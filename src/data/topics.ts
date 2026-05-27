@@ -21,6 +21,7 @@ export interface Topic {
   color: string;
   completion: number;
   subTopics: SubTopic[];
+  topicQuiz: QuizQuestion[];
 }
 
 export const topics: Topic[] = [
@@ -118,6 +119,43 @@ export const topics: Topic[] = [
           }
         ]
       }
+    ],
+    topicQuiz: [
+      {
+        id: "pq1",
+        question: "What percentage of qualifying earnings must you contribute to your workplace pension?",
+        options: ["2%", "3%", "5%", "8%"],
+        correctAnswer: 2,
+        explanation: "Employees must contribute at least 5% of qualifying earnings to their workplace pension under auto-enrolment rules."
+      },
+      {
+        id: "pq2",
+        question: "When does workplace pension auto-enrolment begin?",
+        options: ["After 3 months", "After 6 months", "On your first day", "After passing probation"],
+        correctAnswer: 2,
+        explanation: "Auto-enrolment happens from your first day — your employer is legally required to sign you up immediately."
+      },
+      {
+        id: "pq3",
+        question: "What is the employer's minimum pension contribution?",
+        options: ["1%", "2%", "3%", "5%"],
+        correctAnswer: 2,
+        explanation: "Employers must contribute a minimum of 3% of qualifying earnings, bringing the combined total to at least 8%."
+      },
+      {
+        id: "pq4",
+        question: "At what age can you typically start accessing your pension pot?",
+        options: ["50", "55", "60", "65"],
+        correctAnswer: 1,
+        explanation: "You can typically access your pension from age 55 (rising to 57 in 2028). Accessing it early reduces your retirement income."
+      },
+      {
+        id: "pq5",
+        question: "What happens to your pension when you change employers?",
+        options: ["You lose it", "It stays in your name", "It transfers automatically", "It is frozen until retirement"],
+        correctAnswer: 1,
+        explanation: "Your pension pot stays in your name. You can leave it, transfer it to a new scheme, or consolidate multiple pensions."
+      }
     ]
   },
   {
@@ -213,6 +251,43 @@ export const topics: Topic[] = [
             explanation: "If you think your tax code is wrong, contact HMRC directly. Your employer can't change it — they must use the code HMRC provides."
           }
         ]
+      }
+    ],
+    topicQuiz: [
+      {
+        id: "tq1",
+        question: "What is the UK personal allowance for 2026/27?",
+        options: ["£10,000", "£12,570", "£15,000", "£20,000"],
+        correctAnswer: 1,
+        explanation: "The personal allowance is £12,570 — you pay no income tax on earnings below this threshold."
+      },
+      {
+        id: "tq2",
+        question: "What is the basic rate of income tax?",
+        options: ["10%", "20%", "30%", "40%"],
+        correctAnswer: 1,
+        explanation: "The basic rate is 20%, applied to taxable income between £12,571 and £50,270."
+      },
+      {
+        id: "tq3",
+        question: "What does National Insurance primarily fund?",
+        options: ["Healthcare only", "State pension only", "NHS, state pension & benefits", "Private insurance"],
+        correctAnswer: 2,
+        explanation: "NI contributions fund the NHS, your state pension, and state benefits like maternity allowance."
+      },
+      {
+        id: "tq4",
+        question: "What does the tax code 1257L represent?",
+        options: ["Emergency tax", "Standard personal allowance", "Higher rate taxpayer", "No personal allowance"],
+        correctAnswer: 1,
+        explanation: "1257L is the most common code — the digits indicate your £12,570 personal allowance divided by 10."
+      },
+      {
+        id: "tq5",
+        question: "How is income tax collected for most employees?",
+        options: ["Annual self-assessment", "Monthly via PAYE", "Quarterly direct debit", "Employer discretion"],
+        correctAnswer: 1,
+        explanation: "Tax is deducted each month through the PAYE (Pay As You Earn) system before you receive your salary."
       }
     ]
   },
@@ -310,6 +385,43 @@ export const topics: Topic[] = [
           }
         ]
       }
+    ],
+    topicQuiz: [
+      {
+        id: "eq1",
+        question: "When must your employer provide a written employment contract?",
+        options: ["Within 1 week", "Within 2 months", "On or before day one", "At any time"],
+        correctAnswer: 2,
+        explanation: "Since 2023 employers must provide a written statement of terms on or before your first day of work."
+      },
+      {
+        id: "eq2",
+        question: "What is the minimum UK holiday entitlement for a full-time worker?",
+        options: ["20 days", "25 days", "28 days including bank holidays", "30 days"],
+        correctAnswer: 2,
+        explanation: "UK workers are entitled to 5.6 weeks (28 days for full-time) including bank holidays."
+      },
+      {
+        id: "eq3",
+        question: "What is the minimum statutory notice period after one month of employment?",
+        options: ["None", "1 week", "2 weeks", "1 month"],
+        correctAnswer: 1,
+        explanation: "The statutory minimum is 1 week after at least one month of service. It increases with years served."
+      },
+      {
+        id: "eq4",
+        question: "Can your employer change your contract terms without your agreement?",
+        options: ["Yes, anytime", "Only for pay increases", "Only with your agreement", "Only with 3 months notice"],
+        correctAnswer: 2,
+        explanation: "Employers cannot change contract terms unilaterally — changes require mutual agreement or a proper consultation process."
+      },
+      {
+        id: "eq5",
+        question: "Do part-time workers receive the same holiday rights as full-time workers?",
+        options: ["No", "Yes, pro-rated", "Only if working 3+ days", "At employer's discretion"],
+        correctAnswer: 1,
+        explanation: "Part-time workers receive the same entitlement pro-rated to their hours, protecting them from less favourable treatment."
+      }
     ]
   },
   {
@@ -406,6 +518,43 @@ export const topics: Topic[] = [
           }
         ]
       }
+    ],
+    topicQuiz: [
+      {
+        id: "bq1",
+        question: "How much is Statutory Sick Pay per week in 2026/27?",
+        options: ["£92.05", "£109.40", "£116.75", "£150.00"],
+        correctAnswer: 2,
+        explanation: "SSP is £116.75 per week for up to 28 weeks. Many employers offer enhanced sick pay on top of this."
+      },
+      {
+        id: "bq2",
+        question: "When does Statutory Sick Pay start being paid?",
+        options: ["Day 1", "Day 4", "Day 7", "Week 2"],
+        correctAnswer: 1,
+        explanation: "SSP starts from the 4th consecutive day of illness. Days 1-3 are unpaid waiting days."
+      },
+      {
+        id: "bq3",
+        question: "How long is statutory maternity leave in the UK?",
+        options: ["26 weeks", "39 weeks", "52 weeks", "No limit"],
+        correctAnswer: 2,
+        explanation: "You're entitled to 52 weeks of maternity leave — 26 ordinary plus 26 additional leave."
+      },
+      {
+        id: "bq4",
+        question: "Is private health insurance provided by an employer a taxable benefit?",
+        options: ["No", "Yes, as a benefit in kind", "Only if worth over £1,000", "Only for directors"],
+        correctAnswer: 1,
+        explanation: "Private medical insurance is a taxable benefit in kind — you pay income tax on its assessed value."
+      },
+      {
+        id: "bq5",
+        question: "How much is Statutory Maternity Pay after the first six weeks?",
+        options: ["Full salary", "90% of earnings", "£184.03 per week or 90% if lower", "Nothing"],
+        correctAnswer: 2,
+        explanation: "After the first 6 weeks at 90% of average earnings, SMP drops to £184.03/week (or 90% if lower) for 33 weeks."
+      }
     ]
   },
   {
@@ -501,6 +650,43 @@ export const topics: Topic[] = [
             explanation: "You can have multiple ISAs but can only open and pay into one of each type (Cash, Stocks & Shares, Lifetime, Innovative) per tax year."
           }
         ]
+      }
+    ],
+    topicQuiz: [
+      {
+        id: "sq1",
+        question: "How much should a typical emergency fund cover?",
+        options: ["1 month expenses", "3-6 months expenses", "1 year expenses", "No specific amount"],
+        correctAnswer: 1,
+        explanation: "Financial experts recommend 3-6 months of essential expenses as an emergency buffer against unexpected costs."
+      },
+      {
+        id: "sq2",
+        question: "Where should you keep your emergency fund?",
+        options: ["Under the mattress", "Easy access savings account", "Long-term investments", "Your pension"],
+        correctAnswer: 1,
+        explanation: "Easy access savings accounts let you withdraw funds immediately without penalties — essential for emergencies."
+      },
+      {
+        id: "sq3",
+        question: "What does the 50/30/20 budgeting rule suggest for savings?",
+        options: ["50% savings", "30% savings", "20% savings and debt repayment", "20% fun money"],
+        correctAnswer: 2,
+        explanation: "The 50/30/20 rule allocates 50% to needs, 30% to wants, and 20% to savings and debt repayment."
+      },
+      {
+        id: "sq4",
+        question: "What is the UK ISA allowance for 2026/27?",
+        options: ["£10,000", "£15,000", "£20,000", "£25,000"],
+        correctAnswer: 2,
+        explanation: "The ISA allowance is £20,000 per tax year — any interest, dividends, or gains inside are completely tax-free."
+      },
+      {
+        id: "sq5",
+        question: "Can you pay into more than one ISA of the same type in a tax year?",
+        options: ["Yes, unlimited", "Yes, up to two", "No, only one of each type", "Only for Stocks & Shares ISAs"],
+        correctAnswer: 2,
+        explanation: "You can hold multiple ISAs but may only open and pay into one of each type (Cash, Stocks & Shares, Lifetime, Innovative) per tax year."
       }
     ]
   }
