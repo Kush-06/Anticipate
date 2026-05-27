@@ -3,7 +3,7 @@ import { ArrowLeft, MoreHorizontal, MousePointer2, ChevronRight, Lightbulb } fro
 import { useNavigate, useParams } from "react-router";
 import { getTopicById, getSubTopicById } from "../data/topics";
 
-function DocumentView({ highlightRef, highlightText }: { highlightRef?: React.RefObject<HTMLSpanElement>, highlightText?: string }) {
+function DocumentView({ highlightRef, highlightText }: { highlightRef?: React.RefObject <HTMLSpanElement | null>, highlightText?: string }) {
   return (
     <div
       className="flex-1 overflow-y-auto px-5 pt-3 pb-0"
