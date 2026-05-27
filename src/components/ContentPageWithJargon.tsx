@@ -3,7 +3,7 @@ import { ArrowLeft, MoreHorizontal, MousePointer2, ChevronRight, Lightbulb } fro
 import { useNavigate, useParams } from "react-router";
 import { getTopicById, getSubTopicById } from "../data/topics";
 
-function DocumentView({ highlightRef, highlightText }: { highlightRef?: React.RefObject <HTMLSpanElement | null>, highlightText?: string }) {
+function DocumentView({ highlightRef, highlightText }: { highlightRef?: React.RefObject<HTMLSpanElement | null>, highlightText?: string }) {
   return (
     <div
       className="flex-1 overflow-y-auto px-5 pt-3 pb-0"
@@ -51,7 +51,7 @@ function DocumentView({ highlightRef, highlightText }: { highlightRef?: React.Re
               ref={highlightRef}
               className="relative inline-block px-0.5 rounded-sm"
               style={{
-                outline: "1.25px solid #22d3ee",
+                outline: "1.5px solid #22d3ee",
                 boxShadow: "0 0 6px rgba(34,211,238,0.45), 0 0 2px rgba(34,211,238,0.6)",
                 borderRadius: 3,
                 textDecoration: "underline",
@@ -188,12 +188,16 @@ function JargonDecoderSheet({ title }: { title: string }) {
 }
 
 export function ContentPageWithJargon() {
-  const { topicId, subTopicId } = useParams();
+  const params = useParams();
   const navigate = useNavigate();
   const highlightRef = useRef<HTMLSpanElement>(null);
 
-  const topic = getTopicById(topicId || "");
-  const subTopic = getSubTopicById(topicId || "", subTopicId || "");
+  // Use params if available, otherwise default to pension/auto-enrolment
+  const topicId = params.topicId || "pension";
+  const subTopicId = params.subTopicId || "auto-enrolment";
+
+  const topic = getTopicById(topicId);
+  const subTopic = getSubTopicById(topicId, subTopicId);
 
   if (!topic || !subTopic) {
     return (
