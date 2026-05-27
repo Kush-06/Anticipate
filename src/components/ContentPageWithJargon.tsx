@@ -51,7 +51,7 @@ function DocumentView({ highlightRef, highlightText }: { highlightRef?: React.Re
               ref={highlightRef}
               className="relative inline-block px-0.5 rounded-sm"
               style={{
-                outline: "1.5px solid #22d3ee",
+                outline: "1.25px solid #22d3ee",
                 boxShadow: "0 0 6px rgba(34,211,238,0.45), 0 0 2px rgba(34,211,238,0.6)",
                 borderRadius: 3,
                 textDecoration: "underline",
