@@ -108,50 +108,30 @@ body {
   font-weight: 700;
   color: var(--p-ink);
   line-height: 1.1;
-  margin-bottom: calc(16px * var(--d));
+  margin-bottom: calc(8px * var(--d));
 }
 
-/* XP bar */
-.anp-home__xp {
+/* Semi-circle gauge */
+.anp-home__gauge {
   display: flex;
-  align-items: center;
-  gap: calc(10px * var(--d));
-  padding: calc(10px * var(--d)) calc(14px * var(--d));
-  background: var(--p-card);
-  border-radius: var(--r-lg);
-  border: 1px solid var(--p-line);
-  box-shadow: var(--shadow-card);
+  justify-content: center;
+  padding: calc(4px * var(--d)) 0 0;
 }
 
-.anp-home__xp-label {
-  font-family: var(--font-display);
-  font-size: calc(12px * var(--d));
-  font-weight: 600;
-  color: var(--p-navy);
-  white-space: nowrap;
+.anp-home__gauge-svg {
+  width: 100%;
+  max-width: calc(220px * var(--d));
+  height: auto;
+  overflow: visible;
 }
 
-.anp-home__xp-track {
-  flex: 1;
-  height: calc(6px * var(--d));
-  background: var(--p-line);
-  border-radius: var(--r-pill);
-  overflow: hidden;
+.anp-home__gauge-progress {
+  transition: stroke-dasharray 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.anp-home__xp-fill {
-  height: 100%;
-  border-radius: var(--r-pill);
-  background: linear-gradient(90deg, var(--p-navy), var(--p-plum));
-  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.anp-home__xp-badge {
-  font-family: var(--font-mono);
-  font-size: calc(11px * var(--d));
-  font-weight: 500;
-  color: var(--p-ink-2);
-  white-space: nowrap;
+.anp-home__gauge-needle {
+  transition: x2 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+              y2 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Tracks section label */

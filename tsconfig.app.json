@@ -19,7 +19,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases */
+    "paths": {
+      "@frontend/*": ["./src/frontend/*"],
+      "@backend/*": ["./src/backend/*"],
+      "@shared/*": ["./src/shared/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src/frontend", "src/backend", "src/shared"]
 }
