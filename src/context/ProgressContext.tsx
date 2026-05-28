@@ -20,7 +20,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("completedSubTopics", JSON.stringify(completedSubTopicIds));
   }, [completedSubTopicIds]);
 
-  const completeSubTopic = (topicId: string, subTopicId: string) => {
+  const completeSubTopic = (subTopicId: string) => {
     setCompletedSubTopicIds((prev) => {
       if (prev.includes(subTopicId)) return prev;
       return [...prev, subTopicId];
