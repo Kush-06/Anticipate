@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { topics } from "../data/topics";
 import { supabase } from "@backend/supabaseClient";
 import { fetchProgress, saveProgress } from "@backend/progressService";
@@ -49,7 +49,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const getTopicCompletion = (topicId: string) => {
+  const getTopicCompletion = useCallback((topicId: string) => {
     const topic = topics.find((t) => t.id === topicId);
     if (!topic) return 0;
     const totalSubtopics = topic.subTopics.length;
@@ -57,11 +57,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       completedSubTopicIds.includes(s.id)
     ).length;
     return Math.round((completedSubtopics / totalSubtopics) * 100);
-  };
+  }, [completedSubTopicIds]);
 
   const totalXP = useMemo(() => {
     return topics.reduce((acc, topic) => acc + getTopicCompletion(topic.id) * 0.5, 0);
-  }, [completedSubTopicIds]);
+  }, [getTopicCompletion]);
 
   return (
     <ProgressContext.Provider
@@ -72,6 +72,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useProgress() {
   const context = useContext(ProgressContext);
   if (context === undefined) {

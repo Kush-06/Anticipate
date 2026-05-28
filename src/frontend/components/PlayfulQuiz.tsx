@@ -121,7 +121,7 @@ export function PlayfulQuiz() {
         setPhase("answering");
       }
     }, 300);
-  }, [currentIndex, questions.length, subTopicId, score, topicId, completeSubTopic]);
+  }, [currentIndex, questions.length, subTopicId, score, completeSubTopic]);
 
   const handleTryAgain = useCallback(() => {
     setCurrentIndex(0);

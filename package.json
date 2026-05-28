@@ -8,6 +8,8 @@
     "sim": "npm run build && npx cap sync ios && xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'id=6AC482D9-4157-49B9-81E8-7830FFD2D798' -derivedDataPath /tmp/anticipate-build build && xcrun simctl boot 6AC482D9-4157-49B9-81E8-7830FFD2D798 2>/dev/null; open -a Simulator && xcrun simctl bootstatus 6AC482D9-4157-49B9-81E8-7830FFD2D798 -b && xcrun simctl install 6AC482D9-4157-49B9-81E8-7830FFD2D798 /tmp/anticipate-build/Build/Products/Debug-iphonesimulator/App.app && xcrun simctl launch 6AC482D9-4157-49B9-81E8-7830FFD2D798 com.akshath.anticipate",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest",
+    "test:ci": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -38,20 +40,25 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/ui": "^4.1.7",
     "autoprefixer": "^10.5.0",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.7"
   }
 }
