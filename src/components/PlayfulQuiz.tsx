@@ -105,6 +105,8 @@ export function PlayfulQuiz() {
     // Wait for sheet to slide back down, then advance
     setTimeout(() => {
       const isLastQuestion = currentIndex === questions.length - 1;
+      
+      // Calculate what the score will be after this answer
       const finalScore = score;
       
       setAnswerState(null);
@@ -112,7 +114,7 @@ export function PlayfulQuiz() {
         setPhase("results");
         // If it's a sub-topic quiz and they got full marks, mark it as complete
         if (subTopicId && finalScore === questions.length) {
-          completeSubTopic(topicId!, subTopicId);
+          completeSubTopic(subTopicId);
         }
       } else {
         setCurrentIndex((prev) => prev + 1);

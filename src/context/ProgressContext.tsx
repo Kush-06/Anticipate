@@ -3,7 +3,7 @@ import { topics } from "../data/topics";
 
 interface ProgressContextType {
   completedSubTopicIds: string[];
-  completeSubTopic: (topicId: string, subTopicId: string) => void;
+  completeSubTopic: (subTopicId: string) => void;
   getTopicCompletion: (topicId: string) => number;
   totalXP: number;
 }
