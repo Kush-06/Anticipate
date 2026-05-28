@@ -28,31 +28,89 @@ const TOPIC_GLYPHS: Record<string, string> = {
   savings: "💰",
 };
 
-const MAX_XP = 250;
-
 export function PlayfulHome() {
   const navigate = useNavigate();
-  const { totalXP, getTopicCompletion, completedSubTopicIds } = useProgress();
+  const { getTopicCompletion, completedSubTopicIds } = useProgress();
+
+  const totalSubTopics = topics.reduce((acc, t) => acc + t.subTopics.length, 0);
+  const totalCompleted = completedSubTopicIds.length;
+  const globalCompletion = Math.round((totalCompleted / totalSubTopics) * 100);
 
   return (
     <div className="anp-home">
       {/* Header */}
       <div className="anp-home__header">
-        <p className="anp-home__eyebrow">Your learning</p>
-        <h1 className="anp-home__title">Financial&nbsp;Literacy</h1>
-
-        {/* XP Bar */}
-        <div className="anp-home__xp">
-          <span className="anp-home__xp-label">Level {Math.floor(totalXP / 100) + 1}</span>
-          <div className="anp-home__xp-track">
-            <div
-              className="anp-home__xp-fill"
-              style={{ width: `${Math.min(100, (totalXP / MAX_XP) * 100)}%` }}
-            />
+        <div className="anp-home__header-text">
+          <p className="anp-home__eyebrow">Your learning progress</p>
+          <h1 className="anp-home__title">Financial&nbsp;Literacy</h1>
+        </div>
+        
+        {/* Semi-circle Gauge Meter - Centered */}
+        <div className="anp-home__gauge-container">
+          <span className="anp-home__gauge-percentage">{globalCompletion}%</span>
+          <div className="anp-home__gauge">
+            <svg viewBox="0 0 100 50" className="anp-home__gauge-svg">
+              <path
+                className="anp-home__gauge-bg"
+                d="M 10 50 A 40 40 0 0 1 90 50"
+                fill="none"
+                strokeWidth="8"
+              />
+              <path
+                className="anp-home__gauge-fill"
+                d="M 10 50 A 40 40 0 0 1 90 50"
+                fill="none"
+                strokeWidth="8"
+                strokeDasharray={`${(globalCompletion / 100) * 125.6}, 125.6`}
+              />
+            </svg>
           </div>
-          <span className="anp-home__xp-badge">{Math.round(totalXP)}&nbsp;/&nbsp;{MAX_XP}&nbsp;XP</span>
         </div>
       </div>
+
+      <style>{`
+        .anp-home__header {
+          padding-bottom: 16px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .anp-home__header-text {
+          margin-bottom: 12px;
+        }
+        .anp-home__gauge-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 90px;
+        }
+        .anp-home__gauge-percentage {
+          font-family: var(--font-display);
+          font-weight: 800;
+          font-size: 16px;
+          color: var(--p-ink);
+          margin-bottom: -2px;
+        }
+        .anp-home__gauge {
+          width: 100%;
+          height: 45px;
+          overflow: hidden;
+        }
+        .anp-home__gauge-svg {
+          width: 100%;
+          height: 100%;
+        }
+        .anp-home__gauge-bg {
+          stroke: var(--p-ink-4);
+          opacity: 0.2;
+        }
+        .anp-home__gauge-fill {
+          stroke: var(--p-mint);
+          stroke-linecap: round;
+          transition: stroke-dasharray 0.8s ease-out;
+        }
+      `}</style>
 
       {/* Scrollable track list */}
       <div className="anp-home__scroll">
