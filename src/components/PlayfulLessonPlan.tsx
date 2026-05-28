@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
+import { useProgress } from "../context/ProgressContext";
 
 type NodeState = "done" | "active" | "upcoming" | "locked";
 
@@ -15,6 +16,8 @@ const NODE_ALIGNMENTS = ["right", "center", "left", "center", "right", "center"]
 export function PlayfulLessonPlan() {
   const navigate = useNavigate();
   const { topicId } = useParams<{ topicId: string }>();
+  const { completedSubTopicIds } = useProgress();
+
   const topic = topics.find((t) => t.id === topicId);
 
   if (!topic) {
@@ -27,14 +30,16 @@ export function PlayfulLessonPlan() {
     );
   }
 
-  const completedCount = topic.subTopics.filter((s) => s.completed).length;
+  const completedCount = topic.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
   const totalModules = topic.subTopics.length;
 
   const nodeStates: NodeState[] = topic.subTopics.map((sub, i) => {
-    if (sub.completed) return "done";
-    const firstIncomplete = topic.subTopics.findIndex((s) => !s.completed);
-    if (i === firstIncomplete) return "active";
-    if (i === firstIncomplete + 1) return "upcoming";
+    const isCompleted = completedSubTopicIds.includes(sub.id);
+    if (isCompleted) return "done";
+    
+    const firstIncompleteIdx = topic.subTopics.findIndex((s) => !completedSubTopicIds.includes(s.id));
+    if (i === firstIncompleteIdx) return "active";
+    if (i === firstIncompleteIdx + 1) return "upcoming";
     return "locked";
   });
 
@@ -87,7 +92,14 @@ export function PlayfulLessonPlan() {
             return (
               <div key={sub.id} style={{ width: "100%" }}>
                 <div className={`anp-plan__node-row anp-plan__node-row--${alignment}`}>
-                  <div className={`anp-plan__node${state !== "locked" ? " anp-plan__node--clickable" : ""}`}>
+                  <div
+                    className={`anp-plan__node${state !== "locked" ? " anp-plan__node--clickable" : ""}`}
+                    onClick={() => {
+                      if (state !== "locked") {
+                        navigate(`/topic/${topic.id}/subtopic/${sub.id}`);
+                      }
+                    }}
+                  >
                     <div className={`anp-plan__node-bubble anp-plan__node-bubble--${state}`}>
                       {NODE_ICONS[state]}
                     </div>
@@ -111,13 +123,15 @@ export function PlayfulLessonPlan() {
         </div>
 
         {/* Treasure chest completion card */}
-        <div className="anp-plan__chest-card">
-          <span className="anp-plan__chest-icon">🏆</span>
-          <div className="anp-plan__chest-body">
-            <p className="anp-plan__chest-title">Topic Complete!</p>
-            <p className="anp-plan__chest-sub">Finish all modules and ace the quiz to earn your badge</p>
+        {completedCount === totalModules && (
+          <div className="anp-plan__chest-card">
+            <span className="anp-plan__chest-icon">🏆</span>
+            <div className="anp-plan__chest-body">
+              <p className="anp-plan__chest-title">Topic Complete!</p>
+              <p className="anp-plan__chest-sub">Finish all modules and ace the quiz to earn your badge</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Quiz CTA */}
         <button

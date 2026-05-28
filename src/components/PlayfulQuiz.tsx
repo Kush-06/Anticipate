@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
+import { useProgress } from "../context/ProgressContext";
 
 const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 
@@ -57,10 +58,12 @@ type Phase = "answering" | "feedback" | "results";
 
 export function PlayfulQuiz() {
   const navigate = useNavigate();
-  const { topicId } = useParams<{ topicId: string }>();
+  const { topicId, subTopicId } = useParams<{ topicId: string; subTopicId?: string }>();
+  const { completeSubTopic } = useProgress();
 
   const topic = topics.find((t) => t.id === topicId);
-  const questions = topic?.topicQuiz ?? [];
+  const subTopic = subTopicId ? topic?.subTopics.find(s => s.id === subTopicId) : null;
+  const questions = subTopic ? subTopic.quiz : (topic?.topicQuiz ?? []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -73,6 +76,8 @@ export function PlayfulQuiz() {
   const isLocked = phase === "feedback" || phase === "results";
 
   const currentQ = questions[currentIndex];
+
+  const backPath = subTopicId ? `/topic/${topicId}/subtopic/${subTopicId}` : `/topic/${topicId}`;
 
   const handleAnswer = useCallback(
     (optionIndex: number) => {
@@ -99,16 +104,22 @@ export function PlayfulQuiz() {
 
     // Wait for sheet to slide back down, then advance
     setTimeout(() => {
-      setAnswerState(null);
       const isLastQuestion = currentIndex === questions.length - 1;
+      const finalScore = score;
+      
+      setAnswerState(null);
       if (isLastQuestion) {
         setPhase("results");
+        // If it's a sub-topic quiz and they got full marks, mark it as complete
+        if (subTopicId && finalScore === questions.length) {
+          completeSubTopic(topicId!, subTopicId);
+        }
       } else {
         setCurrentIndex((prev) => prev + 1);
         setPhase("answering");
       }
     }, 300);
-  }, [currentIndex, questions.length]);
+  }, [currentIndex, questions.length, subTopicId, score, topicId, completeSubTopic]);
 
   const handleTryAgain = useCallback(() => {
     setCurrentIndex(0);
@@ -153,7 +164,7 @@ export function PlayfulQuiz() {
         {/* Close button top-right */}
         <button
           className="anp-result__close"
-          onClick={() => navigate(`/topic/${topicId}`)}
+          onClick={() => navigate(backPath)}
           aria-label="Close"
         >
           ✕
@@ -195,16 +206,16 @@ export function PlayfulQuiz() {
           <div className="anp-result__ctas">
             <button
               className="anp-result__btn anp-result__btn--secondary"
-              onClick={() => navigate(`/topic/${topicId}`)}
+              onClick={() => navigate(backPath)}
             >
               ↺ Review answers
             </button>
             {perfClass === "win" ? (
               <button
                 className="anp-result__btn anp-result__btn--primary anp-result__btn--win"
-                onClick={() => navigate("/")}
+                onClick={() => navigate(subTopicId ? `/topic/${topicId}` : "/")}
               >
-                Next topic ›
+                {subTopicId ? "Back to lesson ›" : "Next topic ›"}
               </button>
             ) : (
               <button
@@ -241,12 +252,12 @@ export function PlayfulQuiz() {
       <div className="anp-quiz__topbar">
         <button
           className="anp-quiz__close"
-          onClick={() => navigate(`/topic/${topicId}`)}
+          onClick={() => navigate(backPath)}
           aria-label="Close quiz"
         >
           ✕
         </button>
-        <span className="anp-quiz__topbar-title">{topic?.title ?? "Quiz"}</span>
+        <span className="anp-quiz__topbar-title">{subTopic?.title ?? topic?.title ?? "Quiz"}</span>
         <span className="anp-quiz__score-pill">
           {score}/{totalQs}
         </span>

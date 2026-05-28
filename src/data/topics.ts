@@ -30,13 +30,27 @@ export const topics: Topic[] = [
     title: "Pension & Retirement",
     icon: "🏦",
     color: "#3b82f6",
-    completion: 67,
+    completion: 0,
     subTopics: [
       {
         id: "auto-enrolment",
         title: "Auto-Enrolment Basics",
-        completed: true,
-        content: "pension auto-enrolment",
+        completed: false,
+        content: `### What is Auto-Enrolment?
+
+Since 2012, employers in the UK are legally required to automatically enrol eligible workers into a workplace pension scheme. This is called 'auto-enrolment'.
+
+### Who is eligible?
+
+You'll be automatically enrolled if you:
+* Are at least 22 years old
+* Are under State Pension age
+* Earn more than £10,000 a year
+* Work in the UK
+
+### Can I opt out?
+
+Yes, you have the right to opt out. If you opt out within one month of being enrolled, you'll get back any money you've already paid in. However, staying enrolled means you get 'free money' from your employer and the government!`,
         quiz: [
           {
             id: "q1",
@@ -64,8 +78,23 @@ export const topics: Topic[] = [
       {
         id: "contributions",
         title: "Understanding Contributions",
-        completed: true,
-        content: "pension contributions",
+        completed: false,
+        content: `### How much goes in?
+
+Under auto-enrolment, a minimum total of **8%** of your 'qualifying earnings' must be paid into your pension.
+
+### Who pays what?
+
+* **Your contribution:** Typically **5%**
+* **Employer contribution:** Minimum **3%**
+
+### What are 'Qualifying Earnings'?
+
+This is the part of your pay that's used to calculate pension contributions. For the 2026/27 tax year, this is usually earnings between **£6,240 and £50,270**.
+
+### Can I pay more?
+
+Absolutely! Many employers will even 'match' your contributions. If you increase your contribution to 6%, they might increase theirs to 6% too. It's worth checking your contract!`,
         quiz: [
           {
             id: "q1",
@@ -94,7 +123,7 @@ export const topics: Topic[] = [
         id: "tax-relief",
         title: "Tax Relief Benefits",
         completed: false,
-        content: "pension tax relief",
+        content: "### The Government's 'Top-up'\n\nPension contributions benefit from **tax relief**. This means some of the money that would have gone to the government as income tax goes into your pension instead.\n\n### How it works\n\nIf you're a basic-rate taxpayer (20%), putting **£80** into your pension only costs you £80, but **£100** actually goes into your pot. The government adds the extra £20!\n\n### When can I take it out?\n\nYou can usually start taking money from your workplace pension from age **55** (this is rising to **57** in 2028). \n\n### Changing jobs\n\nYour pension pot belongs to you. If you change jobs, you can leave the money where it is, or move it to your new employer's scheme to keep everything in one place.",
         quiz: [
           {
             id: "q1",
@@ -163,12 +192,12 @@ export const topics: Topic[] = [
     title: "Tax & National Insurance",
     icon: "💷",
     color: "#10b981",
-    completion: 33,
+    completion: 0,
     subTopics: [
       {
         id: "income-tax",
         title: "Income Tax Basics",
-        completed: true,
+        completed: false,
         content: "income tax",
         quiz: [
           {
@@ -296,12 +325,12 @@ export const topics: Topic[] = [
     title: "Employment Rights",
     icon: "📋",
     color: "#f59e0b",
-    completion: 50,
+    completion: 0,
     subTopics: [
       {
         id: "contracts",
         title: "Employment Contracts",
-        completed: true,
+        completed: false,
         content: "employment contracts",
         quiz: [
           {
@@ -330,7 +359,7 @@ export const topics: Topic[] = [
       {
         id: "holiday",
         title: "Holiday Entitlement",
-        completed: true,
+        completed: false,
         content: "holiday entitlement",
         quiz: [
           {
@@ -429,12 +458,12 @@ export const topics: Topic[] = [
     title: "Employee Benefits",
     icon: "🎁",
     color: "#8b5cf6",
-    completion: 25,
+    completion: 0,
     subTopics: [
       {
         id: "sick-pay",
         title: "Sick Pay",
-        completed: true,
+        completed: false,
         content: "statutory sick pay",
         quiz: [
           {

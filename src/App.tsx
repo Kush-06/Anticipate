@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { PlayfulHome } from "./components/PlayfulHome";
 import { PlayfulLessonPlan } from "./components/PlayfulLessonPlan";
 import { PlayfulQuiz } from "./components/PlayfulQuiz";
+import { PlayfulSubTopic } from "./components/PlayfulSubTopic";
 
 export default function App() {
   const platform = Capacitor.getPlatform();
@@ -13,6 +14,8 @@ export default function App() {
       <Route path="/" element={<PlayfulHome />} />
       <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
       <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
+      <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
+      <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
     </Routes>
   );
 

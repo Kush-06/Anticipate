@@ -1,14 +1,15 @@
 import { useNavigate } from "react-router";
 import { topics } from "../data/topics";
+import { useProgress } from "../context/ProgressContext";
 
 type TrackState = "active" | "done" | "upcoming" | "locked";
 
-function resolveTrackState(completion: number, index: number): TrackState {
+function resolveTrackState(completion: number, index: number, topicsData: typeof topics, getCompletion: (id: string) => number): TrackState {
   if (completion === 100) return "done";
   if (completion > 0) return "active";
   // First topic with 0% is upcoming, rest are locked
   if (index === 0) return "upcoming";
-  const prevHasProgress = topics.slice(0, index).some((t) => t.completion > 0);
+  const prevHasProgress = topicsData.slice(0, index).some((t) => getCompletion(t.id) > 0);
   return prevHasProgress ? "upcoming" : "locked";
 }
 
@@ -27,11 +28,11 @@ const TOPIC_GLYPHS: Record<string, string> = {
   savings: "💰",
 };
 
-const TOTAL_XP = topics.reduce((acc, t) => acc + Math.round(t.completion * 0.5), 0);
 const MAX_XP = 250;
 
 export function PlayfulHome() {
   const navigate = useNavigate();
+  const { totalXP, getTopicCompletion, completedSubTopicIds } = useProgress();
 
   return (
     <div className="anp-home">
@@ -42,14 +43,14 @@ export function PlayfulHome() {
 
         {/* XP Bar */}
         <div className="anp-home__xp">
-          <span className="anp-home__xp-label">Level 2</span>
+          <span className="anp-home__xp-label">Level {Math.floor(totalXP / 100) + 1}</span>
           <div className="anp-home__xp-track">
             <div
               className="anp-home__xp-fill"
-              style={{ width: `${Math.min(100, (TOTAL_XP / MAX_XP) * 100)}%` }}
+              style={{ width: `${Math.min(100, (totalXP / MAX_XP) * 100)}%` }}
             />
           </div>
-          <span className="anp-home__xp-badge">{TOTAL_XP}&nbsp;/&nbsp;{MAX_XP}&nbsp;XP</span>
+          <span className="anp-home__xp-badge">{Math.round(totalXP)}&nbsp;/&nbsp;{MAX_XP}&nbsp;XP</span>
         </div>
       </div>
 
@@ -58,9 +59,10 @@ export function PlayfulHome() {
         <p className="anp-home__section-label">Topics</p>
         <div className="anp-home__tracks">
           {topics.map((topic, index) => {
-            const state = resolveTrackState(topic.completion, index);
+            const completion = getTopicCompletion(topic.id);
+            const state = resolveTrackState(completion, index, topics, getTopicCompletion);
             const isLocked = state === "locked";
-            const completedSubtopics = topic.subTopics.filter((s) => s.completed).length;
+            const completedSubtopicsCount = topic.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
 
             const handleClick = () => {
               if (!isLocked) navigate(`/topic/${topic.id}`);
@@ -102,11 +104,11 @@ export function PlayfulHome() {
                 <div className="anp-l-track__body">
                   <div className="anp-l-track__title">{topic.title}</div>
                   <div className="anp-l-track__meta">
-                    <span>{completedSubtopics}&nbsp;/&nbsp;{topic.subTopics.length}&nbsp;lessons</span>
-                    {topic.completion > 0 && (
+                    <span>{completedSubtopicsCount}&nbsp;/&nbsp;{topic.subTopics.length}&nbsp;lessons</span>
+                    {completion > 0 && (
                       <>
                         <span className="anp-l-track__dot" />
-                        <span>{topic.completion}%&nbsp;done</span>
+                        <span>{completion}%&nbsp;done</span>
                       </>
                     )}
                     {state === "locked" && (
@@ -122,7 +124,7 @@ export function PlayfulHome() {
                       className={`anp-l-track__bar-fill anp-l-track__bar-fill--${
                         state === "upcoming" ? "upcoming" : state
                       }`}
-                      style={{ width: `${Math.max(topic.completion, state === "active" ? 8 : 0)}%` }}
+                      style={{ width: `${Math.max(completion, state === "active" ? 8 : 0)}%` }}
                     />
                   </div>
                 </div>
