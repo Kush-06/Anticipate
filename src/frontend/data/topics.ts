@@ -27,7 +27,7 @@ export interface Topic {
 export const topics: Topic[] = [
   {
     id: "pension",
-    title: "Pension & Retirement",
+    title: "BOBS RETIREMENT",
     icon: "🏦",
     color: "#3b82f6",
     completion: 0,
