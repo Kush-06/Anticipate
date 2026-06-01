@@ -74,7 +74,7 @@ export function PlayfulLessonPlan() {
       <div className="anp-spacer" />
 
       <div className="anp-top">
-        <BackBtn onClick={() => navigate("/")} />
+        <BackBtn onClick={() => navigate("/learn")} />
         <div className="anp-wordmark">Lesson plan</div>
         <div style={{ width: "calc(36px * var(--d))" }} />
       </div>
