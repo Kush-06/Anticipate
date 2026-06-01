@@ -4,19 +4,24 @@ import { PlayfulHome } from "./components/PlayfulHome";
 import { PlayfulLessonPlan } from "./components/PlayfulLessonPlan";
 import { PlayfulQuiz } from "./components/PlayfulQuiz";
 import { PlayfulSubTopic } from "./components/PlayfulSubTopic";
+import { LessonComplete } from "./components/LessonComplete";
+import { ProgressProvider } from "./context/ProgressContext";
 
 export default function App() {
   const platform = Capacitor.getPlatform();
   const isNative = platform === "android" || platform === "ios";
 
   const AppRoutes = (
-    <Routes>
-      <Route path="/" element={<PlayfulHome />} />
-      <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
-      <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
-      <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
-      <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
-    </Routes>
+    <ProgressProvider>
+      <Routes>
+        <Route path="/" element={<PlayfulHome />} />
+        <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
+        <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
+        <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
+        <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
+        <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
+      </Routes>
+    </ProgressProvider>
   );
 
   // Native shell — full screen, no frame
