@@ -30,7 +30,7 @@ const lessonModules = import.meta.glob<string>(
 )
 
 function getContent(topicId: string, subTopicId: string): string {
-  const key = `/src/frontend/content/lessons/${topicId}/${subTopicId}.md`
+  const key = `../content/lessons/${topicId}/${subTopicId}.md`
   return lessonModules[key] ?? ''
 }
 
