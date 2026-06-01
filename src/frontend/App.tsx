@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Capacitor } from "@capacitor/core";
 import { PlayfulHome } from "./components/PlayfulHome";
@@ -12,11 +13,28 @@ import { OnboardingFlow } from "./components/OnboardingFlow";
 import { ProgressProvider } from "./context/ProgressContext";
 import { ProfileProvider, useProfile } from "./context/ProfileContext";
 import { TimelineProvider } from "./context/TimelineContext";
+import { LoadingScreen } from "./components/LoadingScreen";
 
 function MainApp() {
   const { completedOnboarding } = useProfile();
   const platform = Capacitor.getPlatform();
   const isNative = platform === "android" || platform === "ios";
+  const [appLoading, setAppLoading] = useState(true);
+
+  if (appLoading) {
+    if (isNative) {
+      return (
+        <div style={{ width: "100%", height: "100vh", background: "var(--p-coral, #e9694a)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}>
+          <LoadingScreen onFinished={() => setAppLoading(false)} />
+        </div>
+      );
+    }
+    return (
+      <PhoneFrame>
+        <LoadingScreen onFinished={() => setAppLoading(false)} />
+      </PhoneFrame>
+    );
+  }
 
   if (!completedOnboarding) {
     const shell = (

@@ -13,10 +13,38 @@ export function SageAvatar({ size = 48 }: { size?: number }) {
           <stop offset="0%" stopColor="#FFE4D4" />
           <stop offset="100%" stopColor="#FFD4B8" />
         </linearGradient>
+        <style>{`
+          .sage-sprout {
+            transform-origin: 50px 34px;
+            animation: sage-sway 2.5s ease-in-out infinite;
+          }
+          .sage-leaf-l {
+            transform-origin: 42px 14px;
+            animation: sage-flutter-l 2.5s ease-in-out infinite;
+          }
+          .sage-leaf-r {
+            transform-origin: 58px 14px;
+            animation: sage-flutter-r 2.5s ease-in-out infinite;
+          }
+          @keyframes sage-sway {
+            0%, 100% { transform: rotate(-4deg); }
+            50% { transform: rotate(4deg); }
+          }
+          @keyframes sage-flutter-l {
+            0%, 100% { transform: rotate(-8deg) scale(0.95); }
+            50% { transform: rotate(4deg) scale(1.05); }
+          }
+          @keyframes sage-flutter-r {
+            0%, 100% { transform: rotate(8deg) scale(0.95); }
+            50% { transform: rotate(-4deg) scale(1.05); }
+          }
+        `}</style>
       </defs>
-      <path d="M50 34 L50 20" stroke="#5fab84" strokeWidth="4.5" strokeLinecap="round" />
-      <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
-      <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+      <g className="sage-sprout">
+        <path d="M50 34 L50 20" stroke="#5fab84" strokeWidth="4.5" strokeLinecap="round" />
+        <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" className="sage-leaf-l" />
+        <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" className="sage-leaf-r" />
+      </g>
       <circle cx="50" cy="62" r="30" fill="url(#sage-grad)" stroke="#e9694a" strokeWidth="3.5" />
       <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" strokeWidth="2.5" strokeLinecap="round" fill="none" />
       <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" strokeWidth="2.5" strokeLinecap="round" fill="none" />
