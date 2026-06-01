@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import {
   Baby,
   Bell,
+  BookOpen,
   Briefcase,
   Car,
   CreditCard,
@@ -12,7 +13,6 @@ import {
   Landmark,
   Lightbulb,
   LineChart,
-  Lock,
   Scale,
   TrendingUp,
   type LucideIcon,
@@ -54,7 +54,7 @@ const TOPIC_SUBTITLES: Record<string, string> = {
 
 type TrackStatus = "done" | "active" | "queued";
 
-const SIDE_COLORS = ["mint", "coral", "gold", "plum", "navy", "mint"];
+const SIDE_COLORS = ["mint", "coral", "gold", "coral", "navy", "mint"];
 const MINS_PER_SUBTOPIC = 3;
 
 const FOUNDATIONAL_IDS = new Set(["foundations", "mastering-credit", "investing-101", "taxes-wealth"]);
@@ -286,6 +286,13 @@ export function PlayfulHome() {
         </div>
 
         <div style={{ height: 50 }} />
+      </div>
+
+      <div className="anp-bottom-nav">
+        <button className="anp-bottom-nav__tab anp-bottom-nav__tab--active" onClick={() => navigate("/")}>
+          <BookOpen size={22} />
+          <span className="anp-bottom-nav__label">Learn</span>
+        </button>
       </div>
     </div>
   );

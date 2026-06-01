@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { TopicIcon } from "./TopicIcon";
 
 export function PlayfulSubTopic() {
   const navigate = useNavigate();
@@ -156,7 +157,7 @@ export function PlayfulSubTopic() {
       <div className="anp-plan__scroll" style={{ padding: "0 16px 32px" }}>
         {/* Header decoration */}
         <div className="anp-subtopic__header" style={{ backgroundColor: topic.color + "20" }}>
-          <span className="anp-subtopic__icon">{topic.icon}</span>
+          <TopicIcon topicId={topic.id} size={32} color={topic.color} />
           <div className="anp-subtopic__topic-info">
             <span className="anp-subtopic__topic-title">{topic.title}</span>
             <h2 className="anp-subtopic__title">{subTopic.title}</h2>
