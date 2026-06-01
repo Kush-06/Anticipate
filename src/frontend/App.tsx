@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Capacitor } from "@capacitor/core";
 import { PlayfulHome } from "./components/PlayfulHome";
+import { DecoderPage } from "./components/DecoderPage";
 import { PlayfulLessonPlan } from "./components/PlayfulLessonPlan";
 import { PlayfulQuiz } from "./components/PlayfulQuiz";
 import { PlayfulSubTopic } from "./components/PlayfulSubTopic";
@@ -15,6 +16,7 @@ export default function App() {
     <ProgressProvider>
       <Routes>
         <Route path="/" element={<PlayfulHome />} />
+        <Route path="/decoder" element={<DecoderPage />} />
         <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
         <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
         <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
-import { BookOpen } from "lucide-react";
+import { BookOpen, FileText } from "lucide-react";
 import { TopicIcon } from "./TopicIcon";
 
 type TrackStatus = "done" | "active" | "queued" | "locked";
@@ -180,6 +180,10 @@ export function PlayfulHome() {
       </div>
 
       <div className="anp-bottom-nav">
+        <button className="anp-bottom-nav__tab" onClick={() => navigate("/decoder")}>
+          <FileText size={22} />
+          <span className="anp-bottom-nav__label">Decoder</span>
+        </button>
         <button className="anp-bottom-nav__tab anp-bottom-nav__tab--active" onClick={() => navigate("/")}>
           <BookOpen size={22} />
           <span className="anp-bottom-nav__label">Learn</span>
