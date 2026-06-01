@@ -2,7 +2,6 @@ import { useNavigate } from "react-router";
 import {
   Baby,
   Bell,
-  BookOpen,
   Briefcase,
   Car,
   CreditCard,
@@ -238,10 +237,10 @@ export function PlayfulHome() {
         {/* ── Foundational section — card wrapper ── */}
         <div style={{
           margin: "0 calc(16px * var(--d)) calc(16px * var(--d))",
-          background: "var(--p-card)",
+          background: "linear-gradient(135deg, #fef9ee 0%, #faeac8 45%, #fdf5e2 100%)",
           borderRadius: "calc(20px * var(--d))",
           padding: "calc(14px * var(--d)) calc(14px * var(--d)) calc(6px * var(--d))",
-          border: "1px solid var(--p-line)",
+          border: "1px solid var(--p-gold-tint)",
         }}>
           {/* Section header */}
           <div style={{
@@ -288,12 +287,7 @@ export function PlayfulHome() {
         <div style={{ height: 50 }} />
       </div>
 
-      <div className="anp-bottom-nav">
-        <button className="anp-bottom-nav__tab anp-bottom-nav__tab--active" onClick={() => navigate("/")}>
-          <BookOpen size={22} />
-          <span className="anp-bottom-nav__label">Learn</span>
-        </button>
-      </div>
+
     </div>
   );
 }

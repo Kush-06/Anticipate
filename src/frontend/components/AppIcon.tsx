@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 type IconName =
   | "home" | "learn" | "profile" | "bell" | "arrowRight" | "chevronRight"
   | "chevronDown" | "chevronLeft" | "check" | "play" | "clock" | "settings"
