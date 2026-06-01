@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { FileText, BookOpen, Receipt, Landmark, Home, Mail, Calculator } from "lucide-react";
-import { PayslipDocument } from "./PayslipDocument";
-import { TenancyAgreement } from "./TenancyAgreement";
-import { MortgageESIS } from "./MortgageESIS";
-import { PensionWelcomeLetter } from "./PensionWelcomeLetter";
-import { SA302TaxCalc } from "./SA302TaxCalc";
+import { PayslipDocument } from "./decoderDocs/PayslipDocument";
+import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
+import { MortgageESIS } from "./decoderDocs/MortgageESIS";
+import { PensionWelcomeLetter } from "./decoderDocs/PensionWelcomeLetter";
+import { SA302TaxCalc } from "./decoderDocs/SA302TaxCalc";
 
 type Document = {
   id: string;
