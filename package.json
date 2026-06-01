@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:ci": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "node --experimental-strip-types scripts/seed-quizzes.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
