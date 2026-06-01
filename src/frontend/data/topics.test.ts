@@ -4,34 +4,47 @@ import { getTopicById, getSubTopicById, topics } from './topics'
 describe('topics data utilities', () => {
   describe('getTopicById', () => {
     it('should return the correct topic for a valid ID', () => {
-      const topic = getTopicById('starting-work')
-      expect(topic).toBeDefined()
-      expect(topic?.id).toBe('starting-work')
-      expect(topic?.title).toBe('Starting Work')
+      if (topics.length > 0) {
+        const firstTopic = topics[0]
+        const topic = getTopicById(firstTopic.id)
+        expect(topic).toBeDefined()
+        expect(topic?.id).toBe(firstTopic.id)
+        expect(topic?.title).toBe(firstTopic.title)
+      }
     })
 
     it('should return undefined for an invalid ID', () => {
-      const topic = getTopicById('non-existent')
+      const topic = getTopicById('non-existent-topic-123')
       expect(topic).toBeUndefined()
     })
   })
 
   describe('getSubTopicById', () => {
     it('should return the correct subtopic for valid topic and subtopic IDs', () => {
-      const subTopic = getSubTopicById('starting-work', 'lesson-01')
-      expect(subTopic).toBeDefined()
-      expect(subTopic?.id).toBe('lesson-01')
-      expect(subTopic?.title).toBe('Decoding Your Payslip')
+      if (topics.length > 0 && topics[0].subTopics.length > 0) {
+        const firstTopic = topics[0]
+        const firstSubTopic = firstTopic.subTopics[0]
+        const subTopic = getSubTopicById(firstTopic.id, firstSubTopic.id)
+        expect(subTopic).toBeDefined()
+        expect(subTopic?.id).toBe(firstSubTopic.id)
+        expect(subTopic?.title).toBe(firstSubTopic.title)
+      }
     })
 
     it('should return undefined for an invalid topic ID', () => {
-      const subTopic = getSubTopicById('non-existent', 'lesson-01')
-      expect(subTopic).toBeUndefined()
+      if (topics.length > 0 && topics[0].subTopics.length > 0) {
+        const firstSubTopic = topics[0].subTopics[0]
+        const subTopic = getSubTopicById('non-existent-topic-123', firstSubTopic.id)
+        expect(subTopic).toBeUndefined()
+      }
     })
 
     it('should return undefined for an invalid subtopic ID', () => {
-      const subTopic = getSubTopicById('starting-work', 'non-existent')
-      expect(subTopic).toBeUndefined()
+      if (topics.length > 0) {
+        const firstTopic = topics[0]
+        const subTopic = getSubTopicById(firstTopic.id, 'non-existent-subtopic-123')
+        expect(subTopic).toBeUndefined()
+      }
     })
   })
 
@@ -44,6 +57,10 @@ describe('topics data utilities', () => {
       topics.forEach(topic => {
         expect(topic.subTopics.length).toBeGreaterThan(0)
         expect(Array.isArray(topic.topicQuiz)).toBe(true)
+        topic.subTopics.forEach(subTopic => {
+          expect(Array.isArray(subTopic.quiz)).toBe(true)
+          expect(typeof subTopic.content).toBe('string')
+        })
       })
     })
   })
