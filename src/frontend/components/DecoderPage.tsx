@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { FileText, BookOpen, Receipt, Landmark } from "lucide-react";
+import { FileText, BookOpen, Receipt, Landmark, Home, Mail, Calculator } from "lucide-react";
 import { PayslipDocument } from "./PayslipDocument";
+import { TenancyAgreement } from "./TenancyAgreement";
+import { MortgageESIS } from "./MortgageESIS";
+import { PensionWelcomeLetter } from "./PensionWelcomeLetter";
+import { SA302TaxCalc } from "./SA302TaxCalc";
 
 type Document = {
   id: string;
@@ -9,7 +13,6 @@ type Document = {
   description: string;
   tag: string;
   icon: React.ReactNode;
-  color: string;
 };
 
 const DOCUMENTS: Document[] = [
@@ -19,15 +22,34 @@ const DOCUMENTS: Document[] = [
     description: "Understand gross pay, deductions, tax codes and what actually hits your bank.",
     tag: "Employment",
     icon: <Receipt size={24} />,
-    color: "mint",
   },
   {
     id: "tenancy",
     title: "Tenancy agreement",
     description: "Break down rental contracts, deposit rules, and your rights as a tenant.",
     tag: "Housing",
+    icon: <Home size={24} />,
+  },
+  {
+    id: "mortgage",
+    title: "Mortgage (ESIS)",
+    description: "Compare mortgage costs, APRC, fees, and early repayment charges.",
+    tag: "Property",
     icon: <Landmark size={24} />,
-    color: "gold",
+  },
+  {
+    id: "pension",
+    title: "Pension letter",
+    description: "Auto-enrolment details, employer contributions, and opt-out rights.",
+    tag: "Future",
+    icon: <Mail size={24} />,
+  },
+  {
+    id: "tax",
+    title: "Tax calculation",
+    description: "SA302 summary for self-assessment, NI, and payments on account.",
+    tag: "Tax",
+    icon: <Calculator size={24} />,
   },
 ];
 
@@ -35,9 +57,11 @@ export function DecoderPage() {
   const navigate = useNavigate();
   const [openDoc, setOpenDoc] = useState<string | null>(null);
 
-  if (openDoc === "payslip") {
-    return <PayslipDocument onBack={() => setOpenDoc(null)} />;
-  }
+  if (openDoc === "payslip") return <PayslipDocument onBack={() => setOpenDoc(null)} />;
+  if (openDoc === "tenancy") return <TenancyAgreement onBack={() => setOpenDoc(null)} />;
+  if (openDoc === "mortgage") return <MortgageESIS onBack={() => setOpenDoc(null)} />;
+  if (openDoc === "pension") return <PensionWelcomeLetter onBack={() => setOpenDoc(null)} />;
+  if (openDoc === "tax") return <SA302TaxCalc onBack={() => setOpenDoc(null)} />;
 
   return (
     <div className="anp-app anp-lessons-bg">
@@ -59,35 +83,27 @@ export function DecoderPage() {
         </div>
 
         <div className="anp-l-tracks">
-          {DOCUMENTS.map((doc) => {
-            const isAvailable = doc.id === "payslip";
-            return (
-              <div
-                key={doc.id}
-                className={`anp-l-track ${isAvailable ? "active" : "locked"} ${doc.color}`}
-                onClick={() => (isAvailable ? setOpenDoc(doc.id) : null)}
-              >
-                <div className="anp-l-track-num">
-                  {doc.icon}
-                </div>
+          {DOCUMENTS.map((doc) => (
+            <div
+              key={doc.id}
+              className="anp-l-track active"
+              onClick={() => setOpenDoc(doc.id)}
+            >
+              <div className="anp-l-track-num">
+                {doc.icon}
+              </div>
 
-                <div className="anp-l-track-body">
-                  <div className="anp-l-track-title">
-                    {doc.title}
-                    {isAvailable && <span className="now-tag">READY</span>}
-                  </div>
-                  <div className="anp-l-track-sub">
-                    {doc.description}
-                  </div>
-                  {!isAvailable && (
-                    <div className="anp-l-track-meta">
-                      <span className="lock-meta">Coming soon</span>
-                    </div>
-                  )}
+              <div className="anp-l-track-body">
+                <div className="anp-l-track-title">
+                  {doc.title}
+                  <span className="now-tag">READY</span>
+                </div>
+                <div className="anp-l-track-sub">
+                  {doc.description}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         <div style={{ height: 60 }} />
