@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { ChevronRight, ArrowLeft } from "lucide-react";
+import type { ReactNode } from "react";
 
 export function PlayfulSubTopic() {
   const navigate = useNavigate();
@@ -19,42 +20,132 @@ export function PlayfulSubTopic() {
     );
   }
 
-  // Simple "markdown" renderer
-  const renderContent = (content: string) => {
-    return content.split("\n\n").map((block, i) => {
-      if (block.startsWith("### ")) {
-        return <h3 key={i} className="anp-subtopic__h3">{block.replace("### ", "")}</h3>;
-      }
-      if (block.startsWith("* ")) {
-        const items = block.split("\n").map(item => item.replace("* ", ""));
-        return (
-          <ul key={i} className="anp-subtopic__ul">
-            {items.map((item, j) => <li key={j}>{renderText(item)}</li>)}
-          </ul>
-        );
-      }
-      return <p key={i} className="anp-subtopic__p">{renderText(block)}</p>;
-    });
-  };
-
-  const renderText = (text: string) => {
-    // Handle bold **text**
+  const renderInline = (text: string): ReactNode[] => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return <strong key={i}>{part.slice(2, -2)}</strong>;
       }
-      return part;
+      return part as ReactNode;
     });
+  };
+
+  const isSeparatorRow = (line: string) => /^\|[\s\-:|]+\|$/.test(line.trim());
+
+  const renderTable = (block: string, key: number) => {
+    const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+    const dataLines = lines.filter(l => !isSeparatorRow(l));
+    if (dataLines.length < 1) return null;
+
+    const parseRow = (line: string) =>
+      line.split("|").map(c => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length - 1);
+
+    const headers = parseRow(dataLines[0]);
+    const rows = dataLines.slice(1).map(parseRow);
+
+    return (
+      <div key={key} className="anp-subtopic__table-wrap">
+        <table className="anp-subtopic__table">
+          <thead>
+            <tr>{headers.map((h, i) => <th key={i}>{renderInline(h)}</th>)}</tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i}>{row.map((c, j) => <td key={j}>{renderInline(c)}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const renderContent = (content: string): ReactNode[] => {
+    const blocks = content.split(/\n\n+/).map(b => b.trim()).filter(Boolean);
+    const elements: ReactNode[] = [];
+
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+
+      // Skip h1 — title already shown in header
+      if (block.startsWith("# ")) continue;
+
+      // Reading time
+      if (block.startsWith("**Reading Time:**")) {
+        const time = block.replace("**Reading Time:**", "").trim();
+        elements.push(
+          <p key={i} className="anp-subtopic__reading-time">⏱ {time}</p>
+        );
+        continue;
+      }
+
+      // h2
+      if (block.startsWith("## ")) {
+        elements.push(
+          <h2 key={i} className="anp-subtopic__h2">{renderInline(block.replace(/^## /, ""))}</h2>
+        );
+        continue;
+      }
+
+      // h3
+      if (block.startsWith("### ")) {
+        elements.push(
+          <h3 key={i} className="anp-subtopic__h3">{renderInline(block.replace(/^### /, ""))}</h3>
+        );
+        continue;
+      }
+
+      // Divider
+      if (block === "---") {
+        elements.push(<hr key={i} className="anp-subtopic__hr" />);
+        continue;
+      }
+
+      // Blockquote / action step
+      if (block.startsWith("> ")) {
+        const inner = block.replace(/^> /, "");
+        elements.push(
+          <blockquote key={i} className="anp-subtopic__blockquote">
+            {renderInline(inner)}
+          </blockquote>
+        );
+        continue;
+      }
+
+      // Table
+      if (block.includes("|")) {
+        const tableEl = renderTable(block, i);
+        if (tableEl) { elements.push(tableEl); continue; }
+      }
+
+      // List (- or *)
+      const lines = block.split("\n");
+      if (lines.every(l => l.match(/^[-*] /))) {
+        elements.push(
+          <ul key={i} className="anp-subtopic__ul">
+            {lines.map((item, j) => (
+              <li key={j}>{renderInline(item.replace(/^[-*] /, ""))}</li>
+            ))}
+          </ul>
+        );
+        continue;
+      }
+
+      // Paragraph
+      elements.push(
+        <p key={i} className="anp-subtopic__p">{renderInline(block)}</p>
+      );
+    }
+
+    return elements;
   };
 
   return (
     <div className="anp-plan">
       {/* Top bar */}
       <div className="anp-plan__topbar">
-        <button 
-          className="anp-plan__back" 
-          onClick={() => navigate(`/topic/${topicId}`)} 
+        <button
+          className="anp-plan__back"
+          onClick={() => navigate(`/topic/${topicId}`)}
           aria-label="Back to lesson plan"
         >
           <ArrowLeft size={18} />
@@ -65,11 +156,11 @@ export function PlayfulSubTopic() {
       <div className="anp-plan__scroll" style={{ padding: "0 16px 32px" }}>
         {/* Header decoration */}
         <div className="anp-subtopic__header" style={{ backgroundColor: topic.color + "20" }}>
-           <span className="anp-subtopic__icon">{topic.icon}</span>
-           <div className="anp-subtopic__topic-info">
-             <span className="anp-subtopic__topic-title">{topic.title}</span>
-             <h2 className="anp-subtopic__title">{subTopic.title}</h2>
-           </div>
+          <span className="anp-subtopic__icon">{topic.icon}</span>
+          <div className="anp-subtopic__topic-info">
+            <span className="anp-subtopic__topic-title">{topic.title}</span>
+            <h2 className="anp-subtopic__title">{subTopic.title}</h2>
+          </div>
         </div>
 
         {/* Content Area */}
@@ -99,9 +190,7 @@ export function PlayfulSubTopic() {
           margin-top: 16px;
           margin-bottom: 24px;
         }
-        .anp-subtopic__icon {
-          font-size: 32px;
-        }
+        .anp-subtopic__icon { font-size: 32px; }
         .anp-subtopic__topic-title {
           font-size: 10px;
           text-transform: uppercase;
@@ -117,21 +206,50 @@ export function PlayfulSubTopic() {
           color: var(--p-ink);
           line-height: 1.2;
         }
+        .anp-subtopic__reading-time {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--p-ink-3);
+          margin-bottom: 20px;
+        }
         .anp-subtopic__content {
           color: var(--p-ink-2);
           line-height: 1.6;
         }
+        .anp-subtopic__h2 {
+          font-family: var(--font-display);
+          font-size: 17px;
+          font-weight: 800;
+          color: var(--p-ink);
+          margin-top: 28px;
+          margin-bottom: 10px;
+        }
         .anp-subtopic__h3 {
           font-family: var(--font-display);
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 700;
           color: var(--p-ink);
-          margin-top: 24px;
-          margin-bottom: 8px;
+          margin-top: 20px;
+          margin-bottom: 6px;
         }
         .anp-subtopic__p {
           font-size: 14px;
           margin-bottom: 12px;
+        }
+        .anp-subtopic__hr {
+          border: none;
+          border-top: 1px solid var(--p-ink-5, #e5e7eb);
+          margin: 20px 0;
+        }
+        .anp-subtopic__blockquote {
+          border-left: 3px solid var(--p-coral, #f97316);
+          background: var(--p-coral, #f97316)14;
+          border-radius: 0 12px 12px 0;
+          padding: 12px 14px;
+          margin: 16px 0;
+          font-size: 14px;
+          color: var(--p-ink);
+          line-height: 1.55;
         }
         .anp-subtopic__ul {
           margin-bottom: 16px;
@@ -141,6 +259,34 @@ export function PlayfulSubTopic() {
           font-size: 14px;
           margin-bottom: 8px;
           list-style-type: disc;
+        }
+        .anp-subtopic__table-wrap {
+          overflow-x: auto;
+          margin: 16px 0;
+          border-radius: 12px;
+          border: 1px solid var(--p-ink-5, #e5e7eb);
+        }
+        .anp-subtopic__table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 13px;
+        }
+        .anp-subtopic__table th {
+          background: var(--p-bg-2, #f3f4f6);
+          font-weight: 700;
+          color: var(--p-ink);
+          padding: 10px 12px;
+          text-align: left;
+          border-bottom: 1px solid var(--p-ink-5, #e5e7eb);
+        }
+        .anp-subtopic__table td {
+          padding: 9px 12px;
+          color: var(--p-ink-2);
+          border-bottom: 1px solid var(--p-ink-5, #e5e7eb);
+          vertical-align: top;
+        }
+        .anp-subtopic__table tr:last-child td {
+          border-bottom: none;
         }
       `}</style>
     </div>
