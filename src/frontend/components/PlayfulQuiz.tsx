@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { topics, type QuizQuestion } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
@@ -6,56 +6,54 @@ import { fetchQuizQuestions } from "../../backend/quizService";
 
 const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 
-const QUESTION_GLYPHS = ["💡", "🎯", "🔍", "📊", "⚡"];
-
-const CONFETTI_COLORS = [
-  "var(--p-coral)",
-  "var(--p-gold)",
-  "var(--p-mint)",
-  "var(--p-navy)",
-  "var(--p-plum)",
-];
-
-function ConfettiPiece({ index }: { index: number }) {
-  const left = `${5 + (index * 19) % 90}%`;
-  // Stagger start positions across the full screen height so pieces appear scattered
-  const top = `${(index * 23) % 80}%`;
-  const delay = `${(index * 0.12) % 2}s`;
-  const color = CONFETTI_COLORS[index % CONFETTI_COLORS.length];
-  const isCircle = index % 3 === 0;
-
-  return (
-    <div
-      className="anp-result__confetti-piece"
-      style={{
-        left,
-        top,
-        animationDelay: delay,
-        background: color,
-        borderRadius: isCircle ? "50%" : "2px",
-        width: isCircle ? "8px" : "6px",
-        height: isCircle ? "8px" : "14px",
-      }}
-    />
-  );
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function Confetti() {
+function QuizOption({
+  letter,
+  question,
+  index,
+  pickedIndex,
+  correctIndex,
+  onPick,
+}: {
+  letter: string;
+  question: QuizQuestion;
+  index: number;
+  pickedIndex: number | null;
+  correctIndex: number;
+  onPick: (i: number) => void;
+}) {
+  const isPicked = pickedIndex === index;
+  const isCorrect = pickedIndex !== null && index === correctIndex;
+  const isWrong = isPicked && index !== correctIndex;
+  const isDim = pickedIndex !== null && !isPicked && index !== correctIndex;
+
+  const cls = isCorrect ? "correct" : isWrong ? "wrong" : isDim ? "dim" : "";
+
   return (
-    <div className="anp-result__confetti">
-      {Array.from({ length: 26 }, (_, i) => (
-        <ConfettiPiece key={i} index={i} />
-      ))}
-    </div>
+    <button
+      className={`anp-l-quiz-opt ${cls}`}
+      onClick={() => pickedIndex === null && onPick(index)}
+      disabled={pickedIndex !== null}
+    >
+      <div className="letter">{letter}</div>
+      <div className="body">
+        <div className="value">{question.options[index]}</div>
+      </div>
+      {isCorrect && (
+        <div className="check">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8.5l3.5 3.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+    </button>
   );
 }
-
-type AnswerState = {
-  selectedIndex: number;
-  isCorrect: boolean;
-};
-
-type Phase = "answering" | "feedback" | "results";
 
 export function PlayfulQuiz() {
   const navigate = useNavigate();
@@ -63,339 +61,183 @@ export function PlayfulQuiz() {
   const { completeSubTopic } = useProgress();
 
   const topic = topics.find((t) => t.id === topicId);
+  const subTopic = subTopicId ? topic?.subTopics.find((s) => s.id === subTopicId) : null;
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [quizLoading, setQuizLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [pickedIndex, setPickedIndex] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+
+  const startTimeRef = useRef<number>(Date.now());
+  const elapsedRef = useRef<number>(0);
+
+  const backPath = subTopicId
+    ? `/topic/${topicId}/subtopic/${subTopicId}`
+    : `/topic/${topicId}`;
 
   useEffect(() => {
-    void fetchQuizQuestions(topicId ?? '', subTopicId ?? null)
-      .then(qs => { setQuestions(qs); setQuizLoading(false); });
+    void fetchQuizQuestions(topicId ?? "", subTopicId ?? null).then((qs) => {
+      setQuestions(qs);
+      setLoading(false);
+      startTimeRef.current = Date.now();
+    });
   }, [topicId, subTopicId]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [phase, setPhase] = useState<Phase>("answering");
-  const [answerState, setAnswerState] = useState<AnswerState | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [, setAnsweredCorrect] = useState<boolean[]>([]);
-
-  // Lock options once answered
-  const isLocked = phase === "feedback" || phase === "results";
-
   const currentQ = questions[currentIndex];
+  const totalQs = questions.length;
 
-  const backPath = subTopicId ? `/topic/${topicId}/subtopic/${subTopicId}` : `/topic/${topicId}`;
-
-  const handleAnswer = useCallback(
-    (optionIndex: number) => {
-      if (isLocked || !currentQ) return;
-
-      const isCorrect = optionIndex === currentQ.correctAnswer;
-      const newScore = isCorrect ? score + 1 : score;
-
-      setAnswerState({ selectedIndex: optionIndex, isCorrect });
-      if (isCorrect) setScore(newScore);
-      setAnsweredCorrect((prev) => [...prev, isCorrect]);
-      setPhase("feedback");
-
-      // Slight delay before sheet slides up for visual clarity
-      requestAnimationFrame(() => {
-        setSheetOpen(true);
-      });
+  const handlePick = useCallback(
+    (optIndex: number) => {
+      if (pickedIndex !== null || !currentQ) return;
+      setPickedIndex(optIndex);
+      if (optIndex === currentQ.correctAnswer) {
+        setScore((s) => s + 1);
+      }
     },
-    [isLocked, currentQ, score],
+    [pickedIndex, currentQ]
   );
 
-  const handleNext = useCallback(() => {
-    setSheetOpen(false);
+  const handleContinue = useCallback(() => {
+    if (pickedIndex === null) return;
 
-    // Wait for sheet to slide back down, then advance
-    setTimeout(() => {
-      const isLastQuestion = currentIndex === questions.length - 1;
-      
-      // Calculate what the score will be after this answer
+    const isLast = currentIndex === totalQs - 1;
+    elapsedRef.current = Math.round((Date.now() - startTimeRef.current) / 1000);
+
+    if (isLast) {
       const finalScore = score;
-      
-      setAnswerState(null);
-      if (isLastQuestion) {
-        setPhase("results");
-        // If it's a sub-topic quiz and they got full marks, mark it as complete
-        if (subTopicId && finalScore === questions.length) {
-          completeSubTopic(subTopicId);
+      if (subTopicId) completeSubTopic(subTopicId);
+
+      navigate(
+        subTopicId
+          ? `/topic/${topicId}/subtopic/${subTopicId}/complete`
+          : backPath,
+        {
+          state: {
+            timeTaken: formatTime(elapsedRef.current),
+            correct: finalScore,
+            total: totalQs,
+          },
         }
-      } else {
-        setCurrentIndex((prev) => prev + 1);
-        setPhase("answering");
-      }
-    }, 300);
-  }, [currentIndex, questions.length, subTopicId, score, completeSubTopic]);
+      );
+    } else {
+      setCurrentIndex((i) => i + 1);
+      setPickedIndex(null);
+    }
+  }, [pickedIndex, currentIndex, totalQs, score, currentQ, subTopicId, topicId, backPath, navigate, completeSubTopic]);
 
-  const handleTryAgain = useCallback(() => {
-    setCurrentIndex(0);
-    setScore(0);
-    setPhase("answering");
-    setAnswerState(null);
-    setSheetOpen(false);
-    setAnsweredCorrect([]);
-  }, []);
-
-  // Keyboard shortcut: 1-4 for options
+  // Keyboard: 1-4 selects option, Enter/Space continues
   useEffect(() => {
-    if (phase !== "answering") return;
-
     const handler = (e: KeyboardEvent) => {
       const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= 4) handleAnswer(num - 1);
+      if (num >= 1 && num <= 4 && pickedIndex === null) handlePick(num - 1);
+      if ((e.key === "Enter" || e.key === " ") && pickedIndex !== null) handleContinue();
     };
-
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [phase, handleAnswer]);
+  }, [handlePick, handleContinue, pickedIndex]);
 
-  // ——— Results screen ———
-  if (phase === "results") {
-    const totalQs = questions.length;
-    const missed = totalQs - score;
-    const xpEarned = score * 5;
-    const perfClass =
-      score >= totalQs - 1 ? "win" : score >= Math.ceil(totalQs / 2) ? "mid" : "low";
-    const subline =
-      perfClass === "win"
-        ? "You've mastered this topic."
-        : perfClass === "mid"
-        ? "A few more questions and you'll have it."
-        : "Review the lesson plan and try again.";
-
+  if (loading) {
     return (
-      <div className="anp-result">
-        {score >= totalQs - 1 && <Confetti />}
-
-        {/* Close button top-right */}
-        <button
-          className="anp-result__close"
-          onClick={() => navigate(backPath)}
-          aria-label="Close"
-        >
-          ✕
-        </button>
-
-        <div className="anp-result__content">
-          {/* Party emoji icon above score */}
-          <div className="anp-result__emoji">
-            {perfClass === "win" ? "🎉" : perfClass === "mid" ? "👍" : "💪"}
-          </div>
-
-          {/* Score — numerator colored, slash + denominator gray */}
-          <div className="anp-result__score-big">
-            <span className={`anp-result__score-num--${perfClass}`}>{score}</span>
-            <span className="anp-result__score-denom">/{totalQs}</span>
-          </div>
-
-          <h2 className={`anp-result__headline anp-result__headline--${perfClass}`}>
-            {perfClass === "win" ? "Nailed it!" : perfClass === "mid" ? "Good start!" : "Keep practising"}
-          </h2>
-          <p className="anp-result__subline">{subline}</p>
-
-          {/* Stats — compact inline strip */}
-          <div className="anp-result__stats">
-            <div className="anp-result__stat-box">
-              <span className="anp-result__stat-val" style={{ color: "var(--p-mint)" }}>{score}</span>
-              <span className="anp-result__stat-label">Correct</span>
-            </div>
-            <div className="anp-result__stat-box">
-              <span className="anp-result__stat-val" style={{ color: "var(--p-coral)" }}>{missed}</span>
-              <span className="anp-result__stat-label">Missed</span>
-            </div>
-            <div className="anp-result__stat-box">
-              <span className="anp-result__stat-val" style={{ color: "var(--p-gold)" }}>+{xpEarned}</span>
-              <span className="anp-result__stat-label">XP</span>
-            </div>
-          </div>
-
-          <div className="anp-result__ctas">
-            <button
-              className="anp-result__btn anp-result__btn--secondary"
-              onClick={() => navigate(backPath)}
-            >
-              ↺ Review answers
-            </button>
-            {perfClass === "win" ? (
-              <button
-                className="anp-result__btn anp-result__btn--primary anp-result__btn--win"
-                onClick={() => navigate(subTopicId ? `/topic/${topicId}` : "/")}
-              >
-                {subTopicId ? "Back to lesson ›" : "Next topic ›"}
-              </button>
-            ) : (
-              <button
-                className="anp-result__btn anp-result__btn--primary"
-                onClick={handleTryAgain}
-              >
-                Try again
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ——— Quiz question screen ———
-  if (quizLoading) {
-    return (
-      <div className="anp-quiz">
-        <div className="anp-quiz__body">
-          <p style={{ color: "var(--p-ink-3)", textAlign: "center" }}>
-            Loading questions...
-          </p>
-        </div>
+      <div className="anp-app anp-quiz-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "var(--p-ink-3)", fontFamily: "var(--p-mono)", fontSize: "13px" }}>Loading…</p>
       </div>
     );
   }
 
   if (!currentQ) {
     return (
-      <div className="anp-quiz">
-        <div className="anp-quiz__body">
-          <p style={{ color: "var(--p-ink-3)", textAlign: "center" }}>
-            No quiz questions found for this topic.
-          </p>
-        </div>
+      <div className="anp-app anp-quiz-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "var(--p-ink-3)", textAlign: "center", padding: "24px" }}>
+          No questions found for this module.
+        </p>
       </div>
     );
   }
 
-  const totalQs = questions.length;
+  const progressPct = ((currentIndex) / Math.max(totalQs, 1)) * 100;
+  const subTopicTitle = subTopic?.title ?? topic?.title ?? "Quiz";
+  const topicIdx = topic ? topics.indexOf(topic) + 1 : 1;
+  const subTopicIdx = subTopic ? (topic?.subTopics.indexOf(subTopic) ?? 0) + 1 : 1;
+  const subTopicTotal = topic?.subTopics.length ?? 1;
 
   return (
-    <div className="anp-quiz">
-      {/* Top bar */}
-      <div className="anp-quiz__topbar">
-        <button
-          className="anp-quiz__close"
-          onClick={() => navigate(backPath)}
-          aria-label="Close quiz"
-        >
-          ✕
+    <div className="anp-app anp-quiz-bg">
+      <div className="anp-spacer" />
+
+      {/* Top row: close + progress bar + counter */}
+      <div className="anp-l-quiz-toprow">
+        <button className="anp-icon-btn" onClick={() => navigate(backPath)} aria-label="Close quiz">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          </svg>
         </button>
-        <span className="anp-quiz__topbar-title">{topic?.subTopics.find(s => s.id === subTopicId)?.title ?? topic?.title ?? "Quiz"}</span>
-        <span className="anp-quiz__score-pill">
-          {score}/{totalQs}
-        </span>
-      </div>
-
-      {/* Segmented progress bar */}
-      <div className="anp-quiz__progress" role="progressbar" aria-valuenow={currentIndex}>
-        {questions.map((_, i) => (
-          <div
-            key={i}
-            className={[
-              "anp-quiz__seg",
-              i < currentIndex && "anp-quiz__seg--done",
-              i === currentIndex && "anp-quiz__seg--active",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          />
-        ))}
-      </div>
-
-      {/* Question body */}
-      <div className="anp-quiz__body">
-        {/* Question card */}
-        <div className="anp-quiz__q-card">
-          <p className="anp-quiz__q-eyebrow">
-            Question {currentIndex + 1} of {totalQs}
-          </p>
-          <span className="anp-quiz__q-glyph">{QUESTION_GLYPHS[currentIndex % QUESTION_GLYPHS.length]}</span>
-          <p className="anp-quiz__q-text">{currentQ.question}</p>
+        <div className="anp-l-quiz-progress">
+          <div className="bar">
+            <div style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
+        <div className="anp-l-quiz-count">{currentIndex + 1} / {totalQs}</div>
+      </div>
 
-        {/* Options */}
-        <div className="anp-quiz__options">
-          {currentQ.options.map((option, i) => {
-            const selected = answerState?.selectedIndex === i;
-            const isCorrectOption = i === currentQ.correctAnswer;
+      <div className="anp-scroll" style={{ paddingTop: "calc(8px * var(--d))" }}>
+        <div style={{ padding: "0 calc(20px * var(--d))" }}>
+          {/* Eyebrow */}
+          <div className="anp-l-quiz-eyebrow">
+            <span className="tag">
+              {subTopicId ? `Module ${subTopicIdx} of ${subTopicTotal}` : `Lesson ${topicIdx}`}
+            </span>
+            <span>· {subTopicTitle}</span>
+          </div>
 
-            let stateClass = "";
-            if (answerState !== null) {
-              if (selected && answerState.isCorrect) stateClass = "anp-quiz__option--correct";
-              else if (selected && !answerState.isCorrect) stateClass = "anp-quiz__option--wrong";
-              else if (!selected && isCorrectOption) stateClass = "anp-quiz__option--correct";
-              else stateClass = "anp-quiz__option--dim";
-            }
+          {/* Question */}
+          <h2 className="anp-l-quiz-q">{currentQ.question}</h2>
 
-            const icon = (() => {
-              if (answerState === null) return null;
-              if (selected && answerState.isCorrect) return "✓";
-              if (selected && !answerState.isCorrect) return "✗";
-              if (!selected && isCorrectOption) return "✓";
-              return null;
-            })();
-
-            return (
-              <button
+          {/* Options */}
+          <div className="anp-l-quiz-opts">
+            {currentQ.options.map((_, i) => (
+              <QuizOption
                 key={i}
-                className={[
-                  "anp-quiz__option",
-                  isLocked && "anp-quiz__option--locked",
-                  stateClass,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                onClick={() => handleAnswer(i)}
-                disabled={isLocked}
-              >
-                <span className="anp-quiz__option-chip">{OPTION_LETTERS[i]}</span>
-                <span className="anp-quiz__option-text">{option}</span>
-                {icon && <span className="anp-quiz__option-icon">{icon}</span>}
-              </button>
-            );
-          })}
+                letter={OPTION_LETTERS[i] ?? String(i + 1)}
+                question={currentQ}
+                index={i}
+                pickedIndex={pickedIndex}
+                correctIndex={currentQ.correctAnswer}
+                onPick={handlePick}
+              />
+            ))}
+          </div>
+
+          {/* Reveal panel */}
+          {pickedIndex !== null && (
+            <div
+              className={`anp-l-quiz-reveal ${pickedIndex === currentQ.correctAnswer ? "correct" : "wrong"}`}
+            >
+              <div className="head">
+                <div className="badge">
+                  {pickedIndex === currentQ.correctAnswer ? "Nailed it" : "Not quite"}
+                </div>
+              </div>
+              <p>{currentQ.explanation}</p>
+            </div>
+          )}
         </div>
+
+        <div style={{ height: 120 }} />
       </div>
 
-      {/* Overlay */}
-      <div
-        className={`anp-quiz__overlay${sheetOpen ? " anp-quiz__overlay--open" : ""}`}
-      />
-
-      {/* Feedback sheet */}
-      <div
-        className={`anp-quiz__sheet${sheetOpen ? " anp-quiz__sheet--open" : ""}`}
-        role="dialog"
-        aria-live="polite"
-      >
-        {answerState !== null && (
-          <>
-            <div className="anp-quiz__sheet-header">
-              <span className="anp-quiz__sheet-icon">
-                {answerState.isCorrect ? "🎉" : "💪"}
-              </span>
-              <span
-                className={`anp-quiz__sheet-verdict anp-quiz__sheet-verdict--${
-                  answerState.isCorrect ? "correct" : "wrong"
-                }`}
-              >
-                {answerState.isCorrect ? "Nailed it!" : "Not quite"}
-              </span>
-              {answerState.isCorrect && (
-                <span className="anp-quiz__sheet-xp">+5 XP</span>
-              )}
-            </div>
-            <p className="anp-quiz__sheet-explanation">
-              {currentQ.explanation}
-            </p>
-            <button
-              className={`anp-quiz__sheet-btn anp-quiz__sheet-btn--${
-                answerState.isCorrect ? "correct" : "wrong"
-              }`}
-              onClick={handleNext}
-            >
-              {currentIndex === totalQs - 1 ? "See results" : "Next question"}
-            </button>
-          </>
-        )}
+      {/* Bottom bar */}
+      <div className="anp-l-quiz-bottom">
+        <button
+          className="anp-l-quiz-cta"
+          onClick={handleContinue}
+          disabled={pickedIndex === null}
+        >
+          {currentIndex === totalQs - 1 ? "Finish" : "Continue"}
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </div>
     </div>
   );

@@ -2,16 +2,44 @@ import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
 
-type NodeState = "done" | "active" | "upcoming" | "locked";
+type NodeStatus = "done" | "active" | "locked";
 
-const NODE_ICONS: Record<NodeState, string> = {
-  done: "✓",
-  active: "▶",
-  upcoming: "○",
-  locked: "🔒",
-};
+const SIDE_PATTERN = ["c", "r", "l", "c", "r", "l"] as const;
+const MINS_PER_MODULE = 3;
 
-const NODE_ALIGNMENTS = ["right", "center", "left", "center", "right", "center"] as const;
+function BackBtn({ onClick }: { onClick: () => void }) {
+  return (
+    <button className="anp-icon-btn" onClick={onClick} aria-label="Back">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 3L4 8l6 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+function ModuleGlyph({ status }: { status: NodeStatus }) {
+  if (status === "locked") {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+  if (status === "done") {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M9 9a3 3 0 116 0c0 1.5-3 2-3 4M12 17v.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export function PlayfulLessonPlan() {
   const navigate = useNavigate();
@@ -22,125 +50,112 @@ export function PlayfulLessonPlan() {
 
   if (!topic) {
     return (
-      <div className="anp-plan">
-        <div className="anp-plan__scroll" style={{ padding: "24px 16px" }}>
-          <p style={{ color: "var(--p-ink-3)", textAlign: "center" }}>Topic not found.</p>
+      <div className="anp-app anp-lessons-bg">
+        <div className="anp-scroll" style={{ padding: "24px 20px" }}>
+          <p style={{ color: "var(--p-ink-3)", textAlign: "center" }}>Lesson not found.</p>
         </div>
       </div>
     );
   }
 
-  const completedCount = topic.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
   const totalModules = topic.subTopics.length;
+  const completedCount = topic.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
+  const minutesLeft = (totalModules - completedCount) * MINS_PER_MODULE;
 
-  const nodeStates: NodeState[] = topic.subTopics.map((sub, i) => {
-    const isCompleted = completedSubTopicIds.includes(sub.id);
-    if (isCompleted) return "done";
-    
-    const firstIncompleteIdx = topic.subTopics.findIndex((s) => !completedSubTopicIds.includes(s.id));
-    if (i === firstIncompleteIdx) return "active";
-    // All other incomplete lessons are unlocked (upcoming) for testing purposes
-    return "upcoming";
+  const nodeStatuses: NodeStatus[] = topic.subTopics.map((sub, i) => {
+    if (completedSubTopicIds.includes(sub.id)) return "done";
+    const firstIncomplete = topic.subTopics.findIndex((s) => !completedSubTopicIds.includes(s.id));
+    if (i === firstIncomplete) return "active";
+    return "locked";
   });
 
-  const xpEarned = completedCount * 15;
-  const estimatedMins = totalModules * 5;
-
   return (
-    <div className="anp-plan">
-      {/* Top bar */}
-      <div className="anp-plan__topbar">
-        <button className="anp-plan__back" onClick={() => navigate("/")} aria-label="Back to home">
-          ‹
-        </button>
-        <span className="anp-plan__topbar-title">{topic.title}</span>
+    <div className="anp-app anp-lessons-bg">
+      <div className="anp-spacer" />
+
+      <div className="anp-top">
+        <BackBtn onClick={() => navigate("/")} />
+        <div className="anp-wordmark">Lesson plan</div>
+        <div style={{ width: "calc(36px * var(--d))" }} />
       </div>
 
-      <div className="anp-plan__scroll">
-        {/* Course header card */}
-        <div className="anp-plan__header-card">
-          <span className="anp-plan__header-icon">{topic.icon}</span>
-          <h2 className="anp-plan__header-title">{topic.title}</h2>
-          <p className="anp-plan__header-subtitle">Complete all modules to unlock the final quiz</p>
-          <div className="anp-plan__stats">
-            <div className="anp-plan__stat">
-              <span className="anp-plan__stat-val">{totalModules}</span>
-              <span className="anp-plan__stat-label">Modules</span>
+      <div className="anp-scroll">
+        <div className="anp-l-plan-head">
+          <div className="eyebrow">
+            {topic.title} · {completedCount} of {totalModules} modules done
+          </div>
+          <h1>{topic.title}</h1>
+          <div className="sub">
+            {totalModules} short modules.{" "}
+            {completedCount > 0 ? `${completedCount} done. ` : ""}
+            {minutesLeft > 0 ? `About ${minutesLeft} min left.` : "All complete!"}
+          </div>
+
+          <div className="anp-l-plan-meta">
+            <div className="m">
+              <div className="v">{completedCount}/{totalModules}</div>
+              <div className="l">Modules</div>
             </div>
-            <div className="anp-plan__stat">
-              <span className="anp-plan__stat-val">{xpEarned}&nbsp;XP</span>
-              <span className="anp-plan__stat-label">Earned</span>
+            <div className="m">
+              <div className="v">
+                {minutesLeft}
+                <span style={{ color: "var(--p-ink-3)", fontWeight: 400 }}>m</span>
+              </div>
+              <div className="l">Left</div>
             </div>
-            <div className="anp-plan__stat">
-              <span className="anp-plan__stat-val">~{estimatedMins}m</span>
-              <span className="anp-plan__stat-label">Est. time</span>
-            </div>
-            <div className="anp-plan__stat">
-              <span className="anp-plan__stat-val">{completedCount}/{totalModules}</span>
-              <span className="anp-plan__stat-label">Progress</span>
+            <div className="m">
+              <div className="v">{totalModules}</div>
+              <div className="l">Total</div>
             </div>
           </div>
         </div>
 
-        {/* Snaking path */}
-        <div className="anp-plan__path">
-          {topic.subTopics.map((sub, index) => {
-            const state = nodeStates[index];
-            const alignment = NODE_ALIGNMENTS[index % NODE_ALIGNMENTS.length];
-            const isLast = index === topic.subTopics.length - 1;
+        <div className="anp-l-path">
+          {topic.subTopics.map((sub, i) => {
+            const status = nodeStatuses[i];
+            const side = SIDE_PATTERN[i % SIDE_PATTERN.length];
 
             return (
-              <div key={sub.id} style={{ width: "100%" }}>
-                <div className={`anp-plan__node-row anp-plan__node-row--${alignment}`}>
-                  <div
-                    className={`anp-plan__node${state !== "locked" ? " anp-plan__node--clickable" : ""}`}
-                    onClick={() => {
-                      if (state !== "locked") {
-                        navigate(`/topic/${topic.id}/subtopic/${sub.id}`);
-                      }
-                    }}
-                  >
-                    <div className={`anp-plan__node-bubble anp-plan__node-bubble--${state}`}>
-                      {NODE_ICONS[state]}
-                    </div>
-                    <span className={`anp-plan__node-label anp-plan__node-label--${state}`}>
-                      {sub.title}
-                    </span>
-                    {state === "active" && (
-                      <span className="anp-plan__node-start">Start ›</span>
-                    )}
+              <div
+                key={sub.id}
+                className={`anp-l-node side-${side} ${status}`}
+                onClick={() => status !== "locked" && navigate(`/topic/${topic.id}/subtopic/${sub.id}`)}
+              >
+                {status === "active" && <div className="halo" />}
+                <div className="bubble">
+                  {status === "active" && <div className="cta-pulse">Start ›</div>}
+                  <div className="glyph">
+                    <ModuleGlyph status={status} />
                   </div>
                 </div>
-
-                {!isLast && (
-                  <div className="anp-plan__connector">
-                    <div className={`anp-plan__connector-line anp-plan__connector-line--${alignment}`} />
+                <div className="label">
+                  <div className="ttl">{sub.title}</div>
+                  <div className="sub">
+                    {status === "locked"
+                      ? "Locked"
+                      : status === "done"
+                      ? "Done"
+                      : `${MINS_PER_MODULE} min · quiz`}
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
-        </div>
 
-        {/* Treasure chest completion card */}
-        {completedCount === totalModules && (
-          <div className="anp-plan__chest-card">
-            <span className="anp-plan__chest-icon">🏆</span>
-            <div className="anp-plan__chest-body">
-              <p className="anp-plan__chest-title">Topic Complete!</p>
-              <p className="anp-plan__chest-sub">Finish all modules and ace the quiz to earn your badge</p>
+          <div className="anp-l-finish-clean">
+            <div className="rosette">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="text">
+              <div className="ttl">{topic.title}, handled</div>
+              <div className="sub">Finish all {totalModules} modules to wrap up this lesson.</div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Quiz CTA */}
-        <button
-          className="anp-plan__quiz-cta"
-          onClick={() => navigate(`/topic/${topic.id}/quiz`)}
-        >
-          <span>📝</span>
-          Take the topic quiz
-        </button>
+        <div style={{ height: 60 }} />
       </div>
     </div>
   );
