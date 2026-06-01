@@ -39,8 +39,8 @@ export function PlayfulLessonPlan() {
     
     const firstIncompleteIdx = topic.subTopics.findIndex((s) => !completedSubTopicIds.includes(s.id));
     if (i === firstIncompleteIdx) return "active";
-    if (i === firstIncompleteIdx + 1) return "upcoming";
-    return "locked";
+    // All other incomplete lessons are unlocked (upcoming) for testing purposes
+    return "upcoming";
   });
 
   const xpEarned = completedCount * 15;

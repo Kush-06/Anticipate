@@ -4,13 +4,11 @@ import { useProgress } from "../context/ProgressContext";
 
 type TrackState = "active" | "done" | "upcoming" | "locked";
 
-function resolveTrackState(completion: number, index: number, topicsData: typeof topics, getCompletion: (id: string) => number): TrackState {
+function resolveTrackState(completion: number, _index: number, _topicsData: typeof topics, _getCompletion: (id: string) => number): TrackState {
   if (completion === 100) return "done";
   if (completion > 0) return "active";
-  // First topic with 0% is upcoming, rest are locked
-  if (index === 0) return "upcoming";
-  const prevHasProgress = topicsData.slice(0, index).some((t) => getCompletion(t.id) > 0);
-  return prevHasProgress ? "upcoming" : "locked";
+  // All topics are unlocked (upcoming) for testing purposes
+  return "upcoming";
 }
 
 const STATE_ICONS: Record<TrackState, string> = {
