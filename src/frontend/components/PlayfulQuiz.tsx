@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { topics } from "../data/topics";
+import { topics, type QuizQuestion } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { fetchQuizQuestions } from "../../backend/quizService";
 
 const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 
@@ -62,8 +63,14 @@ export function PlayfulQuiz() {
   const { completeSubTopic } = useProgress();
 
   const topic = topics.find((t) => t.id === topicId);
-  const subTopic = subTopicId ? topic?.subTopics.find(s => s.id === subTopicId) : null;
-  const questions = subTopic ? subTopic.quiz : (topic?.topicQuiz ?? []);
+
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [quizLoading, setQuizLoading] = useState(true);
+
+  useEffect(() => {
+    void fetchQuizQuestions(topicId ?? '', subTopicId ?? null)
+      .then(qs => { setQuestions(qs); setQuizLoading(false); });
+  }, [topicId, subTopicId]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -234,6 +241,18 @@ export function PlayfulQuiz() {
   }
 
   // ——— Quiz question screen ———
+  if (quizLoading) {
+    return (
+      <div className="anp-quiz">
+        <div className="anp-quiz__body">
+          <p style={{ color: "var(--p-ink-3)", textAlign: "center" }}>
+            Loading questions...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentQ) {
     return (
       <div className="anp-quiz">
@@ -259,7 +278,7 @@ export function PlayfulQuiz() {
         >
           ✕
         </button>
-        <span className="anp-quiz__topbar-title">{subTopic?.title ?? topic?.title ?? "Quiz"}</span>
+        <span className="anp-quiz__topbar-title">{topic?.subTopics.find(s => s.id === subTopicId)?.title ?? topic?.title ?? "Quiz"}</span>
         <span className="anp-quiz__score-pill">
           {score}/{totalQs}
         </span>
