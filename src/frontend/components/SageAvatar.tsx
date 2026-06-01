@@ -14,36 +14,46 @@ export function SageAvatar({ size = 48 }: { size?: number }) {
           <stop offset="100%" stopColor="#FFD4B8" />
         </linearGradient>
         <style>{`
-          .sage-sprout {
+          .sage-sprout-grow {
+            transform-origin: 50px 34px;
+            animation: sage-shoot-grow 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+          }
+          .sage-sprout-sway {
             transform-origin: 50px 34px;
             animation: sage-sway 2.5s ease-in-out infinite;
           }
           .sage-leaf-l {
             transform-origin: 42px 14px;
-            animation: sage-flutter-l 2.5s ease-in-out infinite;
+            animation: sage-unfold-l 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
           }
           .sage-leaf-r {
             transform-origin: 58px 14px;
-            animation: sage-flutter-r 2.5s ease-in-out infinite;
+            animation: sage-unfold-r 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+          }
+          @keyframes sage-shoot-grow {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
           }
           @keyframes sage-sway {
-            0%, 100% { transform: rotate(-4deg); }
-            50% { transform: rotate(4deg); }
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
           }
-          @keyframes sage-flutter-l {
-            0%, 100% { transform: rotate(-8deg) scale(0.95); }
-            50% { transform: rotate(4deg) scale(1.05); }
+          @keyframes sage-unfold-l {
+            0% { transform: rotate(35deg) scale(0.2); }
+            100% { transform: rotate(0deg) scale(1); }
           }
-          @keyframes sage-flutter-r {
-            0%, 100% { transform: rotate(8deg) scale(0.95); }
-            50% { transform: rotate(-4deg) scale(1.05); }
+          @keyframes sage-unfold-r {
+            0% { transform: rotate(-35deg) scale(0.2); }
+            100% { transform: rotate(0deg) scale(1); }
           }
         `}</style>
       </defs>
-      <g className="sage-sprout">
-        <path d="M50 34 L50 20" stroke="#5fab84" strokeWidth="4.5" strokeLinecap="round" />
-        <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" className="sage-leaf-l" />
-        <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" className="sage-leaf-r" />
+      <g className="sage-sprout-grow">
+        <g className="sage-sprout-sway">
+          <path d="M50 34 L50 20" stroke="#5fab84" strokeWidth="4.5" strokeLinecap="round" />
+          <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" className="sage-leaf-l" />
+          <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" className="sage-leaf-r" />
+        </g>
       </g>
       <circle cx="50" cy="62" r="30" fill="url(#sage-grad)" stroke="#e9694a" strokeWidth="3.5" />
       <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" strokeWidth="2.5" strokeLinecap="round" fill="none" />

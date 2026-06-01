@@ -42,7 +42,7 @@ export function LoadingScreen({ onFinished }: { onFinished: () => void }) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "calc(16px * var(--d, 1))",
+          gap: "calc(4px * var(--d, 1))",
         }}
       >
         <SageAvatar size={100} />
