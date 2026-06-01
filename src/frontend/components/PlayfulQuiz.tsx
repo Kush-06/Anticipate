@@ -69,7 +69,7 @@ export function PlayfulQuiz() {
   const [pickedIndex, setPickedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
 
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number>(0);
   const elapsedRef = useRef<number>(0);
 
   const backPath = subTopicId
@@ -124,7 +124,7 @@ export function PlayfulQuiz() {
       setCurrentIndex((i) => i + 1);
       setPickedIndex(null);
     }
-  }, [pickedIndex, currentIndex, totalQs, score, currentQ, subTopicId, topicId, backPath, navigate, completeSubTopic]);
+  }, [pickedIndex, currentIndex, totalQs, score, subTopicId, topicId, backPath, navigate, completeSubTopic]);
 
   // Keyboard: 1-4 selects option, Enter/Space continues
   useEffect(() => {
