@@ -32,7 +32,7 @@ export function LessonComplete() {
     if (nextSub) {
       navigate(`/topic/${topicId}/subtopic/${nextSub.id}`);
     } else {
-      navigate(`/topic/${topicId}`);
+      navigate(`/`);
     }
   };
 
@@ -63,7 +63,7 @@ export function LessonComplete() {
             </svg>
           </div>
 
-          <div className="title">Module complete</div>
+          <div className="title">{nextSub ? "Lesson complete" : "Module complete"}</div>
           <div className="sub">
             {currentSubTitle
               ? `"${currentSubTitle}" — keep the momentum going.`
@@ -92,6 +92,23 @@ export function LessonComplete() {
               <div className="next-sub">{MINS_PER_SUBTOPIC} min · quiz</div>
             </div>
           )}
+
+          <div style={{ display: "flex", gap: "calc(10px * var(--d))", marginTop: "calc(20px * var(--d))" }}>
+            <button
+              className="anp-result__btn anp-result__btn--secondary"
+              style={{ flex: 1, padding: "calc(12px * var(--d))", fontSize: "calc(13px * var(--d))", fontWeight: 600 }}
+              onClick={() => navigate(`/topic/${topicId}/subtopic/${subTopicId}/quiz`)}
+            >
+              🔄 Retake Quiz
+            </button>
+            <button
+              className="anp-result__btn anp-result__btn--secondary"
+              style={{ flex: 1, padding: "calc(12px * var(--d))", fontSize: "calc(13px * var(--d))", fontWeight: 600 }}
+              onClick={() => navigate(`/topic/${topicId}/subtopic/${subTopicId}`)}
+            >
+              📖 Review Lesson
+            </button>
+          </div>
         </div>
 
         <div style={{ height: 30 }} />
@@ -99,7 +116,7 @@ export function LessonComplete() {
 
       <div className="anp-l-quiz-bottom">
         <button className="anp-l-quiz-cta" onClick={handleKeepGoing}>
-          {nextSub ? "Keep going" : "Back to lesson"}
+          {nextSub ? "Keep going" : "Back to home screen"}
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
