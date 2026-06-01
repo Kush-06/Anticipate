@@ -1,8 +1,40 @@
 import { useNavigate } from "react-router";
+import {
+  Baby,
+  Briefcase,
+  Car,
+  CreditCard,
+  Gift,
+  HeartHandshake,
+  House,
+  KeyRound,
+  Landmark,
+  Lightbulb,
+  LineChart,
+  Scale,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
 
-type TrackStatus = "done" | "active" | "queued" | "locked";
+const TOPIC_ICONS: Record<string, LucideIcon> = {
+  "starting-work":    Briefcase,
+  "renting":          KeyRound,
+  "buying-a-home":    House,
+  "relationships":    HeartHandshake,
+  "family":           Baby,
+  "career":           TrendingUp,
+  "cars":             Car,
+  "debt":             Scale,
+  "windfalls":        Gift,
+  "foundations":      Lightbulb,
+  "mastering-credit": CreditCard,
+  "investing-101":    LineChart,
+  "taxes-wealth":     Landmark,
+};
+
+type TrackStatus = "done" | "active" | "queued";
 
 const SIDE_COLORS = ["mint", "coral", "gold", "plum", "navy", "mint"];
 const MINS_PER_SUBTOPIC = 3;
@@ -14,8 +46,7 @@ function deriveStatuses(completions: number[]): TrackStatus[] {
   return completions.map((c, i) => {
     if (c === 1) return "done";
     if (i === activeIdx) return "active";
-    if (i === activeIdx + 1) return "queued";
-    return "locked";
+    return "queued";
   });
 }
 
@@ -40,14 +71,6 @@ function ModuleDots({ total, completedCount }: { total: number; completedCount: 
   );
 }
 
-function LockIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
 
 export function PlayfulHome() {
   const navigate = useNavigate();
@@ -143,26 +166,21 @@ export function PlayfulHome() {
             const pct = (completedCount / Math.max(total, 1)) * 100;
             const minutes = total * MINS_PER_SUBTOPIC;
             const color = SIDE_COLORS[i] ?? "mint";
-            const isLocked = status === "locked";
-
             return (
               <div
                 key={topic.id}
                 className={`anp-l-track ${status} ${color}`}
-                onClick={() => !isLocked && navigate(`/topic/${topic.id}`)}
+                onClick={() => navigate(`/topic/${topic.id}`)}
               >
                 <div className="anp-l-track-num">
                   {status === "done" ? (
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                       <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  ) : isLocked ? (
-                    <LockIcon />
-                  ) : completedCount > 0 ? (
-                    completedCount
-                  ) : (
-                    total
-                  )}
+                  ) : (() => {
+                    const Icon = TOPIC_ICONS[topic.id];
+                    return Icon ? <Icon size={24} strokeWidth={1.5} /> : null;
+                  })()}
                 </div>
 
                 <div className="anp-l-track-body">
@@ -171,23 +189,17 @@ export function PlayfulHome() {
                     {status === "active" && <span className="now-tag">NOW</span>}
                   </div>
 
-                  {isLocked ? (
-                    <div className="anp-l-track-meta">
-                      <span className="lock-meta">Complete earlier lessons to unlock</span>
+                  <>
+                    <div className="anp-l-track-progress">
+                      <div className="bar">
+                        <div style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
-                  ) : (
-                    <>
-                      <div className="anp-l-track-progress">
-                        <div className="bar">
-                          <div style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                      <div className="anp-l-track-meta">
-                        <span>{status === "done" ? "Complete" : `${completedCount}/${total} modules`}</span>
-                        <span>{minutes} min</span>
-                      </div>
-                    </>
-                  )}
+                    <div className="anp-l-track-meta">
+                      <span>{status === "done" ? "Complete" : `${completedCount}/${total} modules`}</span>
+                      <span>{minutes} min</span>
+                    </div>
+                  </>
                 </div>
               </div>
             );
