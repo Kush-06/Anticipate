@@ -1,6 +1,10 @@
 import { useNavigate } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { useTimeline } from "../context/TimelineContext";
+import { useProfile } from "../context/ProfileContext";
+import { AnticipateLogo } from "./RobotIcon";
+import { TopicIllustration } from "./TopicIllustration";
 
 type TrackState = "active" | "done" | "upcoming" | "locked";
 
@@ -13,24 +17,12 @@ function resolveTrackState(completion: number, index: number, topicsData: typeof
   return prevHasProgress ? "upcoming" : "locked";
 }
 
-const STATE_ICONS: Record<TrackState, string> = {
-  active: "▶",
-  done: "✓",
-  upcoming: "★",
-  locked: "🔒",
-};
-
-const TOPIC_GLYPHS: Record<string, string> = {
-  pension: "🏦",
-  taxes: "💷",
-  employment: "📋",
-  benefits: "🎁",
-  savings: "💰",
-};
 
 export function PlayfulHome() {
   const navigate = useNavigate();
   const { getTopicCompletion, completedSubTopicIds } = useProgress();
+  const { unreadCount } = useTimeline();
+  const { resetProfile } = useProfile();
 
   const totalSubTopics = topics.reduce((acc, t) => acc + t.subTopics.length, 0);
   const totalCompleted = completedSubTopicIds.length;
@@ -39,10 +31,89 @@ export function PlayfulHome() {
   return (
     <div className="anp-home">
       {/* Header */}
-      <div className="anp-home__header">
+      <div className="anp-home__header" style={{ position: "relative" }}>
+        {/* Header Actions */}
+        <div
+          style={{
+            position: "absolute",
+            top: "max(calc(12px * var(--d)), env(safe-area-inset-top))",
+            right: "16px",
+            display: "flex",
+            gap: "8px",
+            zIndex: 10
+          }}
+        >
+          {/* Reset button */}
+          <button
+            onClick={resetProfile}
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              border: "1.5px solid var(--p-line)",
+              background: "var(--p-card)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "14px",
+              color: "var(--p-ink)"
+            }}
+            title="Reset profile"
+            aria-label="Reset profile"
+          >
+            🔄
+          </button>
+
+          {/* Bell Icon */}
+          <button
+            onClick={() => navigate("/notifications")}
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              border: "1.5px solid var(--p-line)",
+              background: "var(--p-card)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "16px",
+              position: "relative"
+            }}
+            aria-label="View notifications"
+          >
+            🔔
+            {unreadCount > 0 && (
+              <span
+                className="anp-notif-dot"
+                style={{
+                  position: "absolute",
+                  top: "-2px",
+                  right: "-2px",
+                  background: "var(--p-coral)",
+                  color: "white",
+                  fontSize: "9px",
+                  fontWeight: "bold",
+                  borderRadius: "50%",
+                  width: "16px",
+                  height: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1.5px solid var(--p-card)"
+                }}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+
         <div className="anp-home__header-text">
+          <AnticipateLogo />
           <p className="anp-home__eyebrow">Your learning progress</p>
-          <h1 className="anp-home__title">Financial&nbsp;Literacy</h1>
+          <h1 className="anp-home__title" style={{ paddingRight: "40px" }}>Financial&nbsp;Literacy</h1>
         </div>
         
         {/* Semi-circle Gauge Meter - Centered */}
@@ -73,17 +144,19 @@ export function PlayfulHome() {
           padding-bottom: 16px;
           display: flex;
           flex-direction: column;
-          align-items: center;
-          text-align: center;
+          align-items: stretch;
+          text-align: left;
         }
         .anp-home__header-text {
           margin-bottom: 12px;
+          text-align: left;
         }
         .anp-home__gauge-container {
           display: flex;
           flex-direction: column;
           align-items: center;
           width: 90px;
+          align-self: center;
         }
         .anp-home__gauge-percentage {
           font-family: var(--font-display);
@@ -145,18 +218,7 @@ export function PlayfulHome() {
                 }}
               >
                 {/* Status bubble */}
-                <div
-                  className={[
-                    "anp-l-track__status",
-                    `anp-l-track__status--${state === "upcoming" ? "upcoming" : state}`,
-                  ].join(" ")}
-                >
-                  {state === "done"
-                    ? "✓"
-                    : state === "locked"
-                    ? "🔒"
-                    : TOPIC_GLYPHS[topic.id] ?? STATE_ICONS[state]}
-                </div>
+                <TopicIllustration iconName={topic.id} size={44} />
 
                 {/* Body */}
                 <div className="anp-l-track__body">

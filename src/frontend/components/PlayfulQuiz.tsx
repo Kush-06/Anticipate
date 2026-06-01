@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { useDragToDismiss } from "./useDragToDismiss";
 
 const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 
@@ -71,6 +72,12 @@ export function PlayfulQuiz() {
   const [answerState, setAnswerState] = useState<AnswerState | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [, setAnsweredCorrect] = useState<boolean[]>([]);
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleBack = () => {
+    setIsExiting(true);
+    setTimeout(() => navigate(backPath), 250);
+  };
 
   // Lock options once answered
   const isLocked = phase === "feedback" || phase === "results";
@@ -122,6 +129,8 @@ export function PlayfulQuiz() {
       }
     }, 300);
   }, [currentIndex, questions.length, subTopicId, score, completeSubTopic]);
+
+  const sheetDrag = useDragToDismiss(handleNext, sheetOpen);
 
   const handleTryAgain = useCallback(() => {
     setCurrentIndex(0);
@@ -249,12 +258,12 @@ export function PlayfulQuiz() {
   const totalQs = questions.length;
 
   return (
-    <div className="anp-quiz">
+    <div className={`anp-quiz anp-screen-forward ${isExiting ? "anp-screen-backward" : ""}`}>
       {/* Top bar */}
       <div className="anp-quiz__topbar">
         <button
           className="anp-quiz__close"
-          onClick={() => navigate(backPath)}
+          onClick={handleBack}
           aria-label="Close quiz"
         >
           ✕
@@ -344,6 +353,10 @@ export function PlayfulQuiz() {
       {/* Feedback sheet */}
       <div
         className={`anp-quiz__sheet${sheetOpen ? " anp-quiz__sheet--open" : ""}`}
+        onTouchStart={sheetDrag.onTouchStart}
+        onTouchMove={sheetDrag.onTouchMove}
+        onTouchEnd={sheetDrag.onTouchEnd}
+        style={sheetDrag.style}
         role="dialog"
         aria-live="polite"
       >

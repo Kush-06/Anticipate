@@ -1,6 +1,8 @@
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { ChevronRight, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { TopicIllustration } from "./TopicIllustration";
 
 export function PlayfulSubTopic() {
   const navigate = useNavigate();
@@ -48,13 +50,20 @@ export function PlayfulSubTopic() {
     });
   };
 
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleBack = () => {
+    setIsExiting(true);
+    setTimeout(() => navigate(`/topic/${topicId}`), 250);
+  };
+
   return (
-    <div className="anp-plan">
+    <div className={`anp-plan anp-screen-forward ${isExiting ? "anp-screen-backward" : ""}`}>
       {/* Top bar */}
       <div className="anp-plan__topbar">
         <button 
           className="anp-plan__back" 
-          onClick={() => navigate(`/topic/${topicId}`)} 
+          onClick={handleBack} 
           aria-label="Back to lesson plan"
         >
           <ArrowLeft size={18} />
@@ -64,8 +73,8 @@ export function PlayfulSubTopic() {
 
       <div className="anp-plan__scroll" style={{ padding: "0 16px 32px" }}>
         {/* Header decoration */}
-        <div className="anp-subtopic__header" style={{ backgroundColor: topic.color + "20" }}>
-           <span className="anp-subtopic__icon">{topic.icon}</span>
+        <div className="anp-subtopic__header" style={{ backgroundColor: "var(--p-bg-2)" }}>
+           <TopicIllustration iconName={topic.id} size={44} />
            <div className="anp-subtopic__topic-info">
              <span className="anp-subtopic__topic-title">{topic.title}</span>
              <h2 className="anp-subtopic__title">{subTopic.title}</h2>

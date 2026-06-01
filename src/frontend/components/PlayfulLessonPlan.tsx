@@ -1,6 +1,8 @@
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { useState } from "react";
+import { TopicIllustration } from "./TopicIllustration";
 
 type NodeState = "done" | "active" | "upcoming" | "locked";
 
@@ -46,11 +48,18 @@ export function PlayfulLessonPlan() {
   const xpEarned = completedCount * 15;
   const estimatedMins = totalModules * 5;
 
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleBack = () => {
+    setIsExiting(true);
+    setTimeout(() => navigate("/learn"), 250);
+  };
+
   return (
-    <div className="anp-plan">
+    <div className={`anp-plan anp-screen-forward ${isExiting ? "anp-screen-backward" : ""}`}>
       {/* Top bar */}
       <div className="anp-plan__topbar">
-        <button className="anp-plan__back" onClick={() => navigate("/")} aria-label="Back to home">
+        <button className="anp-plan__back" onClick={handleBack} aria-label="Back to learn track">
           ‹
         </button>
         <span className="anp-plan__topbar-title">{topic.title}</span>
@@ -59,7 +68,7 @@ export function PlayfulLessonPlan() {
       <div className="anp-plan__scroll">
         {/* Course header card */}
         <div className="anp-plan__header-card">
-          <span className="anp-plan__header-icon">{topic.icon}</span>
+          <TopicIllustration iconName={topic.id} size={44} style={{ margin: "0 auto 8px" }} />
           <h2 className="anp-plan__header-title">{topic.title}</h2>
           <p className="anp-plan__header-subtitle">Complete all modules to unlock the final quiz</p>
           <div className="anp-plan__stats">

@@ -4,19 +4,49 @@ import { PlayfulHome } from "./components/PlayfulHome";
 import { PlayfulLessonPlan } from "./components/PlayfulLessonPlan";
 import { PlayfulQuiz } from "./components/PlayfulQuiz";
 import { PlayfulSubTopic } from "./components/PlayfulSubTopic";
+import { MainLayout } from "./components/MainLayout";
+import { DocumentLibrary } from "./components/DocumentLibrary";
+import { DocumentViewer } from "./components/DocumentViewer";
+import { DocumentSummary } from "./components/DocumentSummary";
+import { TimelineOverview } from "./components/TimelineOverview";
+import { NotificationView } from "./components/NotificationView";
+import { DayAfterCheckIn } from "./components/DayAfterCheckIn";
+import { TimelineProvider } from "./context/TimelineContext";
+import { ProfileProvider, useProfile } from "./context/ProfileContext";
+import { OnboardingFlow } from "./components/OnboardingFlow";
+import { HomeScreen } from "./components/HomeScreen";
+import { ProfileScreen } from "./components/ProfileScreen";
 
-export default function App() {
+function MainAppContent() {
+  const { completedOnboarding } = useProfile();
   const platform = Capacitor.getPlatform();
   const isNative = platform === "android" || platform === "ios";
 
-  const AppRoutes = (
-    <Routes>
-      <Route path="/" element={<PlayfulHome />} />
-      <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
-      <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
-      <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
-      <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
-    </Routes>
+  const AppRoutes = completedOnboarding ? (
+    <TimelineProvider>
+      <Routes>
+        {/* Main Tab Views */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomeScreen />} />
+          <Route path="/learn" element={<PlayfulHome />} />
+          <Route path="/decoder" element={<DocumentLibrary />} />
+          <Route path="/timeline" element={<TimelineOverview />} />
+          <Route path="/profile" element={<ProfileScreen />} />
+        </Route>
+
+        {/* Full-screen Content Pages */}
+        <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
+        <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
+        <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
+        <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
+        <Route path="/decoder/view/:docId" element={<DocumentViewer />} />
+        <Route path="/decoder/summary/:docId" element={<DocumentSummary />} />
+        <Route path="/notifications" element={<NotificationView />} />
+        <Route path="/check-in" element={<DayAfterCheckIn />} />
+      </Routes>
+    </TimelineProvider>
+  ) : (
+    <OnboardingFlow />
   );
 
   // Native shell — full screen, no frame
@@ -72,5 +102,13 @@ export default function App() {
         </div>
       </div>
     </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <ProfileProvider>
+      <MainAppContent />
+    </ProfileProvider>
   );
 }
