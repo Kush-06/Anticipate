@@ -1,32 +1,22 @@
 import { useNavigate } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { BookOpen } from "lucide-react";
+import { TopicIcon } from "./TopicIcon";
 
 type TrackStatus = "done" | "active" | "queued" | "locked";
 
-const SIDE_COLORS = ["mint", "coral", "gold", "plum", "navy", "mint"];
+const SIDE_COLORS = ["mint", "coral", "gold", "coral", "navy", "mint"];
 const MINS_PER_SUBTOPIC = 3;
 
 function deriveStatuses(completions: number[]): TrackStatus[] {
   const activeIdx = completions.findIndex((c) => c < 1);
   if (activeIdx === -1) return completions.map(() => "done");
 
-  return completions.map((c, i) => {
+  return completions.map((c) => {
     if (c === 1) return "done";
-    if (i === activeIdx) return "active";
-    if (i === activeIdx + 1) return "queued";
-    return "locked";
+    return "active";
   });
-}
-
-function BackBtn({ onClick }: { onClick: () => void }) {
-  return (
-    <button className="anp-icon-btn" onClick={onClick} aria-label="Back">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M10 3L4 8l6 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </button>
-  );
 }
 
 function ModuleDots({ total, completedCount }: { total: number; completedCount: number }) {
@@ -76,9 +66,7 @@ export function PlayfulHome() {
       <div className="anp-spacer" />
 
       <div className="anp-top">
-        <BackBtn onClick={() => navigate(-1)} />
-        <div className="anp-wordmark">Your learning</div>
-        <div style={{ width: "calc(36px * var(--d))" }} />
+        <div className="anp-logo">anticipate.</div>
       </div>
 
       <div className="anp-scroll">
@@ -152,16 +140,10 @@ export function PlayfulHome() {
                 onClick={() => !isLocked && navigate(`/topic/${topic.id}`)}
               >
                 <div className="anp-l-track-num">
-                  {status === "done" ? (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : isLocked ? (
+                  {isLocked ? (
                     <LockIcon />
-                  ) : completedCount > 0 ? (
-                    completedCount
                   ) : (
-                    total
+                    <TopicIcon topicId={topic.id} size={24} />
                   )}
                 </div>
 
@@ -195,6 +177,13 @@ export function PlayfulHome() {
         </div>
 
         <div style={{ height: 50 }} />
+      </div>
+
+      <div className="anp-bottom-nav">
+        <button className="anp-bottom-nav__tab anp-bottom-nav__tab--active" onClick={() => navigate("/")}>
+          <BookOpen size={22} />
+          <span className="anp-bottom-nav__label">Learn</span>
+        </button>
       </div>
     </div>
   );

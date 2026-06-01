@@ -1994,3 +1994,53 @@ body {
   color: var(--p-ink-3);
   letter-spacing: 0.05em;
 }
+
+/* ============================================================
+   ANTICIPATE LOGO & BOTTOM NAVIGATION
+   ============================================================ */
+.anp-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: calc(22px * var(--d));
+  color: var(--p-ink);
+  letter-spacing: -0.03em;
+  text-transform: lowercase;
+}
+
+.anp-bottom-nav {
+  height: calc(64px * var(--d));
+  background-color: var(--p-card, #FFFFFF);
+  border-top: 1.5px solid var(--p-line);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 10;
+  flex-shrink: 0;
+}
+.anp-bottom-nav__tab {
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(4px * var(--d));
+  cursor: pointer;
+  padding: 0;
+  width: calc(60px * var(--d));
+  height: 100%;
+  color: #B8A99A;
+  outline: none;
+  transition: color 0.15s;
+}
+.anp-bottom-nav__tab--active {
+  color: #E76F51 !important;
+}
+.anp-bottom-nav__label {
+  font-size: calc(11px * var(--d));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-family: var(--font-body);
+}
+
