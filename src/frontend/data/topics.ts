@@ -152,6 +152,61 @@ export const topics: Topic[] = [
     ],
     topicQuiz: [],
   },
+  {
+    id: "foundations",
+    title: "The Foundations",
+    icon: "💡",
+    color: "#6366f1",
+    completion: 0,
+    subTopics: [
+      { id: "lesson-36", title: "The Power of Compound Interest", completed: false, content: getContent("foundations", "lesson-36"), quiz: [] },
+      { id: "lesson-37", title: "The Emergency Fund",             completed: false, content: getContent("foundations", "lesson-37"), quiz: [] },
+      { id: "lesson-38", title: "Inflation",                      completed: false, content: getContent("foundations", "lesson-38"), quiz: [] },
+      { id: "lesson-39", title: "Open Banking",                   completed: false, content: getContent("foundations", "lesson-39"), quiz: [] },
+    ],
+    topicQuiz: [],
+  },
+  {
+    id: "mastering-credit",
+    title: "Mastering Credit",
+    icon: "💳",
+    color: "#14b8a6",
+    completion: 0,
+    subTopics: [
+      { id: "lesson-40", title: "Demystifying UK Credit Scores", completed: false, content: getContent("mastering-credit", "lesson-40"), quiz: [] },
+      { id: "lesson-41", title: "Credit Card Jedi",              completed: false, content: getContent("mastering-credit", "lesson-41"), quiz: [] },
+      { id: "lesson-42", title: "Buy Now, Pay Later (BNPL)",     completed: false, content: getContent("mastering-credit", "lesson-42"), quiz: [] },
+    ],
+    topicQuiz: [],
+  },
+  {
+    id: "investing-101",
+    title: "Investing 101",
+    icon: "📊",
+    color: "#22c55e",
+    completion: 0,
+    subTopics: [
+      { id: "lesson-43", title: "Stocks & Shares ISAs vs. Cash ISAs", completed: false, content: getContent("investing-101", "lesson-43"), quiz: [] },
+      { id: "lesson-44", title: "What is an Index Fund?",             completed: false, content: getContent("investing-101", "lesson-44"), quiz: [] },
+      { id: "lesson-45", title: "Risk and Volatility",                completed: false, content: getContent("investing-101", "lesson-45"), quiz: [] },
+      { id: "lesson-46", title: "Pound Cost Averaging",               completed: false, content: getContent("investing-101", "lesson-46"), quiz: [] },
+      { id: "lesson-47", title: "Ethical & ESG Investing",            completed: false, content: getContent("investing-101", "lesson-47"), quiz: [] },
+    ],
+    topicQuiz: [],
+  },
+  {
+    id: "taxes-wealth",
+    title: "Taxes & Wealth Building",
+    icon: "🏦",
+    color: "#a855f7",
+    completion: 0,
+    subTopics: [
+      { id: "lesson-48", title: "The UK Tax Brackets",    completed: false, content: getContent("taxes-wealth", "lesson-48"), quiz: [] },
+      { id: "lesson-49", title: "Capital Gains Tax (CGT)", completed: false, content: getContent("taxes-wealth", "lesson-49"), quiz: [] },
+      { id: "lesson-50", title: "The State Pension",       completed: false, content: getContent("taxes-wealth", "lesson-50"), quiz: [] },
+    ],
+    topicQuiz: [],
+  },
 ];
 
 export function getTopicById(id: string): Topic | undefined {

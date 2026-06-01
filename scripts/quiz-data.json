@@ -1004,6 +1004,551 @@
     },
     "topicQuiz": []
   },
+  "foundations": {
+    "subtopics": {
+      "lesson-36": [
+        {
+          "id": "L36Q01",
+          "question": "What is the fundamental concept behind compound interest?",
+          "options": [
+            "The bank charges you a fee every month your balance increases.",
+            "You earn interest on your original money plus the interest you have already earned.",
+            "The government matches any money you save in a standard current account."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Compound interest means your returns generate their own returns. Each year, you earn on your original money and on the accumulated interest from all previous years."
+        },
+        {
+          "id": "L36Q02",
+          "question": "Why did Saver A end up with more money than Saver B, despite investing much less cash?",
+          "options": [
+            "Saver A chose a higher-risk strategy.",
+            "Saver A gave their money more time to compound, allowing the snowball effect to do the work.",
+            "Saver A received a tax bonus from the local council."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Saver A invested £12,000 over 10 years starting at 22. Their money had over 40 years to compound. Saver B invested £82,800 but started 20 years later, leaving far less time for growth."
+        },
+        {
+          "id": "L36Q03",
+          "question": "When is the most effective time to start utilising compound interest?",
+          "options": [
+            "Right now, because time is the most valuable variable in compounding.",
+            "Only when you earn over £50,000 a year.",
+            "Right before you retire."
+          ],
+          "correctAnswer": 0,
+          "explanation": "The earlier you start, the more compounding cycles your money goes through. Even small amounts invested young can outgrow large amounts invested late."
+        }
+      ],
+      "lesson-37": [
+        {
+          "id": "L37Q01",
+          "question": "What should be included when calculating your emergency fund target?",
+          "options": [
+            "Your total gross monthly income.",
+            "Your absolute baseline living expenses (rent, utilities, food, essential transit).",
+            "Your estimated holiday and entertainment spending for the year."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Your emergency fund target is based on bare survival costs — what you must pay to keep a roof over your head and food on the table, not your full spending habits."
+        },
+        {
+          "id": "L37Q02",
+          "question": "Why is the stock market an unsafe place to keep your emergency fund?",
+          "options": [
+            "You are locked in and can never withdraw the cash.",
+            "Volatility means the market could crash exactly when you need the money, forcing a sale at a loss.",
+            "The tax office takes 50% of any money removed."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Emergencies don't wait for market recoveries. If markets are down when you lose your job, you'd be selling investments at a loss to cover bills."
+        },
+        {
+          "id": "L37Q03",
+          "question": "What is the main purpose of keeping an emergency fund?",
+          "options": [
+            "To buy luxury items when they go on sale.",
+            "To act as a financial shield so unexpected expenses don't force you into high-interest debt.",
+            "To build up a high credit score quickly."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Without an emergency fund, any unexpected expense — a job loss, broken boiler, car repair — forces you to borrow at high interest rates, making the situation worse."
+        }
+      ],
+      "lesson-38": [
+        {
+          "id": "L38Q01",
+          "question": "What is the primary effect of inflation on your money?",
+          "options": [
+            "It increases the physical number of coins in your bank account.",
+            "It erodes your purchasing power, meaning your money buys less over time.",
+            "It automatically raises your personal tax allowance."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Inflation means prices rise year on year. The same £100 buys fewer groceries each year, so your money is worth less in real-world terms even if the number on your bank statement stays the same."
+        },
+        {
+          "id": "L38Q02",
+          "question": "What happens if you leave £10,000 in a 0% interest current account for ten years while inflation runs at 3%?",
+          "options": [
+            "You will have more than £10,000 due to banking rewards.",
+            "You will still have £10,000, but its real-world purchasing power will be significantly lower.",
+            "The bank will confiscate the money for inactivity."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The number stays the same but its real value shrinks. At 3% inflation compounded over 10 years, that £10,000 would only have the purchasing power of roughly £7,440 in today's money."
+        },
+        {
+          "id": "L38Q03",
+          "question": "How should you typically protect long-term savings (5+ years) from inflation?",
+          "options": [
+            "Hide cash physically inside your home.",
+            "Put it into long-term assets like global index funds that historically outperform inflation.",
+            "Keep everything in a standard checking account."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Over long timelines, the stock market and property have historically grown well above inflation. Assets are the primary tool for preserving and growing your purchasing power over decades."
+        }
+      ],
+      "lesson-39": [
+        {
+          "id": "L39Q01",
+          "question": "Does an Open Banking app get access to your actual bank password?",
+          "options": [
+            "Yes, it needs it to log into your account daily.",
+            "No, it uses a secure, read-only software bridge and never sees your login details.",
+            "Only if you use a premium paid version of the app."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Open Banking uses a secure API — a direct software connection approved by your bank. The app receives read-only transaction data without ever seeing or storing your login credentials."
+        },
+        {
+          "id": "L39Q02",
+          "question": "What is a key benefit of using an Open Banking-powered budget app?",
+          "options": [
+            "It automatically pays off your credit cards using government grants.",
+            "It categorises your spending automatically, giving you an accurate picture of your outgoings.",
+            "It improves your credit score by 100 points instantly."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Open Banking apps pull your live transaction data and sort it into categories automatically, making it easy to spot where your money is actually going without any manual logging."
+        },
+        {
+          "id": "L39Q03",
+          "question": "Can an authorised Open Banking app secretly withdraw money from your account?",
+          "options": [
+            "Yes, if you don't check the app weekly.",
+            "No, the connection is strictly read-only; the app has no power to move your funds.",
+            "Only during UK bank holidays."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Open Banking access is read-only by design. The API only allows data viewing — not fund transfers. Only Payment Initiation Services (which require separate explicit consent) can move money."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "mastering-credit": {
+    "subtopics": {
+      "lesson-40": [
+        {
+          "id": "L40Q01",
+          "question": "Is there a single, official credit score used by all lenders in the UK?",
+          "options": [
+            "Yes, it is managed directly by HMRC.",
+            "No, there are three separate major credit agencies, and each calculates your file using a completely different scale.",
+            "Yes, it is linked directly to your National Insurance number."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Experian, Equifax, and TransUnion each use their own proprietary formula and scale. A score of 600 means something completely different on each platform."
+        },
+        {
+          "id": "L40Q02",
+          "question": "What is \"Credit Utilisation\"?",
+          "options": [
+            "The number of credit cards you have open at one time.",
+            "The percentage of your available credit limit that you are actively using.",
+            "The amount of interest you pay to the bank each year."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Credit utilisation measures how much of your available credit you are using. A £900 balance on a £1,000 limit card is 90% utilisation — lenders see this as a sign of financial stress. Keep it under 30%."
+        },
+        {
+          "id": "L40Q03",
+          "question": "Which action is one of the simplest ways to verify your identity and stabilise your credit report?",
+          "options": [
+            "Registering to vote on the Electoral Roll at your current address.",
+            "Maxing out your credit card limit every month.",
+            "Closing all bank accounts and using cash."
+          ],
+          "correctAnswer": 0,
+          "explanation": "Lenders use the Electoral Roll to verify where you live. Being registered confirms your identity and address, which is one of the fastest and easiest ways to strengthen your credit file."
+        }
+      ],
+      "lesson-41": [
+        {
+          "id": "L41Q01",
+          "question": "What threshold must a purchase cross to be covered by Section 75 consumer protection?",
+          "options": [
+            "It must be under £50.",
+            "Between £100 and £30,000.",
+            "Exactly £10,000 or more."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Section 75 of the Consumer Credit Act applies to single-item purchases costing between £100 and £30,000. The credit card company becomes jointly liable with the retailer for the full purchase."
+        },
+        {
+          "id": "L41Q02",
+          "question": "What must you do to ensure you pay zero interest on a standard reward credit card?",
+          "options": [
+            "Pay only the minimum payment listed on the statement.",
+            "Clear the statement balance completely in full every single month.",
+            "Use the card exclusively at ATM cash machines."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Interest is only charged on balances that carry over month to month. Paying the full statement balance every month via Direct Debit means you use the credit card's grace period entirely interest-free."
+        },
+        {
+          "id": "L41Q03",
+          "question": "If you pay a £50 deposit for a £200 product on a credit card and the retailer goes bust, how much is protected under Section 75?",
+          "options": [
+            "Only the £50 paid on the card.",
+            "Nothing, because the full amount wasn't put on the card.",
+            "The full £200 value of the purchase."
+          ],
+          "correctAnswer": 2,
+          "explanation": "Section 75 protection covers the entire transaction value as long as any part of the deposit or payment was made on the credit card. The £50 deposit unlocks protection for the full £200."
+        }
+      ],
+      "lesson-42": [
+        {
+          "id": "L42Q01",
+          "question": "How do Buy Now, Pay Later (BNPL) services encourage consumer overspending?",
+          "options": [
+            "They physically force you to add items to your basket.",
+            "They lower the mental \"pain of paying\" by breaking large costs into seemingly small, delayed chunks.",
+            "They give you cash back on every purchase."
+          ],
+          "correctAnswer": 1,
+          "explanation": "When payment is delayed or split, the brain doesn't register the full cost upfront. A £90 item split into three £30 payments feels affordable even if the total isn't — this is deliberate product design."
+        },
+        {
+          "id": "L42Q02",
+          "question": "Is a missed Buy Now, Pay Later instalment completely harmless to your financial future?",
+          "options": [
+            "Yes, because BNPL does not involve real banks.",
+            "No, missed payments can incur late fees and be reported to credit bureaus, damaging your credit file.",
+            "Yes, the government covers any missed payments."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Many BNPL providers now report to credit reference agencies. A missed payment can appear on your credit file for up to 6 years, potentially affecting mortgage or loan applications."
+        },
+        {
+          "id": "L42Q03",
+          "question": "What is the safest rule of thumb when encountering BNPL options at an online checkout?",
+          "options": [
+            "Always use it to split costs so you can buy more items.",
+            "Avoid it unless you already have the full cash amount available to buy the item right now.",
+            "Use it to borrow money for investments."
+          ],
+          "correctAnswer": 1,
+          "explanation": "BNPL should be treated as a convenience tool, not a credit facility. If you can't afford the full price today, you can't afford the item — BNPL simply defers the problem while adding risk."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "investing-101": {
+    "subtopics": {
+      "lesson-43": [
+        {
+          "id": "L43Q01",
+          "question": "What is the core tax advantage of a UK Individual Savings Account (ISA)?",
+          "options": [
+            "You get a 50% discount on your council tax.",
+            "All interest, capital gains, and investment dividends earned inside the wrapper are 100% tax-free.",
+            "Your employer doubles your contributions."
+          ],
+          "correctAnswer": 1,
+          "explanation": "An ISA is a tax-free wrapper. Any growth, interest, or dividends generated inside it are completely exempt from UK Income Tax and Capital Gains Tax — forever, not just during the contribution year."
+        },
+        {
+          "id": "L43Q02",
+          "question": "What is the maximum combined total you can pay into your ISAs per tax year?",
+          "options": [
+            "£1,000",
+            "£12,570",
+            "£20,000"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The annual ISA allowance is £20,000 per person. You can split it across different ISA types, but the total across all your ISAs cannot exceed £20,000 in a single tax year."
+        },
+        {
+          "id": "L43Q03",
+          "question": "Which ISA is most appropriate for a house deposit you plan to spend in 18 months?",
+          "options": [
+            "A Stocks & Shares ISA, to try and double the cash quickly.",
+            "A Cash ISA, because short-term funds require capital security and shouldn't face market drops.",
+            "A standard un-wrapped current account."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Any money you'll need within 5 years should not be in the stock market. A market crash in the 18 months before your purchase could devastate your deposit. A Cash ISA keeps it safe and earns tax-free interest."
+        }
+      ],
+      "lesson-44": [
+        {
+          "id": "L44Q01",
+          "question": "What does an index fund do?",
+          "options": [
+            "It hires active traders to pick individual stocks to try and beat the market daily.",
+            "It automatically tracks and mirrors a specific market index, buying a small slice of all companies within it.",
+            "It guarantees a fixed cash payout every month regardless of market movements."
+          ],
+          "correctAnswer": 1,
+          "explanation": "An index fund passively copies a market index — like the FTSE 100 or S&P 500 — by holding shares in every company within it, proportional to their size. No active stock-picking involved."
+        },
+        {
+          "id": "L44Q02",
+          "question": "Why is diversification via an index fund safer than stock picking?",
+          "options": [
+            "Diversification protects your money because the failure of a single company won't destroy your entire portfolio.",
+            "It guarantees that your investments will never experience short-term drops.",
+            "It eliminates all forms of UK capital gains tax automatically."
+          ],
+          "correctAnswer": 0,
+          "explanation": "When your money is spread across thousands of companies, one going bankrupt barely registers. With stock picking, a single company collapsing could wipe out a major portion of your savings."
+        },
+        {
+          "id": "L44Q03",
+          "question": "Why do passive index funds generally cost less than actively managed funds?",
+          "options": [
+            "They are subsidised by the government.",
+            "They are run automatically by computers tracking an index, removing the need for high-salaried fund managers.",
+            "They only operate during morning trading hours."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Active funds employ expensive analysts and fund managers. Index funds are automated — they just mirror an index — so costs are a fraction of those of active funds. Lower fees mean more growth stays in your pot."
+        }
+      ],
+      "lesson-45": [
+        {
+          "id": "L45Q01",
+          "question": "What is the definition of financial volatility?",
+          "options": [
+            "The total fees a bank charges to close an investment portfolio.",
+            "The natural up-and-down price movements of investments over short periods.",
+            "A permanent loss of cash that can never be recovered."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Volatility describes how much an investment's value fluctuates. It is not the same as a loss — it is the normal rhythm of markets going up and down before trending upward over the long term."
+        },
+        {
+          "id": "L45Q02",
+          "question": "When does a temporary drop in stock market value become a permanent financial loss?",
+          "options": [
+            "The moment the evening news reports a market dip.",
+            "Only if you panic and sell your investments while the price is down.",
+            "Automatically at the end of the UK tax year."
+          ],
+          "correctAnswer": 1,
+          "explanation": "A paper drop is just a number on a screen. You only crystallise the loss if you sell. If you hold through the dip, you still own the same shares — and they will recover as the market recovers."
+        },
+        {
+          "id": "L45Q03",
+          "question": "Why should you have a minimum time horizon of 5+ years when investing in a Stocks & Shares ISA?",
+          "options": [
+            "Because the bank will fine you for withdrawing early.",
+            "A longer timeline gives your investments the space to smooth out short-term volatility and recover from market dips.",
+            "It takes 5 years for an index fund to register with HMRC."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Over any single year, there is a ~30% chance markets finish down. Over 20 years, historically near-0% of investors have lost money in a diversified index fund. Time dramatically reduces the risk of a permanent loss."
+        }
+      ],
+      "lesson-46": [
+        {
+          "id": "L46Q01",
+          "question": "How does Pound Cost Averaging work?",
+          "options": [
+            "You only invest when financial experts predict the market will rise.",
+            "You invest a fixed sum of money at regular intervals, regardless of whether the market is up or down.",
+            "You switch your money between cash and gold every 30 days."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Pound Cost Averaging removes the guesswork from investing by committing a fixed amount on a set schedule. You buy automatically whether markets are high or low, smoothing your average purchase price over time."
+        },
+        {
+          "id": "L46Q02",
+          "question": "What happens automatically under a pound cost averaging strategy when the stock market dips?",
+          "options": [
+            "Your investment account is frozen to protect your balance.",
+            "Your fixed monthly contribution automatically buys a larger number of shares at a lower price.",
+            "You are charged an extra service fee by your provider."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Because you invest a fixed cash amount, a lower share price means your money buys more shares. When prices recover, those extra cheap shares add significantly more to your returns."
+        },
+        {
+          "id": "L46Q03",
+          "question": "What is the psychological advantage of automating your investments via pound cost averaging?",
+          "options": [
+            "It guarantees you will double your money within one calendar year.",
+            "It removes the emotional stress of trying to time the market perfectly.",
+            "It completely eliminates short-term portfolio volatility."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Market timing is notoriously difficult even for professional investors. Automating a fixed monthly contribution means you never have to decide when to invest — the system does it for you, removing emotion from the process."
+        }
+      ],
+      "lesson-47": [
+        {
+          "id": "L47Q01",
+          "question": "What do the letters in the ESG framework stand for?",
+          "options": [
+            "Economic, Stability, Growth",
+            "Environmental, Social, and Governance",
+            "Equity, Savings, Gilts"
+          ],
+          "correctAnswer": 1,
+          "explanation": "ESG stands for Environmental (how a company impacts the planet), Social (how it treats people), and Governance (how it is internally managed). These three pillars are used to rate corporate responsibility."
+        },
+        {
+          "id": "L47Q02",
+          "question": "What is \"Negative Screening\" in the context of ethical investing funds?",
+          "options": [
+            "Charging lower fees to companies with poor financial performance.",
+            "Completely excluding specific sectors or industries, such as weapons or tobacco, from the fund portfolio.",
+            "Reducing your tax contributions based on your ethical views."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Negative screening is the practice of filtering out entire industries the fund considers harmful — such as fossil fuels, gambling, or arms manufacturers — so your money never flows to those companies."
+        },
+        {
+          "id": "L47Q03",
+          "question": "If you do not actively select an ethical fund, where does your workplace pension default fund usually invest?",
+          "options": [
+            "Exclusively in UK government infrastructure projects.",
+            "Across the entire broad market, which can include fossil fuels, tobacco, and other traditional corporate sectors.",
+            "In local community banks."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Default pension funds typically track broad global indices with no ethical screening. Without actively choosing an ESG or ethical option, your pension contributions are automatically invested across all industries."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "taxes-wealth": {
+    "subtopics": {
+      "lesson-48": [
+        {
+          "id": "L48Q01",
+          "question": "If you enter the 40% Higher Rate tax bracket, does your entire income get taxed at 40%?",
+          "options": [
+            "Yes, everything you earn is hit by the 40% rate immediately.",
+            "No, the UK uses a marginal system; you only pay 40% on the portion of your income that sits above the threshold.",
+            "Only if you work in the public sector."
+          ],
+          "correctAnswer": 1,
+          "explanation": "The UK marginal tax system applies each rate only to the income within that band. Crossing into the 40% bracket means you pay 40% solely on the slice above £50,270 — not on your entire salary."
+        },
+        {
+          "id": "L48Q02",
+          "question": "Can getting a pay raise that pushes you into a higher tax bracket ever reduce your total take-home pay?",
+          "options": [
+            "Yes, if you cross the threshold by less than £5,000.",
+            "No, because the higher tax rate only applies to the specific money inside that new bracket layer.",
+            "Only during years with high inflation."
+          ],
+          "correctAnswer": 1,
+          "explanation": "This is a common myth. Because only the incremental income above the threshold faces the higher rate, your total take-home will always increase with a raise — you just keep slightly less of the extra portion."
+        },
+        {
+          "id": "L48Q03",
+          "question": "What can a higher-rate earner do to legally lower their taxable income back below the 40% bracket threshold?",
+          "options": [
+            "Refuse to pay national insurance contributions.",
+            "Divert the excess salary straight into their workplace or personal pension.",
+            "Use a standard cash current account."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Pension contributions reduce your taxable income. Directing the amount above the £50,270 threshold into a pension brings your taxable salary back below the higher-rate band and earns you pension tax relief at the same time."
+        }
+      ],
+      "lesson-49": [
+        {
+          "id": "L49Q01",
+          "question": "What exactly are you taxed on under Capital Gains Tax rules?",
+          "options": [
+            "The total sale price of the asset.",
+            "The profit (the gain) made between the purchase price and the sale price.",
+            "The original purchase price of the item."
+          ],
+          "correctAnswer": 1,
+          "explanation": "CGT is charged on the profit only. If you bought shares for £5,000 and sold them for £8,000, CGT applies to the £3,000 gain — not the full £8,000 sale proceeds."
+        },
+        {
+          "id": "L49Q02",
+          "question": "Do you normally have to pay Capital Gains Tax when you sell your main residential home?",
+          "options": [
+            "Yes, at a flat rate of 40%.",
+            "No, your primary residence is generally exempt from CGT under UK tax rules.",
+            "Only if you sell it to a family member."
+          ],
+          "correctAnswer": 1,
+          "explanation": "Your main home is protected by Principal Private Residence relief. CGT applies to second homes, buy-to-let properties, or investment assets — not the house you live in."
+        },
+        {
+          "id": "L49Q03",
+          "question": "What is the individual tax-free Capital Gains Tax annual allowance limit?",
+          "options": [
+            "£1,000",
+            "£3,000",
+            "£20,000"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Annual Exempt Amount is £3,000 per tax year. Gains below this threshold are entirely tax-free. Anything above must be reported to HMRC via Self Assessment."
+        }
+      ],
+      "lesson-50": [
+        {
+          "id": "L50Q01",
+          "question": "What is the minimum number of qualifying National Insurance years required to receive any State Pension payout?",
+          "options": [
+            "1 year",
+            "10 years",
+            "35 years"
+          ],
+          "correctAnswer": 1,
+          "explanation": "You need at least 10 qualifying years on your National Insurance record to receive any State Pension. Fewer than 10 years means no payout at all when you reach State Pension age."
+        },
+        {
+          "id": "L50Q02",
+          "question": "How many qualifying years do you typically need to secure the full maximum New State Pension amount?",
+          "options": [
+            "20 years",
+            "35 years",
+            "50 years"
+          ],
+          "correctAnswer": 1,
+          "explanation": "35 qualifying NI years gives you the full New State Pension of £241.30 per week. Between 10 and 34 years, you receive a proportional fraction of the full amount."
+        },
+        {
+          "id": "L50Q03",
+          "question": "Can you earn a qualifying National Insurance year if you are out of work but registered as a parent claiming Child Benefit?",
+          "options": [
+            "No, you must be in paid employment to earn credits.",
+            "Yes, you can receive automatic National Insurance credits that protect your state pension record.",
+            "Only if you pay an additional corporate tax fee."
+          ],
+          "correctAnswer": 1,
+          "explanation": "NI credits are awarded in several non-working situations — including claiming Child Benefit, Jobseeker's Allowance, or acting as a registered carer — so your State Pension record is protected even when you're not employed."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
   "windfalls": {
     "subtopics": {
       "lesson-34": [
