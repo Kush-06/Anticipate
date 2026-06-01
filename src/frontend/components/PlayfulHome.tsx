@@ -4,7 +4,7 @@ import { useProgress } from "../context/ProgressContext";
 
 type TrackState = "active" | "done" | "upcoming" | "locked";
 
-function resolveTrackState(completion: number, _index: number, _topicsData: typeof topics, _getCompletion: (id: string) => number): TrackState {
+function resolveTrackState(completion: number): TrackState {
   if (completion === 100) return "done";
   if (completion > 0) return "active";
   // All topics are unlocked (upcoming) for testing purposes
@@ -114,9 +114,9 @@ export function PlayfulHome() {
       <div className="anp-home__scroll">
         <p className="anp-home__section-label">Topics</p>
         <div className="anp-home__tracks">
-          {topics.map((topic, index) => {
+          {topics.map((topic) => {
             const completion = getTopicCompletion(topic.id);
-            const state = resolveTrackState(completion, index, topics, getTopicCompletion);
+            const state = resolveTrackState(completion);
             const isLocked = state === "locked";
             const completedSubtopicsCount = topic.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
 
