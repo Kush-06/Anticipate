@@ -1,0 +1,1093 @@
+{
+  "starting-work": {
+    "subtopics": {
+      "lesson-01": [
+        {
+          "id": "L01Q01",
+          "question": "What does the \"Net Pay\" on your payslip represent?",
+          "options": [
+            "Your total salary before taxes",
+            "The money that actually goes into your bank account",
+            "The amount of tax you owe"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Net Pay is your take-home pay after all taxes and deductions have been removed."
+        },
+        {
+          "id": "L01Q02",
+          "question": "If your tax code is 1257L, how much money can you earn tax-free in a year?",
+          "options": [
+            "£1,257",
+            "£12,570",
+            "Everything you earn"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Add a zero to the number in your tax code. 1257 becomes £12,570 — your Personal Allowance."
+        },
+        {
+          "id": "L01Q03",
+          "question": "What does PAYE stand for?",
+          "options": [
+            "Pay As You Earn",
+            "Pension And Yearly Earnings",
+            "Personal Allowance Yearly Estimate"
+          ],
+          "correctAnswer": 0,
+          "explanation": "PAYE (Pay As You Earn) is the HMRC system that collects Income Tax and National Insurance directly from your wages."
+        }
+      ],
+      "lesson-02": [
+        {
+          "id": "L02Q01",
+          "question": "What happens to your employer's contribution if you opt out of your workplace pension?",
+          "options": [
+            "They give it to you in your monthly paycheck",
+            "The government claims it",
+            "You lose it completely — the employer keeps the money"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Your employer is not required to pass their pension contribution to you as wages if you opt out. That free money is simply lost to you."
+        },
+        {
+          "id": "L02Q02",
+          "question": "Under standard auto-enrolment rules, what is the minimum your employer must contribute?",
+          "options": [
+            "1%",
+            "3%",
+            "5%"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The legal minimum employer contribution is 3%, with you contributing 5%, totalling 8% of qualifying earnings."
+        },
+        {
+          "id": "L02Q03",
+          "question": "Why is putting money into a pension described as \"tax efficient\"?",
+          "options": [
+            "You pay zero taxes on anything you buy with it",
+            "Contributions are made before tax, so money that would have gone to HMRC goes into your retirement pot instead",
+            "It lowers your student loan repayments"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Pension contributions are taken from gross pay before income tax, meaning the government effectively contributes to your pension."
+        }
+      ],
+      "lesson-03": [
+        {
+          "id": "L03Q01",
+          "question": "According to the 50/30/20 rule, what percentage of your income should go toward \"Wants\"?",
+          "options": [
+            "20%",
+            "30%",
+            "50%"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Wants — eating out, subscriptions, hobbies — should account for 30% of your take-home pay."
+        },
+        {
+          "id": "L03Q02",
+          "question": "Which of the following belongs in the 50% \"Needs\" category?",
+          "options": [
+            "A gym membership",
+            "Basic groceries and rent",
+            "Putting money into a savings account"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Needs are non-negotiables — things you would still have to pay even if you lost your job, like rent and essential food."
+        },
+        {
+          "id": "L03Q03",
+          "question": "What should you do if your rent and bills take up 60% of your income?",
+          "options": [
+            "Take out a loan to cover the 10% difference",
+            "Stop saving money entirely",
+            "Adjust the framework to fit your reality, such as using a 60/20/20 split"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The 50/30/20 rule is a guideline, not a rigid law. Adjusting proportions to match your real cost of living is entirely sensible."
+        }
+      ],
+      "lesson-04": [
+        {
+          "id": "L04Q01",
+          "question": "How are your monthly UK student loan repayments calculated?",
+          "options": [
+            "You pay a fixed fee of £100 every month",
+            "You pay 9% of your total gross income",
+            "You pay 9% of your income only on the amount you earn above your specific plan's threshold"
+          ],
+          "correctAnswer": 2,
+          "explanation": "You only repay 9% of earnings above the threshold for your plan — not on your total income."
+        },
+        {
+          "id": "L04Q02",
+          "question": "What happens to your student loan payments if you lose your job or your salary drops below the threshold?",
+          "options": [
+            "You must continue paying from your savings",
+            "The payments automatically stop until you earn above the threshold again",
+            "You get charged a late penalty fee"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Repayments are income-contingent. If your earnings drop below the threshold, repayments stop automatically."
+        },
+        {
+          "id": "L04Q03",
+          "question": "Why is a UK student loan often compared to a \"graduate tax\"?",
+          "options": [
+            "Because it is wiped after 30–40 years and scales with your income, rather than acting like commercial debt",
+            "Because it goes straight to the local council",
+            "Because you have to pay it forever, no matter what"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Unlike traditional debt, UK student loans scale with income, don't affect your credit file, and are eventually written off."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "renting": {
+    "subtopics": {
+      "lesson-05": [
+        {
+          "id": "L05Q01",
+          "question": "Your letting agent asks for a £150 \"contract administration fee\" to set up your tenancy. What should you do?",
+          "options": [
+            "Pay it immediately so you don't lose the flat",
+            "Refuse to pay, as this is illegal under the Tenant Fees Act",
+            "Ask if you can pay it in instalments"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Tenant Fees Act (2019) makes it illegal for letting agents to charge fees such as administration or reference-checking fees."
+        },
+        {
+          "id": "L05Q02",
+          "question": "What is the legal maximum amount a landlord can charge for a standard tenancy security deposit?",
+          "options": [
+            "One month's rent",
+            "Five weeks' rent",
+            "Six weeks' rent"
+          ],
+          "correctAnswer": 1,
+          "explanation": "For properties with annual rent under £50,000, the tenancy deposit is capped at five weeks' rent."
+        },
+        {
+          "id": "L05Q03",
+          "question": "What happens to your security deposit while you live in the property?",
+          "options": [
+            "The landlord keeps it in their savings account",
+            "The letting agent uses it to pay for property repairs",
+            "It must be locked in an independent, government-backed protection scheme"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Landlords must place deposits in a government-backed scheme (like DPS, TDS, or MyDeposits) within 30 days."
+        }
+      ],
+      "lesson-06": [
+        {
+          "id": "L06Q01",
+          "question": "You are a full-time university student moving into a house with three other full-time students. How much Council Tax do you have to pay?",
+          "options": [
+            "Nothing — full-time students are entirely exempt",
+            "You get a 25% discount",
+            "The standard rate divided by four"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A household made up entirely of full-time students is 100% exempt from Council Tax."
+        },
+        {
+          "id": "L06Q02",
+          "question": "You only watch Netflix, YouTube, and Disney+ on your laptop. Do you legally need to buy a TV Licence?",
+          "options": [
+            "Yes, because you are streaming video",
+            "Yes, because you own a laptop capable of playing video",
+            "No, because you aren't watching live TV or using BBC iPlayer"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A TV Licence is only required if you watch live TV on any channel or use BBC iPlayer."
+        },
+        {
+          "id": "L06Q03",
+          "question": "What is the very first thing you should do regarding your energy bills on the day you get your keys?",
+          "options": [
+            "Turn the heating on to full blast to test it",
+            "Take a time-stamped photo of the gas and electricity meter readings",
+            "Pay the landlord a £100 energy deposit"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Taking a dated photo of meter readings on move-in day protects you from being charged for the previous tenant's energy usage."
+        }
+      ],
+      "lesson-07": [
+        {
+          "id": "L07Q01",
+          "question": "A pipe bursts in your flat, ruining your expensive gaming console and flooding the kitchen. What does the landlord's Buildings Insurance cover?",
+          "options": [
+            "The kitchen damage and your gaming console",
+            "Only the damage to the kitchen structure",
+            "Only your gaming console"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Buildings Insurance covers the physical structure of the property only. Your personal belongings require your own Tenants' Contents Insurance."
+        },
+        {
+          "id": "L07Q02",
+          "question": "What type of insurance do you need to buy to protect your clothes, laptop, and bicycle?",
+          "options": [
+            "Buildings Insurance",
+            "Tenants' Contents Insurance",
+            "Life Insurance"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Tenants' Contents Insurance covers your personal belongings — the landlord's policy will never cover them."
+        },
+        {
+          "id": "L07Q03",
+          "question": "What does \"New for Old\" cover mean on a contents insurance policy?",
+          "options": [
+            "You only get old, refurbished replacement items",
+            "It pays out the exact amount you originally bought the item for 5 years ago",
+            "It pays out enough money to buy a brand new equivalent of the item you lost"
+          ],
+          "correctAnswer": 2,
+          "explanation": "New for Old cover means you get the current replacement cost of the item, not its depreciated value."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "buying-a-home": {
+    "subtopics": {
+      "lesson-08": [
+        {
+          "id": "L08Q01",
+          "question": "If you and your partner have a combined gross household income of £50,000, roughly what is the maximum mortgage most high-street banks will offer you?",
+          "options": [
+            "£150,000 (3x salary)",
+            "£225,000 (4.5x salary)",
+            "£300,000 (6x salary)"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The FCA-governed standard income multiplier for most high-street lenders is 4.5x gross annual salary."
+        },
+        {
+          "id": "L08Q02",
+          "question": "Which Loan-to-Value (LTV) tier will secure you the cheapest possible interest rate?",
+          "options": [
+            "95% LTV",
+            "85% LTV",
+            "60% LTV"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The lower your LTV, the lower the risk for the lender. A 60% LTV unlocks the best available interest rates on the market."
+        },
+        {
+          "id": "L08Q03",
+          "question": "What happens if you do nothing when your 2-year Fixed Rate deal ends?",
+          "options": [
+            "Your mortgage is paid off",
+            "You are automatically moved to your lender's Standard Variable Rate (SVR), which is much more expensive",
+            "Your rate locks in for another 2 years automatically"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The SVR is punishingly expensive. You should always remortgage to a new deal before your fixed term expires."
+        }
+      ],
+      "lesson-09": [
+        {
+          "id": "L09Q01",
+          "question": "When does the annual £4,000 LISA allowance reset?",
+          "options": [
+            "January 1st",
+            "On your birthday",
+            "At the start of the new tax year (April 6th)"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The UK tax year runs from April 6th to April 5th. The LISA allowance resets at the start of each new tax year."
+        },
+        {
+          "id": "L09Q02",
+          "question": "If you want to buy a house in two years, where should you put your LISA money?",
+          "options": [
+            "A Stocks and Shares LISA",
+            "A Cash LISA",
+            "Cryptocurrency"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Investing for less than 5 years is considered too high-risk for a house deposit. A Cash LISA protects you from stock market volatility."
+        },
+        {
+          "id": "L09Q03",
+          "question": "What happens if you withdraw £5,000 from your LISA (including a £1,000 bonus) to pay for a wedding?",
+          "options": [
+            "You just lose the £1,000 bonus and get your £4,000 back",
+            "You pay a 25% penalty on the £5,000, leaving you with £3,750 — meaning you lose some of your own money",
+            "You keep the bonus but have to pay income tax on it"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The 25% withdrawal penalty is applied to the total balance (including the bonus), meaning you can end up with less than you originally deposited."
+        }
+      ],
+      "lesson-10": [
+        {
+          "id": "L10Q01",
+          "question": "Under 2026 rules, a first-time buyer purchases a home for £350,000. How much Stamp Duty will they pay?",
+          "options": [
+            "£0",
+            "£2,500",
+            "£5,000"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The first £300,000 is tax-free for first-time buyers. They pay 5% on the £50,000 above that threshold: 5% × £50,000 = £2,500."
+        },
+        {
+          "id": "L10Q02",
+          "question": "What is the difference between a Mortgage Valuation and a Level 2 Homebuyer Report?",
+          "options": [
+            "A valuation protects the bank's money; a Homebuyer Report protects you by checking the condition of the house",
+            "A valuation checks for damp; a Homebuyer Report checks the legal documents",
+            "There is no difference — they are the same thing"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The bank's valuation only confirms the property is worth what they are lending against. An independent survey checks the condition for your benefit."
+        },
+        {
+          "id": "L10Q03",
+          "question": "What happens if you add a £1,000 mortgage arrangement fee to your loan instead of paying it upfront?",
+          "options": [
+            "The bank waives the fee completely",
+            "You pay interest on that £1,000 for the entire lifespan of your mortgage",
+            "It decreases your Loan-to-Value ratio"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Adding fees to your mortgage loan means you are charged interest on them for the full mortgage term — potentially 25 to 35 years."
+        }
+      ],
+      "lesson-11": [
+        {
+          "id": "L11Q01",
+          "question": "Why do mortgage lenders \"stress test\" your application?",
+          "options": [
+            "To ensure you can afford the repayments if interest rates rise significantly in the future",
+            "To check if your employer is likely to fire you",
+            "To see how much deposit you have saved"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Lenders stress test affordability against higher hypothetical rates (7–8%) to ensure you could still manage repayments if rates rise."
+        },
+        {
+          "id": "L11Q02",
+          "question": "Which of these is the most damaging thing to have on your bank statements when applying for a mortgage?",
+          "options": [
+            "Spending £100 a month on takeaways",
+            "Using a short-term Payday Loan to cover an emergency",
+            "Paying off your credit card in full every month"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Payday loans signal severe financial distress to underwriters. Even if paid back on time, most high-street lenders will reject applications that show one in the last 12–24 months."
+        },
+        {
+          "id": "L11Q03",
+          "question": "Why is it vital to be on the Electoral Roll before applying for a mortgage?",
+          "options": [
+            "It proves you pay your taxes",
+            "Lenders use it to trace your address history and verify your identity to prevent fraud",
+            "It gives you a government discount on your mortgage rate"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Electoral Roll is a key identity verification tool for lenders. Not being registered makes it very difficult to get a mortgage approved."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "relationships": {
+    "subtopics": {
+      "lesson-12": [
+        {
+          "id": "L12Q01",
+          "question": "Why is the Proportional Split method popular for couples with different salaries?",
+          "options": [
+            "It ensures both partners pay the exact same cash amount",
+            "It divides bills fairly based on a percentage of income, so the lower earner is not financially strained",
+            "It automatically clears both partners' personal debts"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Proportional Split scales each partner's contribution to their income, preventing an unfair financial burden on the lower earner."
+        },
+        {
+          "id": "L12Q02",
+          "question": "Which of the following should be shared during \"The Money Talk\"?",
+          "options": [
+            "Only your gross income",
+            "Your income, existing debts, and general credit standing",
+            "Your childhood savings history"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Transparent disclosure of income, debts, and credit standing is essential before signing joint financial agreements."
+        },
+        {
+          "id": "L12Q03",
+          "question": "What is a common risk of choosing a strict 50/50 split when one partner earns significantly less?",
+          "options": [
+            "The higher earner runs out of money",
+            "It causes financial strain and potential resentment for the lower earner",
+            "The tax office will increase your tax code"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A rigid 50/50 split can place a disproportionate financial burden on the lower earner, which may cause long-term resentment."
+        }
+      ],
+      "lesson-13": [
+        {
+          "id": "L13Q01",
+          "question": "What happens to your credit file when you open a joint account with someone?",
+          "options": [
+            "Your credit files are merged into a single score permanently",
+            "A \"Financial Association\" is created, linking your credit histories in the eyes of lenders",
+            "Nothing changes until you get married"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A Financial Association is created the moment you open any joint financial product. Lenders will then consider your partner's credit history when assessing you individually."
+        },
+        {
+          "id": "L13Q02",
+          "question": "What does \"Joint and Several Liability\" mean for a joint bank account overdraft?",
+          "options": [
+            "You are only responsible for exactly half of the debt",
+            "Your employer must pay off the debt from your salary",
+            "The bank can legally pursue either partner for 100% of the money owed"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Joint and Several Liability means both parties are individually responsible for the full debt — not just their share."
+        },
+        {
+          "id": "L13Q03",
+          "question": "What should you do if you split up with a partner with whom you shared a joint account?",
+          "options": [
+            "Nothing — the link disappears automatically after 30 days",
+            "Close the account and submit a Notice of Disassociation to the credit reference agencies",
+            "Keep the account open but stop using it"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Financial Association does not disappear automatically. You must formally sever it by closing the account and filing a Notice of Disassociation."
+        }
+      ],
+      "lesson-14": [
+        {
+          "id": "L14Q01",
+          "question": "Which couple is eligible to apply for the Marriage Allowance?",
+          "options": [
+            "A cohabiting couple who have lived together for 10 years",
+            "A married couple where one earns £10,000 and the other earns £35,000",
+            "A married couple where one earns £40,000 and the other earns £60,000"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Eligibility requires legal marriage or civil partnership, one partner earning below the Personal Allowance (£12,570), and the other being a basic rate taxpayer (up to £50,270)."
+        },
+        {
+          "id": "L14Q02",
+          "question": "How much of the Personal Allowance can be transferred under this scheme?",
+          "options": [
+            "Exactly 10% (£1,257)",
+            "50% (£6,285)",
+            "The entire amount (£12,570)"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Only 10% of the Personal Allowance (£1,257) can be transferred, resulting in a saving of up to £252 per year."
+        },
+        {
+          "id": "L14Q03",
+          "question": "What letters will appear at the end of your tax codes if your application is successful?",
+          "options": [
+            "BR and 1257L",
+            "M (for the higher earner) and N (for the lower earner)",
+            "X and Y"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The higher earner's tax code ends in M (they receive the transferred allowance); the lower earner's ends in N (they have transferred it)."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "family": {
+    "subtopics": {
+      "lesson-15": [
+        {
+          "id": "L15Q01",
+          "question": "For how many weeks is Statutory Maternity Pay (SMP) paid?",
+          "options": [
+            "12 weeks",
+            "39 weeks",
+            "52 weeks"
+          ],
+          "correctAnswer": 1,
+          "explanation": "You can take up to 52 weeks of maternity leave, but SMP is only paid for the first 39 weeks. The final 13 weeks are unpaid."
+        },
+        {
+          "id": "L15Q02",
+          "question": "What do you receive during the first 6 weeks of Statutory Maternity Pay?",
+          "options": [
+            "A flat rate of £184.03 a week",
+            "100% of your normal salary",
+            "90% of your average weekly earnings"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The first 6 weeks of SMP are paid at 90% of your average weekly earnings before tax."
+        },
+        {
+          "id": "L15Q03",
+          "question": "What is the main difference between Statutory Pay and Occupational Pay?",
+          "options": [
+            "Statutory pay is paid by the local council",
+            "Occupational pay is an enhanced benefit offered voluntarily by your employer above the legal minimum",
+            "Occupational pay is only for part-time workers"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Statutory pay is the legal floor. Occupational (enhanced) pay is whatever your employer chooses to offer on top of that."
+        }
+      ],
+      "lesson-16": [
+        {
+          "id": "L16Q01",
+          "question": "At what individual income level does a parent start paying back Child Benefit via a tax charge?",
+          "options": [
+            "£12,570",
+            "£50,000",
+            "£60,000"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The High Income Child Benefit Charge kicks in when either parent earns over £60,000 individually."
+        },
+        {
+          "id": "L16Q02",
+          "question": "How does the Tax-Free Childcare scheme work?",
+          "options": [
+            "The government covers 100% of your nursery fees",
+            "For every £8 you pay into the account, the government adds £2, up to £2,000 per year per child",
+            "You get a discount card to use at local supermarkets"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The government tops up your childcare account by 20p for every 80p you contribute, up to a maximum of £2,000 per child per year."
+        },
+        {
+          "id": "L16Q03",
+          "question": "Why should a non-working parent still fill out the Child Benefit form even if they don't take the cash?",
+          "options": [
+            "It is a legal requirement to name the child",
+            "It protects their National Insurance record for their future State Pension",
+            "It automatically qualifies them for a council house"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Registering for Child Benefit (even if you opt out of receiving it) ensures you earn NI credits toward your State Pension during years out of work."
+        }
+      ],
+      "lesson-17": [
+        {
+          "id": "L17Q01",
+          "question": "Who legally owns the money inside a Junior ISA (JISA)?",
+          "options": [
+            "The parent who opened the account",
+            "The child",
+            "The bank managing the portfolio"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The money inside a JISA legally belongs to the child from the moment it is deposited. Not even the parents can withdraw it."
+        },
+        {
+          "id": "L17Q02",
+          "question": "When can money be withdrawn from a Junior ISA?",
+          "options": [
+            "At any time if the parents face an emergency",
+            "Only when the child turns 18",
+            "When the child starts secondary school at age 11"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A JISA is fully locked until the child's 18th birthday, at which point it converts into an adult ISA and the child gains full control."
+        },
+        {
+          "id": "L17Q03",
+          "question": "Why is a Stocks and Shares JISA often considered better than a Cash JISA for a newborn?",
+          "options": [
+            "It guarantees you won't lose money",
+            "Over an 18-year timeline, investing historically outperforms cash and beats inflation",
+            "The government doubles your investments"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Over an 18-year horizon, the stock market has historically delivered stronger returns than cash savings accounts and outpaced inflation."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "career": {
+    "subtopics": {
+      "lesson-18": [
+        {
+          "id": "L18Q01",
+          "question": "What is the most effective reason to give your manager when asking for a pay rise?",
+          "options": [
+            "Your train fare and living costs have increased",
+            "You have taken on more responsibilities and delivered measurable results",
+            "Your colleague earns more than you do"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Employers raise salaries because you deliver value to the business, not because your personal expenses have increased."
+        },
+        {
+          "id": "L18Q02",
+          "question": "When is the best time of year to ask for a pay rise?",
+          "options": [
+            "Exactly on the day of your annual performance review",
+            "During the company Christmas party",
+            "3–4 months before the budget/performance review cycle begins"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Asking before the budget is finalised gives your manager room to act on your request. Asking on the day of the review is often too late."
+        },
+        {
+          "id": "L18Q03",
+          "question": "If your manager says \"no\" to a pay rise due to budget constraints, what is your best next step?",
+          "options": [
+            "Threaten to quit immediately",
+            "Accept it and never bring it up again",
+            "Ask to set measurable goals that will trigger a pay review in 3–6 months"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Agreeing on measurable goals keeps the conversation open and gives you a formal basis for a follow-up review."
+        }
+      ],
+      "lesson-19": [
+        {
+          "id": "L19Q01",
+          "question": "What is the definition of Lifestyle Creep?",
+          "options": [
+            "Slowly changing your career path over several years",
+            "Gradually increasing your spending to match your rising income, leaving you no richer",
+            "The slow increase of inflation affecting the cost of living"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Lifestyle Creep is when discretionary spending expands in line with income growth, meaning your savings rate never actually improves."
+        },
+        {
+          "id": "L19Q02",
+          "question": "According to the 50/50 rule, if your take-home pay increases by £100 a month, what should you do?",
+          "options": [
+            "Put £50 into savings/investments and spend £50 on your lifestyle",
+            "Save the entire £100 so you can retire early",
+            "Spend the £100 as a reward for your hard work"
+          ],
+          "correctAnswer": 0,
+          "explanation": "The 50/50 rule balances rewarding yourself now with building wealth for the future."
+        },
+        {
+          "id": "L19Q03",
+          "question": "What is the most reliable way to ensure you actually save the money from your pay rise?",
+          "options": [
+            "Wait until the end of the month and save whatever is left over",
+            "Set up an automated Standing Order to move the money into an ISA on payday",
+            "Keep a mental note to spend less at the supermarket"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Automating savings on payday means the money never sits in your current account to be spent. You save before you can adapt to having it."
+        }
+      ],
+      "lesson-20": [
+        {
+          "id": "L20Q01",
+          "question": "What is the primary benefit of consolidating your old pensions?",
+          "options": [
+            "It resets your retirement age",
+            "It makes tracking your money easier and can reduce the fees you pay",
+            "The government pays you a bonus for combining them"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Consolidating pensions reduces admin fees, simplifies tracking, and gives you access to better investment funds."
+        },
+        {
+          "id": "L20Q02",
+          "question": "Which official UK tool should you use if you have forgotten who your old pension provider was?",
+          "options": [
+            "MoneySavingExpert's Pension Finder",
+            "Your current bank's customer service line",
+            "The Pension Tracing Service on Gov.uk"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The government's free Pension Tracing Service can locate old pension providers using just the name of your former employer."
+        },
+        {
+          "id": "L20Q03",
+          "question": "Before transferring an old pension, what is the most important thing to check?",
+          "options": [
+            "If the new provider has a colourful mobile app",
+            "If you will lose valuable safeguarded benefits or be charged high exit fees",
+            "If you can withdraw the cash immediately to your bank account"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Defined Benefit pensions and Guaranteed Annuity Rates provide valuable guarantees that are permanently lost if you transfer out without proper advice."
+        },
+        {
+          "id": "L20Q04",
+          "question": "True or False: You should always combine every single pension you have into one pot.",
+          "options": [
+            "True — it is always mathematically better",
+            "False — you should not transfer Defined Benefit pensions or those with Guaranteed Annuity Rates without professional advice"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Consolidation is generally a good idea, but never for Defined Benefit (Final Salary) pensions or pensions with Guaranteed Annuity Rates without independent financial advice."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "cars": {
+    "subtopics": {
+      "lesson-24": [
+        {
+          "id": "L24Q01",
+          "question": "You take out a PCP contract and decide to hand the car back after 3 years. However, you exceeded your agreed mileage by 5,000 miles. What happens?",
+          "options": [
+            "Nothing — the contract is over",
+            "You must pay a penalty fee per excess mile before walking away",
+            "The finance company keeps your initial deposit but charges no extra fee"
+          ],
+          "correctAnswer": 1,
+          "explanation": "PCP contracts include strict mileage limits. Exceeding them typically incurs a penalty of 10p to 15p per excess mile, payable at the end of the contract."
+        },
+        {
+          "id": "L24Q02",
+          "question": "Under which finance agreement do you legally own the car from the very first day you drive it off the lot?",
+          "options": [
+            "HP",
+            "PCP",
+            "A standard personal bank loan"
+          ],
+          "correctAnswer": 2,
+          "explanation": "With a bank loan, you buy the car outright as a cash buyer. With PCP and HP, the finance company owns the car until the final payment is made."
+        },
+        {
+          "id": "L24Q03",
+          "question": "Why are HP monthly payments generally higher than PCP payments for the exact same car?",
+          "options": [
+            "Because HP payments are paying off the full value of the vehicle, while PCP only pays off the depreciation",
+            "Because HP has higher interest rates than PCP",
+            "Because HP requires a larger deposit than PCP"
+          ],
+          "correctAnswer": 0,
+          "explanation": "PCP spreads the cost of depreciation only. HP spreads the full value of the car. The difference in what you are paying off explains the higher monthly commitment."
+        }
+      ],
+      "lesson-25": [
+        {
+          "id": "L25Q01",
+          "question": "You are looking at a brand new, fully electric car with a list price of £55,000. How will it be taxed in the 2026/27 tax year?",
+          "options": [
+            "It is exempt from all tax because it produces zero emissions",
+            "It will pay the standard rate (£200) plus the expensive car supplement (£440) for a total of £640 a year",
+            "It will only pay the standard £200 rate"
+          ],
+          "correctAnswer": 1,
+          "explanation": "EVs lost their road tax exemption in April 2025. A zero-emission car with a list price over £50,000 also triggers the Expensive Car Supplement of £440/year for five years."
+        },
+        {
+          "id": "L25Q02",
+          "question": "If you buy a car for £1,500 but find out it sits in Insurance Group 42, what is the most likely outcome?",
+          "options": [
+            "Your insurance will be cheap because the car itself is cheap",
+            "The insurance company will refuse to cover it",
+            "Your annual insurance premium will likely cost more than the car itself"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Insurance group is based on the car's engine, power, and parts cost — not its age or purchase price. A young driver insuring a Group 42 car could pay £3,000+ per year."
+        },
+        {
+          "id": "L25Q03",
+          "question": "True or False: The £54.85 maximum MOT fee guarantees your car will be legally certified for the road for the next 12 months.",
+          "options": [
+            "True",
+            "False — the fee only covers the inspection. You must pay separately for any repairs needed to pass the test"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The MOT fee only covers the mechanic's time to inspect the vehicle. Any repairs required to pass are charged separately."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "debt": {
+    "subtopics": {
+      "lesson-29": [
+        {
+          "id": "L29Q01",
+          "question": "How should you mentally categorise a standard UK Student Loan?",
+          "options": [
+            "As an urgent, high-priority debt that must be cleared to improve your credit score",
+            "As a toxic debt comparable to an unarranged overdraft",
+            "As a \"graduate tax\" that you only pay when earning above a specific threshold, which does not impact your credit file",
+            "As a standard personal loan that requires fixed monthly payments regardless of employment status"
+          ],
+          "correctAnswer": 2,
+          "explanation": "UK student loans do not appear on your credit file, repayments stop if your income drops below the threshold, and the balance is wiped after 30–40 years."
+        },
+        {
+          "id": "L29Q02",
+          "question": "What defines a \"depreciating asset\"?",
+          "options": [
+            "An asset that guarantees a fixed return on investment",
+            "An item that loses value over time, such as a car or a television",
+            "A property that goes up in value faster than inflation",
+            "A financial product regulated by the Financial Conduct Authority"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A depreciating asset is anything that loses value over time. Cars, electronics, and consumer goods are classic examples."
+        },
+        {
+          "id": "L29Q03",
+          "question": "What is the primary danger of only paying the \"minimum payment\" on a high-interest credit card?",
+          "options": [
+            "The bank will close your account immediately",
+            "Your interest rate will automatically double the following month",
+            "It keeps you in debt for decades, as the payment barely covers the compounding interest",
+            "You lose your Section 75 consumer protection rights"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Minimum payments are deliberately set low. On a £3,000 balance at 22% APR, paying only the minimum takes over 20 years and costs more than £4,000 in interest."
+        },
+        {
+          "id": "L29Q04",
+          "question": "Following the 2020 FCA rule changes, what is the typical interest rate for an overdraft at a major UK high street bank?",
+          "options": [
+            "0%",
+            "5% to 10%",
+            "15% to 20%",
+            "Approximately 39.9%"
+          ],
+          "correctAnswer": 3,
+          "explanation": "The 2020 FCA reforms replaced complex overdraft fees with a single APR. Most major banks settled on approximately 39.9% — higher than most credit cards."
+        },
+        {
+          "id": "L29Q05",
+          "question": "Why is a mortgage generally considered \"good\" debt?",
+          "options": [
+            "The government pays the interest on your behalf",
+            "You are leveraging a low-interest loan to secure a long-term, appreciating asset",
+            "Mortgage interest is legally capped at 1% in the UK",
+            "It allows you to use your property as collateral for payday loans"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A mortgage lets you control a valuable, historically appreciating asset with a relatively small initial deposit while building equity over time."
+        }
+      ],
+      "lesson-30": [
+        {
+          "id": "L30Q01",
+          "question": "Before starting any payoff strategy, what must you do with your remaining debts?",
+          "options": [
+            "Consolidate them all into a high-interest personal loan",
+            "Set up direct debits to ensure the minimum payment is met on every single account",
+            "Stop paying the smaller debts entirely to focus cash on the largest one",
+            "Write to the FCA asking for debt forgiveness"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Missing minimum payments causes default charges and credit file damage. Always protect every account with a direct debit before applying your extra cash to any strategy."
+        },
+        {
+          "id": "L30Q02",
+          "question": "Which statement best describes the Avalanche Method?",
+          "options": [
+            "Paying off debts in order of smallest balance to largest balance",
+            "Moving all your debts to a payday lender",
+            "Targeting the debt with the highest interest rate (APR) first, regardless of the balance",
+            "Only paying the minimum payments until the debt is cleared by inflation"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The Avalanche Method is mathematically optimal — it prioritises the most expensive debt first, minimising total interest paid."
+        },
+        {
+          "id": "L30Q03",
+          "question": "Why is the Snowball Method often successful, despite being mathematically more expensive than the Avalanche Method?",
+          "options": [
+            "It automatically improves your credit score faster",
+            "It triggers government debt relief schemes",
+            "It provides early, psychological victories by completely clearing smaller accounts quickly, maintaining motivation",
+            "It eliminates the need to pay interest entirely"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Clearing small debts quickly provides dopamine-driven wins that keep people motivated to continue — often more effective in practice than the mathematically superior Avalanche."
+        },
+        {
+          "id": "L30Q04",
+          "question": "What is the main danger of a 0% Balance Transfer Credit Card?",
+          "options": [
+            "They are completely unregulated in the UK",
+            "Missing a minimum payment usually results in the immediate cancellation of the 0% promotional rate",
+            "They require you to secure the debt against your home",
+            "You are not allowed to pay off the debt before the 0% period ends"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A single missed minimum payment typically triggers the loss of the 0% promotional rate, reverting the balance to the standard punitive APR immediately."
+        },
+        {
+          "id": "L30Q05",
+          "question": "If you cannot afford even the minimum payments on your debts, what is the best course of action in the UK?",
+          "options": [
+            "Take out a payday loan to cover the shortfall",
+            "Ignore the letters — the debt will be wiped after 12 months",
+            "Pay a private debt management company to negotiate for you",
+            "Contact a free, independent charity like StepChange or Citizens Advice immediately"
+          ],
+          "correctAnswer": 3,
+          "explanation": "When you cannot cover minimum payments, budgeting strategies will not work. Free charities like StepChange have legal tools to negotiate with creditors and stop interest accruing."
+        }
+      ],
+      "lesson-31": [
+        {
+          "id": "L31Q01",
+          "question": "What is the \"Golden Rule\" regarding debt advice in the UK, according to MoneyHelper and MoneySavingExpert?",
+          "options": [
+            "You must pay a commercial company to ensure you get the best legal protection",
+            "You should never pay for debt advice — always use a free, funded charity",
+            "You should only take advice from your current bank manager",
+            "You must file for bankruptcy before anyone will give you advice"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Free debt charities are funded by a levy on the financial services industry. Commercial companies charge fees that eat into the money available to repay debts."
+        },
+        {
+          "id": "L31Q02",
+          "question": "Which free UK organisation is best known for offering holistic, face-to-face support, especially if your debt is tied up with complex housing or benefit issues?",
+          "options": [
+            "Citizens Advice",
+            "National Debtline",
+            "StepChange Debt Charity",
+            "The Financial Conduct Authority"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Citizens Advice offers face-to-face support in local branches and handles complex situations where debt intersects with housing, benefits, or employment issues."
+        },
+        {
+          "id": "L31Q03",
+          "question": "What is the standard \"Breathing Space\" scheme?",
+          "options": [
+            "A 12-month period where the government pays your debts for you",
+            "A 60-day period of legal protection where creditors freeze interest, halt fees, and stop contacting you",
+            "A tool that permanently wipes all your debt without affecting your credit score",
+            "A mandatory mediation session with your creditors"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The Debt Respite Scheme (Breathing Space) grants 60 days of legal protection from creditor contact, interest, and fees while you set up a permanent solution."
+        },
+        {
+          "id": "L31Q04",
+          "question": "What happens during the \"Standard Financial Statement (SFS)\" step of debt counselling?",
+          "options": [
+            "The charity forces you to sell your car and electronics",
+            "The advisor judges your past spending habits to determine if you deserve help",
+            "The advisor helps you create a detailed, industry-recognised budget to prove exactly what you can realistically afford to pay creditors",
+            "You are legally bound to pay your creditors in full within 5 years"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The SFS is a standardised budgeting framework used to demonstrate to creditors what a debtor can genuinely afford after essential living costs."
+        },
+        {
+          "id": "L31Q05",
+          "question": "As of April 2024, what is a key feature of a Debt Relief Order (DRO) in the UK?",
+          "options": [
+            "It requires a £90 upfront fee",
+            "It is only available to homeowners",
+            "It is designed for those with low income and few assets, and the application fee was entirely abolished",
+            "It allows you to keep borrowing money from payday lenders while the order is active"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The government abolished the £90 DRO application fee in April 2024, making this debt resolution tool completely free to access for those who qualify."
+        }
+      ]
+    },
+    "topicQuiz": []
+  },
+  "windfalls": {
+    "subtopics": {
+      "lesson-34": [
+        {
+          "id": "L34Q01",
+          "question": "Why is the \"30-Day Pause\" highly recommended when receiving a windfall?",
+          "options": [
+            "To wait for interest rates to go up",
+            "To give yourself time to emotionally process the money and avoid impulsive decisions",
+            "Because banks legally freeze large deposits for a month"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Financial decisions made in an emotionally heightened state are often regretted. The pause shifts your thinking from short-term impulse to long-term planning."
+        },
+        {
+          "id": "L34Q02",
+          "question": "If you receive £150,000, what is the safest way to store it while you think, according to standard FSCS rules?",
+          "options": [
+            "Put it all in your daily current account",
+            "Invest it immediately in the stock market",
+            "Split it across at least two different banking groups to ensure it is fully protected"
+          ],
+          "correctAnswer": 2,
+          "explanation": "The FSCS protects up to £85,000 per person per banking group. Splitting amounts over this threshold across multiple institutions ensures full protection."
+        },
+        {
+          "id": "L34Q03",
+          "question": "What is a recommended strategy to stop yourself from blowing the whole amount while trying to be sensible?",
+          "options": [
+            "Hide the bank statements from yourself",
+            "Allocate a small, strict percentage (like 5%) as guilt-free spending money right away",
+            "Give it all to a friend to hold"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Immediately satisfying the urge to spend a small portion makes it psychologically easier to leave the rest untouched during the thinking period."
+        }
+      ],
+      "lesson-35": [
+        {
+          "id": "L35Q01",
+          "question": "What is the current maximum amount a UK adult can put into an ISA each tax year?",
+          "options": [
+            "£10,000",
+            "£20,000",
+            "£85,000"
+          ],
+          "correctAnswer": 1,
+          "explanation": "The annual ISA allowance is £20,000 per person per tax year. All growth, interest, and dividends inside an ISA are tax-free."
+        },
+        {
+          "id": "L35Q02",
+          "question": "You receive a windfall in January. You haven't used your ISA allowance yet. What happens to your unused allowance if you wait until May to invest it?",
+          "options": [
+            "It rolls over, so you will have £40,000 to use",
+            "You lose it. The tax year ends on April 5th, and allowances do not roll over.",
+            "You get charged a penalty fee by HMRC"
+          ],
+          "correctAnswer": 1,
+          "explanation": "ISA allowances are use-it-or-lose-it. If you do not use your £20,000 allowance before April 5th, it is gone permanently."
+        },
+        {
+          "id": "L35Q03",
+          "question": "Why is putting part of your windfall into a pension highly recommended for long-term growth?",
+          "options": [
+            "Because the government adds \"Tax Relief,\" effectively giving you free money to boost your contribution",
+            "Because pensions allow you to withdraw the cash at any age without penalty",
+            "Because pension growth is guaranteed to beat inflation"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Pension tax relief means the government refunds the income tax you originally paid on the money. For basic rate taxpayers, every £80 contributed becomes £100 in the pot."
+        },
+        {
+          "id": "L35Q04",
+          "question": "According to MoneySavingExpert, what should almost always be your very first financial priority before filling your ISA or pension?",
+          "options": [
+            "Buying a new car outright",
+            "Paying off expensive, high-interest debt like credit cards",
+            "Investing in individual company stocks"
+          ],
+          "correctAnswer": 1,
+          "explanation": "No safe investment reliably returns 15–40%, which is what high-interest debt costs you. Clearing bad debt first is the guaranteed risk-free return."
+        }
+      ]
+    },
+    "topicQuiz": []
+  }
+}
