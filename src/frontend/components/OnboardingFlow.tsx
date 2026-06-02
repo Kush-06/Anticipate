@@ -2,171 +2,259 @@ import { useState } from "react";
 import { useProfile } from "../context/ProfileContext";
 import type { UserProfile } from "../context/ProfileContext";
 import { AppIcon } from "./AppIcon";
+import { SageAvatar } from "./SageAvatar";
 
-// ProgressDots component for tracking progress steps
-function ProgressDots({ total, current }: { total: number; current: number }) {
-  return (
-    <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-      {Array.from({ length: total }, (_, i) => (
-        <div
-          key={i}
-          style={{
-            width: i === current ? 20 : 6,
-            height: 6,
-            borderRadius: 3,
-            background: i <= current ? "var(--p-coral)" : "var(--p-line)",
-            transition: "all 0.25s",
-          }}
-        />
-      ))}
-    </div>
-  );
+// A list of 3-4 specific lesson cards with their personal reasons, picked dynamically
+function getRecommendedSummary(
+  lifeStage: string,
+  livingSituation: string,
+  upcomingEvents: string[],
+  moneyWorry: string,
+  confidence: Record<string, number>,
+  studentLoan: string
+) {
+  const selected: { title: string; desc: string; topicId: string; subTopicId: string; icon: string }[] = [];
+
+  // 1. Tax confusion / low tax confidence -> Payslip lesson
+  if (moneyWorry === "I don't really understand how tax works" || confidence.payslip <= 2) {
+    selected.push({
+      title: "Decoding your payslip",
+      desc: "You said tax confuses you. Let's make sense of your tax codes and deductions first.",
+      topicId: "starting-work",
+      subTopicId: "lesson-01",
+      icon: "💼"
+    });
+  } else if (lifeStage === "I've just started my first job" || upcomingEvents.includes("Starting a new job soon")) {
+    selected.push({
+      title: "Decoding your payslip",
+      desc: "Since you're starting a new job, let's make sure you understand your very first paycheck.",
+      topicId: "starting-work",
+      subTopicId: "lesson-01",
+      icon: "💼"
+    });
+  }
+
+  // 2. Budgeting rule / Nothing left -> 50/30/20 Rule
+  if (moneyWorry === "I never seem to have anything left at the end of the month" || confidence.budgeting <= 2) {
+    selected.push({
+      title: "The 50/30/20 Rule",
+      desc: "A simple, stress-free way to split your income and make sure you have enough left for the fun stuff.",
+      topicId: "starting-work",
+      subTopicId: "lesson-03",
+      icon: "📊"
+    });
+  }
+
+  // 3. Debt payoff strategies -> Debt Spectrum
+  if (moneyWorry === "I've got debt I'm trying to deal with" || lifeStage === "I'm not working at the moment") {
+    selected.push({
+      title: "The Debt Spectrum",
+      desc: "Dealing with debt is exhausting. Let's review payoff strategies and how to get free help.",
+      topicId: "debt",
+      subTopicId: "lesson-29",
+      icon: "📉"
+    });
+  }
+
+  // 4. Renting -> Deposits & Guarantors
+  if (livingSituation?.includes("Renting — just moved in") || upcomingEvents.includes("Moving out for the first time")) {
+    selected.push({
+      title: "Deposits & Guarantors",
+      desc: "Since you're renting soon, let's make sure you protect your deposit and understand your contract.",
+      topicId: "renting",
+      subTopicId: "lesson-05",
+      icon: "🔑"
+    });
+  }
+
+  // 5. Mortgages / Buying -> Mortgages 101
+  if (livingSituation?.includes("Renting — been here a while") || upcomingEvents.includes("Thinking about buying a place")) {
+    selected.push({
+      title: "Mortgages 101",
+      desc: "You want to buy a place. Let's demystify how much you can borrow and interest tiers.",
+      topicId: "buying-a-home",
+      subTopicId: "lesson-08",
+      icon: "🏡"
+    });
+  }
+
+  // 6. Student Loan -> Student Loan Repayments
+  if (studentLoan === "Yes and it comes off my payslip" || studentLoan === "I'm not sure actually") {
+    selected.push({
+      title: "Student Loan Repayments",
+      desc: "Let's review why this functions more like an extra graduate tax than a traditional debt.",
+      topicId: "starting-work",
+      subTopicId: "lesson-04",
+      icon: "🎓"
+    });
+  }
+
+  // 7. Pension Auto-Enrolment -> Auto-Enrolment Pension
+  if (moneyWorry === "I have no idea what my pension is doing" || confidence.pensions <= 2) {
+    selected.push({
+      title: "The Auto-Enrolment Pension",
+      desc: "Workplace pensions can be confusing, but you're turning down free match money if you opt out.",
+      topicId: "starting-work",
+      subTopicId: "lesson-02",
+      icon: "🏦"
+    });
+  }
+
+  // 8. Investing 101 -> Stocks & Shares ISAs
+  if (moneyWorry === "I want to start investing but don't know where to begin" || confidence.investing <= 2) {
+    selected.push({
+      title: "Stocks & Shares ISAs",
+      desc: "You want to start investing. Let's learn how to grow your wealth tax-free with index funds.",
+      topicId: "investing-101",
+      subTopicId: "lesson-43",
+      icon: "📈"
+    });
+  }
+
+  // 9. Joint Accounts / Relationship Money -> The Money Talk
+  if (upcomingEvents.includes("Moving in with a partner")) {
+    selected.push({
+      title: "The Money Talk",
+      desc: "Moving in is exciting! Let's get on the same page about bills and joint accounts early.",
+      topicId: "relationships",
+      subTopicId: "lesson-12",
+      icon: "💑"
+    });
+  }
+
+  // 10. Maternity & Paternity Pay -> Maternity & Paternity Pay
+  if (upcomingEvents.includes("Having a baby or just had one")) {
+    selected.push({
+      title: "Maternity & Paternity Pay",
+      desc: "Let's walk through your legal rights to statutory pay and what allowances you can claim.",
+      topicId: "family",
+      subTopicId: "lesson-15",
+      icon: "👶"
+    });
+  }
+
+  // 11. Salary Negotiation -> Salary Negotiation
+  if (upcomingEvents.includes("Getting a pay rise or changing jobs")) {
+    selected.push({
+      title: "Salary Negotiation",
+      desc: "Prepare a killer business case to ask for what you're worth and get that raise.",
+      topicId: "career",
+      subTopicId: "lesson-18",
+      icon: "📈"
+    });
+  }
+
+  // 12. Car Finance -> Car Finance Demystified
+  if (upcomingEvents.includes("Buying a car")) {
+    selected.push({
+      title: "Car Finance Demystified",
+      desc: "Buying a car is a major purchase. Let's look at PCP, HP, and the true cost of driving.",
+      topicId: "cars",
+      subTopicId: "lesson-24",
+      icon: "🚗"
+    });
+  }
+
+  // Fallbacks: If we have fewer than 3 cards, let's add foundational building blocks
+  if (selected.length < 3) {
+    if (!selected.some((s) => s.subTopicId === "lesson-37")) {
+      selected.push({
+        title: "The Emergency Fund",
+        desc: "Your financial safety net. Let's build a buffer so unexpected bills don't throw you off.",
+        topicId: "foundations",
+        subTopicId: "lesson-37",
+        icon: "💡"
+      });
+    }
+  }
+  if (selected.length < 3) {
+    if (!selected.some((s) => s.subTopicId === "lesson-36")) {
+      selected.push({
+        title: "The Power of Compound Interest",
+        desc: "The ultimate wealth builder. See how small savings grow exponentially over time.",
+        topicId: "foundations",
+        subTopicId: "lesson-36",
+        icon: "💡"
+      });
+    }
+  }
+
+  // Limit to at most 4 items
+  return selected.slice(0, 4);
 }
 
 export function OnboardingFlow() {
   const { completeOnboarding } = useProfile();
   const [step, setStep] = useState(0);
 
-  // SECTION 1: ABOUT YOU
+  // States
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
-  const [ageRange, setAgeRange] = useState("");
-  const [education, setEducation] = useState("");
-
-  // SECTION 1 (CONT) & SECTION 2: LIVING SITUATION
-  const [employmentStatus, setEmploymentStatus] = useState("");
+  const [lifeStage, setLifeStage] = useState("");
   const [livingSituation, setLivingSituation] = useState("");
-  const [livingDuration, setLivingDuration] = useState("");
-  const [planningToMove, setPlanningToMove] = useState("");
-
-  // SECTION 3: FINANCIAL SITUATION
-  const [salary, setSalary] = useState("");
-  const [studentLoan, setStudentLoan] = useState("");
-  const [hasDebt, setHasDebt] = useState("");
-  const [financialProducts, setFinancialProducts] = useState<string[]>([]);
-
-  // SECTION 4: FINANCIAL KNOWLEDGE
-  const [understanding, setUnderstanding] = useState<Record<string, number>>({
+  const [upcomingEvents, setUpcomingEvents] = useState<string[]>([]);
+  const [moneyWorry, setMoneyWorry] = useState("");
+  const [confidence, setConfidence] = useState<Record<string, number>>({
     payslip: 3,
-    tax: 3,
     budgeting: 3,
     pensions: 3,
     investing: 3,
-    renting: 3,
-    buyingHome: 3,
-    selfAssessment: 3
+    renting: 3
   });
-  const [interestedTopics, setInterestedTopics] = useState<string[]>([]);
+  const [studentLoan, setStudentLoan] = useState("");
+  const [salaryInput, setSalaryInput] = useState("");
 
-  // SECTION 5: GOALS & MOTIVATIONS
-  const [motivation, setMotivation] = useState("");
-  const [upcomingEvents, setUpcomingEvents] = useState<string[]>([]);
-  const [usageFrequency, setUsageFrequency] = useState("");
-
-  const total = 6;
-
-  // Validation array for enabling step advancement
-  const canAdvance = [
-    // Step 0: Welcome & basic info
-    firstName.trim().length > 0 && email.trim().length > 0 && ageRange.length > 0 && education.length > 0,
-    // Step 1: Living & Employment
-    employmentStatus.length > 0 && livingSituation.length > 0 && livingDuration.length > 0 && planningToMove.length > 0,
-    // Step 2: Financial situation
-    studentLoan.length > 0 && hasDebt.length > 0,
-    // Step 3: Financial products
-    financialProducts.length > 0,
-    // Step 4: Financial knowledge
-    interestedTopics.length >= 1 && interestedTopics.length <= 3,
-    // Step 5: Goals & motivations
-    motivation.length > 0 && usageFrequency.length > 0,
-  ][step];
+  const totalSteps = 9; // Welcome (0), Q1-Q7 (1-7), Summary (8)
 
   const advance = () => {
-    if (step < total - 1) {
+    if (step < totalSteps - 1) {
       setStep((s) => s + 1);
       return;
     }
 
-    // Map new survey selections back to standard UserProfile fields for backward compatibility
-    let mappedCompany = "your employer";
-    if (employmentStatus === "Student") {
-      mappedCompany = "University";
-    } else if (employmentStatus === "Self-employed / Freelancer") {
-      mappedCompany = "Freelance Client";
-    } else if (employmentStatus === "Not currently employed") {
-      mappedCompany = "Job Search";
-    }
-
-    let mappedLifeStage = employmentStatus;
-    if (employmentStatus.includes("graduate")) {
-      mappedLifeStage = "Recent graduate";
-    }
-
-    const mappedSixMonthGoal = interestedTopics.slice(0, 2).join(" & ") || "Personal finance confidence";
-
-    const mappedConfidence = {
-      tax: understanding.tax || 3,
-      pensions: understanding.pensions || 3,
-      budgeting: understanding.budgeting || 3,
-      investing: understanding.investing || 3,
-      contracts: understanding.payslip || 3,
-    };
+    // Map selections back to UserProfile fields
+    const cleanSalary = salaryInput.trim().replace(/[^0-9.]/g, "") || "28000";
+    const mappedCompany = upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer";
 
     const profile: UserProfile = {
-      firstName: firstName.trim(),
-      email: email.trim(),
+      firstName: firstName.trim() || "Maya",
+      email: email.trim() || "maya@example.com",
       companyName: mappedCompany,
-      lifeStage: mappedLifeStage,
-      employmentType: employmentStatus,
-      sixMonthGoal: mappedSixMonthGoal,
-      upcomingEvents: upcomingEvents.filter((x) => x !== "None of the above"),
-      confidenceScores: mappedConfidence,
-      ageRange,
-      education,
-      livingSituation,
-      livingDuration,
-      planningToMove,
-      salary,
-      studentLoan,
-      financialProducts,
-      hasDebt,
-      interestedTopics,
-      motivation,
-      usageFrequency,
+      lifeStage: lifeStage,
+      employmentType: lifeStage,
+      sixMonthGoal: moneyWorry || "Personal finance confidence",
+      upcomingEvents: upcomingEvents.filter((x) => x !== "None of these right now"),
+      confidenceScores: {
+        tax: confidence.payslip,
+        pensions: confidence.pensions,
+        budgeting: confidence.budgeting,
+        investing: confidence.investing,
+        contracts: confidence.renting
+      },
+      livingSituation: livingSituation,
+      planningToMove: upcomingEvents.includes("Moving out for the first time") ? "Yes" : "No",
+      salary: cleanSalary,
+      studentLoan: studentLoan,
+      hasDebt: moneyWorry === "I've got debt I'm trying to deal with" ? "Yes" : "No",
+      interestedTopics: [moneyWorry],
+      motivation: "Improve general knowledge",
+      usageFrequency: "A few times a week"
     };
 
     completeOnboarding(profile);
   };
 
-  // Selection toggle helpers
-  const toggleFinancialProduct = (prod: string) => {
-    setFinancialProducts((prev) => {
-      if (prod === "None of the above") return ["None of the above"];
-      const filtered = prev.filter((x) => x !== "None of the above");
-      if (filtered.includes(prod)) {
-        return filtered.filter((x) => x !== prod);
-      } else {
-        return [...filtered, prod];
-      }
-    });
-  };
-
-  const toggleInterestedTopic = (topic: string) => {
-    setInterestedTopics((prev) => {
-      if (prev.includes(topic)) {
-        return prev.filter((x) => x !== topic);
-      }
-      if (prev.length >= 3) {
-        return prev;
-      }
-      return [...prev, topic];
-    });
+  const handleSelectSingle = (setter: (v: string) => void, val: string) => {
+    setter(val);
+    setTimeout(() => {
+      setStep((s) => s + 1);
+    }, 280);
   };
 
   const toggleUpcomingEvent = (evt: string) => {
     setUpcomingEvents((prev) => {
-      if (evt === "None of the above") return ["None of the above"];
-      const filtered = prev.filter((x) => x !== "None of the above");
+      if (evt === "None of these right now") return ["None of these right now"];
+      const filtered = prev.filter((x) => x !== "None of these right now");
       if (filtered.includes(evt)) {
         return filtered.filter((x) => x !== evt);
       } else {
@@ -175,24 +263,29 @@ export function OnboardingFlow() {
     });
   };
 
-  const setConfidenceScore = (key: string, val: number) => {
-    setUnderstanding((prev) => ({ ...prev, [key]: val }));
-  };
+  // Validators
+  const canAdvance = [
+    // Welcome / Info
+    firstName.trim().length > 0 && email.trim().length > 0,
+    // Q1
+    lifeStage.length > 0,
+    // Q2
+    livingSituation.length > 0,
+    // Q3 (Upcoming Events)
+    upcomingEvents.length > 0,
+    // Q4 (Money Worry)
+    moneyWorry.length > 0,
+    // Q5 (Confidence check)
+    true, // always valid to continue
+    // Q6 (Student Loan)
+    studentLoan.length > 0,
+    // Q7 (Salary)
+    true, // optional, can skip
+    // Summary
+    true
+  ][step];
 
-  // Reusable inline style objects
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    background: "var(--p-card)",
-    border: "1.5px solid var(--p-line)",
-    borderRadius: "var(--r-md)",
-    padding: "12px 14px",
-    fontSize: 15,
-    color: "var(--p-ink)",
-    outline: "none",
-    fontFamily: "var(--p-sans)",
-    transition: "border-color 0.15s",
-  };
-
+  // Styling helpers
   const questionTitleStyle: React.CSSProperties = {
     fontFamily: "var(--p-sans)",
     fontSize: 11,
@@ -200,13 +293,26 @@ export function OnboardingFlow() {
     letterSpacing: "0.08em",
     textTransform: "uppercase",
     color: "var(--p-ink-3)",
-    marginBottom: 8,
+    marginBottom: 8
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    background: "#fff",
+    border: "1.5px solid var(--p-line)",
+    borderRadius: "var(--r-md)",
+    padding: "12px 14px",
+    fontSize: 15,
+    color: "var(--p-ink)",
+    outline: "none",
+    fontFamily: "var(--p-sans)",
+    transition: "border-color 0.15s"
   };
 
   const rowChoiceStyle = (active: boolean): React.CSSProperties => ({
     width: "100%",
     border: active ? "2.2px solid var(--p-coral)" : "1.5px solid var(--p-line)",
-    background: active ? "var(--p-coral-tint)" : "var(--p-card)",
+    background: active ? "var(--p-coral-tint)" : "#fff",
     borderRadius: 12,
     padding: "12px 16px",
     fontSize: 14,
@@ -218,412 +324,328 @@ export function OnboardingFlow() {
     transition: "all 0.15s ease",
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-between"
   });
 
-  const grid2x2Style: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: 8,
-  };
+  // Get recommendations for closing slide
+  const recSummary = getRecommendedSummary(
+    lifeStage,
+    livingSituation,
+    upcomingEvents,
+    moneyWorry,
+    confidence,
+    studentLoan
+  );
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "var(--p-bg)", overflow: "hidden" }}>
       {/* Onboarding Header */}
-      <div style={{ padding: "max(24px, env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
+      <div style={{ padding: "max(24px, env(safe-area-inset-top)) 20px 16px", flexShrink: 0, borderBottom: "1px solid var(--p-line-2)", background: "var(--p-bg)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
           <div style={{ fontFamily: "var(--p-display)", fontWeight: 800, fontSize: 20, letterSpacing: "-0.03em", textTransform: "lowercase", color: "var(--p-ink)" }}>
             anticipate.
           </div>
-          <div style={{ fontFamily: "var(--p-mono)", fontSize: 10, letterSpacing: "0.02em", color: "var(--p-ink-3)" }}>
-            Section {step === 0 ? 1 : step === 1 ? "1 & 2" : step === 2 || step === 3 ? 3 : step === 4 ? 4 : 5} of 5
+          <div style={{ fontFamily: "var(--p-mono)", fontSize: 9.5, letterSpacing: "0.02em", color: "var(--p-ink-3)", textTransform: "uppercase" }}>
+            {step === 0 ? "Welcome" : step === 8 ? "Tailored plan" : `Question ${step} of 7`}
           </div>
         </div>
-        <ProgressDots total={total} current={step} />
+        {/* Step indicator bar */}
+        <div style={{ display: "flex", gap: 5, justifyContent: "center", marginTop: 8 }}>
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: 4,
+                borderRadius: 2,
+                background: i <= step ? "var(--p-coral)" : "var(--p-line)",
+                transition: "all 0.25s"
+              }}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Main Survey Scroll Area */}
-      <div className="anp-scroll" style={{ flex: 1, padding: "0 20px 24px" }}>
+      {/* Main Conversation Scroll Area */}
+      <div className="anp-scroll" style={{ flex: 1, padding: "20px 20px 24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           
-          {/* STEP 0: ABOUT YOU (PART 1) */}
-          {step === 0 && (
-            <>
-              <div>
-                <h2 style={{ fontFamily: "var(--p-display)", fontWeight: 800, fontSize: 25, letterSpacing: "-0.025em", margin: "0 0 6px", color: "var(--p-ink)" }}>
-                  Onboarding
-                </h2>
-                <p style={{ fontSize: 13, color: "var(--p-ink-2)", lineHeight: 1.45, margin: 0 }}>
-                  Help us personalise your experience by completing this onboarding.
-                </p>
+          {/* SAGE CHAT BUBBLE (Steps 0 to 7) */}
+          {step < 8 && (
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 8 }}>
+              <SageAvatar size={42} />
+              <div style={{
+                background: "#fff",
+                border: "1.5px solid var(--p-line)",
+                borderRadius: "0px 16px 16px 16px",
+                padding: "14px 16px",
+                fontSize: 14.5,
+                lineHeight: 1.45,
+                color: "var(--p-ink)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                flex: 1,
+                fontFamily: "var(--p-sans)"
+              }}>
+                {step === 0 && "Before we get started, I want to make sure everything I show you is actually relevant to you. I'm going to ask you a few things — no wrong answers, and you can update any of this later."}
+                {step === 1 && "So first things first — what best describes where you are right now?"}
+                {step === 2 && "Where are you living at the moment?"}
+                {step === 3 && "Is anything big coming up for you in the next few months? Pick everything that applies."}
+                {step === 4 && "Be honest — what's the thing that stresses you out most about money right now?"}
+                {step === 5 && "Quick one — how would you rate yourself on each of these? Be honest, this just helps me skip stuff you already know."}
+                {step === 6 && "Did you go to university and take out a student loan?"}
+                {step === 7 && "Last one and completely optional — if you drop in your rough take home salary, I can make the lessons use your actual numbers instead of hypotheticals. So instead of 'imagine you earn £30,000' I'll just say what you actually take home."}
               </div>
+            </div>
+          )}
 
-              {/* First Name Input */}
+          {/* STEP 0: Welcome & Profile Info */}
+          {step === 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <label style={questionTitleStyle}>What is your first name?</label>
                 <input style={inputStyle} placeholder="e.g. Maya" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
               </div>
 
-              {/* Email Input */}
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <label style={questionTitleStyle}>What is your email address?</label>
                 <input style={inputStyle} type="email" placeholder="e.g. maya@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
-
-              {/* Age Range Grid */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your age range?</label>
-                <div style={grid2x2Style}>
-                  {["18-21", "22-25", "26-30", "30+"].map((age) => (
-                    <button key={age} style={rowChoiceStyle(ageRange === age)} onClick={() => setAgeRange(age)}>
-                      {age}
-                      {ageRange === age && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Education Stack */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your highest level of education?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Currently at university",
-                    "Undergraduate degree",
-                    "Postgraduate degree",
-                    "Did not attend university"
-                  ].map((edu) => (
-                    <button key={edu} style={rowChoiceStyle(education === edu)} onClick={() => setEducation(edu)}>
-                      {edu}
-                      {education === edu && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
-          {/* STEP 1: ABOUT YOU & LIVING SITUATION */}
+          {/* STEP 1: Q1 - Life Stage */}
           {step === 1 && (
-            <>
-              {/* Employment Status */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your current employment status?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Student",
-                    "Recent graduate (less than 1 year)",
-                    "Employed (1-2 years)",
-                    "Employed (3+ years)",
-                    "Self-employed / Freelancer",
-                    "Not currently employed"
-                  ].map((emp) => (
-                    <button key={emp} style={rowChoiceStyle(employmentStatus === emp)} onClick={() => setEmploymentStatus(emp)}>
-                      {emp}
-                      {employmentStatus === emp && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Living Situation */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your current living situation?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Living with family",
-                    "Student accommodation",
-                    "Renting (private)",
-                    "Own my home",
-                    "Other"
-                  ].map((living) => (
-                    <button key={living} style={rowChoiceStyle(livingSituation === living)} onClick={() => setLivingSituation(living)}>
-                      {living}
-                      {livingSituation === living && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Living Duration */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>How long have you been in your current living situation?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Less than 6 months",
-                    "6 months to 1 year",
-                    "1-3 years",
-                    "3+ years"
-                  ].map((dur) => (
-                    <button key={dur} style={rowChoiceStyle(livingDuration === dur)} onClick={() => setLivingDuration(dur)}>
-                      {dur}
-                      {livingDuration === dur && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Planning to Move Grid */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>Are you planning to move in the next 6 months?</label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                  {["Yes", "No", "Unsure"].map((move) => (
-                    <button key={move} style={{ ...rowChoiceStyle(planningToMove === move), justifyContent: "center" }} onClick={() => setPlanningToMove(move)}>
-                      {move}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "I'm still at university", val: "I'm still at university" },
+                { label: "I've just started my first job", val: "I've just started my first job" },
+                { label: "I've been working for a year or two", val: "I've been working for a year or two" },
+                { label: "I'm self employed or doing freelance work", val: "I'm self employed or doing freelance work" },
+                { label: "I'm not working at the moment", val: "I'm not working at the moment" }
+              ].map((opt) => (
+                <button key={opt.val} style={rowChoiceStyle(lifeStage === opt.val)} onClick={() => handleSelectSingle(setLifeStage, opt.val)}>
+                  <span>{opt.label}</span>
+                  {lifeStage === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
+                </button>
+              ))}
+            </div>
           )}
 
-          {/* STEP 2: FINANCIAL SITUATION */}
+          {/* STEP 2: Q2 - Living Situation */}
           {step === 2 && (
-            <>
-              {/* Gross Salary */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your approximate annual gross salary? (optional)</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Under £20,000",
-                    "£20,000 - £30,000",
-                    "£30,000 - £40,000",
-                    "£40,000 - £50,000",
-                    "Over £50,000",
-                    "Not applicable / Prefer not to say"
-                  ].map((sal) => (
-                    <button key={sal} style={rowChoiceStyle(salary === sal)} onClick={() => setSalary(sal)}>
-                      {sal}
-                      {salary === sal && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Student Loan */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>Do you currently have a student loan?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Yes, it is being deducted from my salary",
-                    "Yes, but I have not started repaying yet",
-                    "No",
-                    "Not sure"
-                  ].map((loan) => (
-                    <button key={loan} style={rowChoiceStyle(studentLoan === loan)} onClick={() => setStudentLoan(loan)}>
-                      <span style={{ maxWidth: "88%" }}>{loan}</span>
-                      {studentLoan === loan && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Outstanding Debt */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>Do you have outstanding debt? <span style={{ textTransform: "lowercase", fontWeight: 400 }}>(excl. student loans & mortgages)</span></label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Yes",
-                    "No",
-                    "Prefer not to say"
-                  ].map((debt) => (
-                    <button key={debt} style={rowChoiceStyle(hasDebt === debt)} onClick={() => setHasDebt(debt)}>
-                      {debt}
-                      {hasDebt === debt && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "At home with family", val: "At home with family" },
+                { label: "Renting — just moved in or about to", val: "Renting — just moved in or about to" },
+                { label: "Renting — been here a while", val: "Renting — been here a while" },
+                { label: "I own my place", val: "I own my place" },
+                { label: "Student accommodation", val: "Student accommodation" }
+              ].map((opt) => (
+                <button key={opt.val} style={rowChoiceStyle(livingSituation === opt.val)} onClick={() => handleSelectSingle(setLivingSituation, opt.val)}>
+                  <span>{opt.label}</span>
+                  {livingSituation === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
+                </button>
+              ))}
+            </div>
           )}
 
-          {/* STEP 3: FINANCIAL PRODUCTS (MULTI-SELECT) */}
+          {/* STEP 3: Q3 - Upcoming Events (Multi-Select) */}
           {step === 3 && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <label style={questionTitleStyle}>Do you currently have any of the following? (Select all that apply)</label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {[
-                  "A pension",
-                  "A Stocks and Shares ISA",
-                  "A Lifetime ISA (LISA)",
-                  "A Help to Buy ISA",
-                  "Premium Bonds",
-                  "None of the above"
-                ].map((prod) => {
-                  const active = financialProducts.includes(prod);
-                  return (
-                    <button key={prod} style={rowChoiceStyle(active)} onClick={() => toggleFinancialProduct(prod)}>
-                      {prod}
-                      {active && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  );
-                })}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                "Starting a new job soon",
+                "Moving out for the first time",
+                "Thinking about buying a place",
+                "Moving in with a partner",
+                "Having a baby or just had one",
+                "Getting a pay rise or changing jobs",
+                "Buying a car",
+                "None of these right now"
+              ].map((evt) => {
+                const active = upcomingEvents.includes(evt);
+                return (
+                  <button key={evt} style={rowChoiceStyle(active)} onClick={() => toggleUpcomingEvent(evt)}>
+                    <span>{evt}</span>
+                    {active && <AppIcon name="check" size={14} stroke={2.4} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* STEP 4: Q4 - Money Worry */}
+          {step === 4 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "I don't really understand how tax works", val: "I don't really understand how tax works" },
+                { label: "I never seem to have anything left at the end of the month", val: "I never seem to have anything left at the end of the month" },
+                { label: "I've got debt I'm trying to deal with", val: "I've got debt I'm trying to deal with" },
+                { label: "I don't know if I'm saving enough or doing it right", val: "I don't know if I'm saving enough or doing it right" },
+                { label: "I have no idea what my pension is doing", val: "I have no idea what my pension is doing" },
+                { label: "I want to start investing but don't know where to begin", val: "I want to start investing but don't know where to begin" },
+                { label: "I feel like I'm missing out on money the government owes me", val: "I feel like I'm missing out on money the government owes me" },
+                { label: "Honestly I don't know what I don't know", val: "Honestly I don't know what I don't know" }
+              ].map((opt) => (
+                <button key={opt.val} style={rowChoiceStyle(moneyWorry === opt.val)} onClick={() => handleSelectSingle(setMoneyWorry, opt.val)}>
+                  <span style={{ maxWidth: "88%" }}>{opt.label}</span>
+                  {moneyWorry === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* STEP 5: Q5 - Confidence Matrix */}
+          {step === 5 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {[
+                { key: "payslip", label: "Understanding your payslip and tax" },
+                { key: "budgeting", label: "Budgeting and managing money day to day" },
+                { key: "pensions", label: "Pensions and retirement saving" },
+                { key: "investing", label: "Investing and ISAs" },
+                { key: "renting", label: "Your rights as a renter or buyer" }
+              ].map(({ key, label }) => {
+                const rating = confidence[key] || 3;
+                return (
+                  <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1.5px solid var(--p-line)", borderRadius: 14, padding: "12px 14px" }}>
+                    <span style={{ fontSize: 13, color: "var(--p-ink-2)", fontWeight: 600, fontFamily: "var(--p-sans)" }}>{label}</span>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "space-between", marginTop: 4 }}>
+                      {[1, 2, 3, 4, 5].map((val) => {
+                        const isSelected = val <= rating;
+                        const isExact = val === rating;
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => setConfidence((prev) => ({ ...prev, [key]: val }))}
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: "50%",
+                              border: "none",
+                              cursor: "pointer",
+                              background: isExact ? "var(--p-coral)" : isSelected ? "var(--p-coral-tint)" : "var(--p-line)",
+                              color: isExact ? "#fff" : "var(--p-ink-2)",
+                              fontWeight: 700,
+                              fontSize: 12,
+                              fontFamily: "var(--p-mono)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.1s ease"
+                            }}
+                          >
+                            {val}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* STEP 6: Q6 - Student Loan */}
+          {step === 6 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "Yes and it comes off my payslip", val: "Yes and it comes off my payslip" },
+                { label: "Yes but I haven't started repaying yet", val: "Yes but I haven't started repaying yet" },
+                { label: "No I didn't take one out", val: "No I didn't take one out" },
+                { label: "I'm not sure actually", val: "I'm not sure actually" }
+              ].map((opt) => (
+                <button key={opt.val} style={rowChoiceStyle(studentLoan === opt.val)} onClick={() => handleSelectSingle(setStudentLoan, opt.val)}>
+                  <span>{opt.label}</span>
+                  {studentLoan === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* STEP 7: Q7 - Salary Input */}
+          {step === 7 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <label style={questionTitleStyle}>Take home salary (optional)</label>
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: 14, top: 12, color: "var(--p-ink-3)", fontWeight: 600, fontSize: 16 }}>£</span>
+                  <input
+                    style={{ ...inputStyle, paddingLeft: 28 }}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="e.g. 28,000"
+                    value={salaryInput}
+                    onChange={(e) => setSalaryInput(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           )}
 
-          {/* STEP 4: FINANCIAL KNOWLEDGE */}
-          {step === 4 && (
-            <>
-              {/* Understanding matrix */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div>
-                  <label style={questionTitleStyle}>How would you rate your understanding of the following?</label>
-                  <p style={{ fontSize: 12, color: "var(--p-ink-3)", margin: 0, fontFamily: "var(--p-sans)" }}>1 = No understanding · 5 = Very confident</p>
+          {/* STEP 8: CLOSING MESSAGE / PERSOMALISATION SUMMARY */}
+          {step === 8 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <SageAvatar size={46} />
+                <div style={{
+                  background: "#fff",
+                  border: "1.5px solid var(--p-line)",
+                  borderRadius: "0px 16px 16px 16px",
+                  padding: "14px 16px",
+                  fontSize: 14.5,
+                  lineHeight: 1.45,
+                  color: "var(--p-ink)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                  flex: 1,
+                  fontFamily: "var(--p-sans)"
+                }}>
+                  Ok <b>{firstName || "Maya"}</b>. Based on what you've told me, here's where I'm starting you off.
                 </div>
+              </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, background: "var(--p-card)", border: "1.5px solid var(--p-line)", borderRadius: 18, padding: "16px 14px" }}>
-                  {[
-                    { key: "payslip", label: "How your payslip works" },
-                    { key: "tax", label: "Income tax and National Insurance" },
-                    { key: "budgeting", label: "Budgeting and saving" },
-                    { key: "pensions", label: "Pensions" },
-                    { key: "investing", label: "Investing" },
-                    { key: "renting", label: "Renting and tenancy rights" },
-                    { key: "buyingHome", label: "Buying a home" },
-                    { key: "selfAssessment", label: "Self-assessment tax returns" },
-                  ].map(({ key, label }) => (
-                    <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 10, borderBottom: "1px solid var(--p-line-2)", lastChild: { borderBottom: "none" } } as React.CSSProperties}>
-                      <span style={{ fontSize: 13, color: "var(--p-ink-2)", fontWeight: 600 }}>{label}</span>
-                      <div style={{ display: "flex", gap: 10, justifyContent: "space-between", padding: "2px 0" }}>
-                        {[1, 2, 3, 4, 5].map((rate) => {
-                          const isSelected = rate <= understanding[key];
-                          return (
-                            <button
-                              key={rate}
-                              onClick={() => setConfidenceScore(key, rate)}
-                              style={{
-                                width: 34,
-                                height: 34,
-                                borderRadius: "50%",
-                                border: "none",
-                                cursor: "pointer",
-                                background: isSelected ? "var(--p-coral)" : "var(--p-line)",
-                                color: isSelected ? "#fff" : "var(--p-ink-2)",
-                                fontWeight: 700,
-                                fontSize: 13,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease",
-                              }}
-                            >
-                              {rate}
-                            </button>
-                          );
-                        })}
+              {/* List of recommended cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+                {recSummary.map((card, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "#fff",
+                      border: "1.5px solid var(--p-line)",
+                      borderRadius: 18,
+                      padding: "16px 16px",
+                      display: "flex",
+                      gap: 14,
+                      alignItems: "flex-start",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.02)"
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 12,
+                        background: "var(--p-coral-tint)",
+                        color: "var(--p-coral)",
+                        fontSize: 18,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0
+                      }}
+                    >
+                      {card.icon}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>
+                        {card.title}
+                      </div>
+                      <div style={{ fontSize: 12.5, color: "var(--p-ink-2)", lineHeight: 1.4, fontFamily: "var(--p-sans)" }}>
+                        {card.desc}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-
-              {/* Most Interested Topics */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>Which financial topics are you most interested in learning about? (Select up to 3)</label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {[
-                    "Understanding my payslip",
-                    "Tax and PAYE",
-                    "Budgeting",
-                    "Saving and ISAs",
-                    "Pensions",
-                    "Investing",
-                    "Renting",
-                    "Buying a home",
-                    "Debt management",
-                    "Self-employment / freelancing",
-                    "Student finance"
-                  ].map((topic) => {
-                    const active = interestedTopics.includes(topic);
-                    return (
-                      <button
-                        key={topic}
-                        style={{
-                          ...rowChoiceStyle(active),
-                          width: "auto",
-                          padding: "8px 14px",
-                          borderRadius: 20,
-                          fontSize: 12,
-                          gap: 6
-                        }}
-                        onClick={() => toggleInterestedTopic(topic)}
-                      >
-                        {topic}
-                        {active && <AppIcon name="check" size={12} stroke={2.4} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* STEP 5: GOALS AND MOTIVATIONS */}
-          {step === 5 && (
-            <>
-              {/* Primary Motivation */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your primary motivation for using Anticipate?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "I have a specific financial event coming up",
-                    "I want to improve my general financial knowledge",
-                    "I want to make sure I'm not missing out on money",
-                    "I was recommended it by someone",
-                    "Other"
-                  ].map((mot) => (
-                    <button key={mot} style={rowChoiceStyle(motivation === mot)} onClick={() => setMotivation(mot)}>
-                      <span style={{ maxWidth: "88%" }}>{mot}</span>
-                      {motivation === mot && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Upcoming Life Events */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What upcoming life events apply to you? (Select all that apply)</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Starting a new job",
-                    "Moving out for the first time",
-                    "Moving in with a partner",
-                    "Buying a property",
-                    "Having a child",
-                    "Changing jobs or receiving a pay rise",
-                    "None of the above"
-                  ].map((evt) => {
-                    const active = upcomingEvents.includes(evt);
-                    return (
-                      <button key={evt} style={rowChoiceStyle(active)} onClick={() => toggleUpcomingEvent(evt)}>
-                        {evt}
-                        {active && <AppIcon name="check" size={14} stroke={2.4} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Expected Usage Frequency */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>How often do you expect to use Anticipate?</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    "Daily",
-                    "A few times a week",
-                    "Once a week",
-                    "A few times a month",
-                    "Occasionally as needed"
-                  ].map((freq) => (
-                    <button key={freq} style={rowChoiceStyle(usageFrequency === freq)} onClick={() => setUsageFrequency(freq)}>
-                      {freq}
-                      {usageFrequency === freq && <AppIcon name="check" size={14} stroke={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
         </div>
@@ -650,30 +672,49 @@ export function OnboardingFlow() {
             justifyContent: "center",
             gap: 8,
             boxShadow: canAdvance ? "0 4px 0 #08070a" : "none",
-            transition: "all 0.15s ease",
+            transition: "all 0.15s ease"
           }}
         >
-          {step < total - 1 ? "Continue" : "Let's go"}
+          {step === 0 ? "Let's start" : step === 8 ? "Let's go" : "Continue"}
           <AppIcon name="arrowRight" size={16} stroke={2} />
         </button>
-        {step > 0 && (
-          <button
-            onClick={() => setStep((s) => s - 1)}
-            style={{
-              width: "100%",
-              marginTop: 10,
-              padding: "10px",
-              background: "transparent",
-              border: "none",
-              color: "var(--p-ink-3)",
-              fontFamily: "var(--p-sans)",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            Back
-          </button>
-        )}
+        
+        {/* Back and Skip buttons */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
+          {step > 0 && step < 8 && (
+            <button
+              onClick={() => setStep((s) => s - 1)}
+              style={{
+                padding: "8px 12px",
+                background: "transparent",
+                border: "none",
+                color: "var(--p-ink-3)",
+                fontFamily: "var(--p-sans)",
+                fontSize: 13,
+                cursor: "pointer"
+              }}
+            >
+              Back
+            </button>
+          )}
+          {step === 7 && (
+            <button
+              onClick={advance}
+              style={{
+                padding: "8px 12px",
+                background: "transparent",
+                border: "none",
+                color: "var(--p-coral)",
+                fontFamily: "var(--p-sans)",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer"
+              }}
+            >
+              Skip
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
