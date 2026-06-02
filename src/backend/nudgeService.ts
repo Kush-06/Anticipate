@@ -5,7 +5,7 @@ import type { AiNudge, NudgeTriggerType, NudgeStatus } from '../shared/types'
 // For now it logs so the integration point is clearly visible during development.
 export async function sendPushNudge(nudge: AiNudge): Promise<void> {
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
+     
     console.info('[nudge] would send push notification', nudge.id, nudge.questionText)
   }
   // TODO: integrate @capacitor/push-notifications here

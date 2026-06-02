@@ -4,27 +4,27 @@ import { topics } from "../data/topics";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { TopicIcon } from "./TopicIcon";
-import { useProfile } from "../context/ProfileContext";
+import { useProfile, type UserProfile } from "../context/ProfileContext";
 import { supabase } from "@backend/supabaseClient";
 import { fetchStoryFacts } from "@backend/profileService";
 import { createNudge, sendPushNudge } from "@backend/nudgeService";
 import { isTopicOffProfile, buildNudgeQuestion } from "../utils/offProfileDetector";
 
-function estimateNetPay(gross: number, profile: any): number {
+function estimateNetPay(gross: number, profile: UserProfile | null | undefined): number {
   const personalAllowance = 12570;
   const basicLimit = 50270;
 
   // 1. Tax
-  let taxable = Math.max(0, gross - personalAllowance);
-  let basicTaxable = Math.min(taxable, basicLimit - personalAllowance);
-  let higherTaxable = Math.max(0, gross - basicLimit);
-  let tax = (basicTaxable * 0.2) + (higherTaxable * 0.4);
+  const taxable = Math.max(0, gross - personalAllowance);
+  const basicTaxable = Math.min(taxable, basicLimit - personalAllowance);
+  const higherTaxable = Math.max(0, gross - basicLimit);
+  const tax = (basicTaxable * 0.2) + (higherTaxable * 0.4);
 
   // 2. National Insurance (roughly 8% on earnings above £12,570 up to £50,270, 2% above)
-  let niable = Math.max(0, gross - 12570);
-  let basicNiable = Math.min(niable, basicLimit - 12570);
-  let higherNiable = Math.max(0, gross - basicLimit);
-  let ni = (basicNiable * 0.08) + (higherNiable * 0.02);
+  const niable = Math.max(0, gross - 12570);
+  const basicNiable = Math.min(niable, basicLimit - 12570);
+  const higherNiable = Math.max(0, gross - basicLimit);
+  const ni = (basicNiable * 0.08) + (higherNiable * 0.02);
 
   // 3. Student Loan
   let studentLoanDeduction = 0;
@@ -34,14 +34,14 @@ function estimateNetPay(gross: number, profile: any): number {
   }
 
   // 4. Pension (5% on earnings above £6,240 up to £50,270)
-  let pensionBase = Math.max(0, Math.min(gross, basicLimit) - 6240);
-  let pension = pensionBase * 0.05;
+  const pensionBase = Math.max(0, Math.min(gross, basicLimit) - 6240);
+  const pension = pensionBase * 0.05;
 
-  let netAnnual = gross - tax - ni - studentLoanDeduction - pension;
+  const netAnnual = gross - tax - ni - studentLoanDeduction - pension;
   return Math.round(netAnnual / 12);
 }
 
-function customizeLessonText(content: string, subTopicId: string, salary: number, profile: any): string {
+function customizeLessonText(content: string, subTopicId: string, salary: number, profile: UserProfile | null | undefined): string {
   let text = content;
   const formattedSalary = "£" + salary.toLocaleString("en-GB", { maximumFractionDigits: 0 });
 
@@ -197,7 +197,7 @@ export function PlayfulSubTopic() {
       if (nudge) await sendPushNudge(nudge);
     })();
   // Intentionally only runs on first mount for this lesson
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [topicId]);
 
   const topic = topics.find((t) => t.id === topicId);

@@ -31,19 +31,14 @@ function TypewriterMessage({
   const [displayedLengths, setDisplayedLengths] = useState<number[]>(paragraphs.map(() => 0));
   const [isTyping, setIsTyping] = useState(true);
 
-  // Initialize once on mount
-  useEffect(() => {
-    setCurrentParagraphIdx(0);
-    setDisplayedLengths(paragraphs.map(() => 0));
-    setIsTyping(true);
-  }, []);
-
   useEffect(() => {
     if (!isTyping) return;
     if (currentParagraphIdx >= paragraphs.length) {
-      setIsTyping(false);
-      onComplete();
-      return;
+      const timer = setTimeout(() => {
+        setIsTyping(false);
+        onComplete();
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const targetText = paragraphs[currentParagraphIdx];
@@ -163,10 +158,6 @@ export function OnboardingFlow() {
   const totalSteps = 10;
 
   useEffect(() => {
-    setTypingComplete(false);
-  }, [step]);
-
-  useEffect(() => {
     if (screen === "welcome") {
       const timer = setTimeout(() => {
         setAnimateWelcome(true);
@@ -177,7 +168,6 @@ export function OnboardingFlow() {
 
   useEffect(() => {
     if (isAnalyzing) {
-      setAnalyzingText("Looking at where you are right now...");
       const t1 = setTimeout(() => {
         setAnalyzingText("Targeting your main money worries...");
       }, 1100);
@@ -193,16 +183,19 @@ export function OnboardingFlow() {
 
   const advance = async () => {
     if (step === 8) {
+      setAnalyzingText("Looking at where you are right now...");
       setIsAnalyzing(true);
       setTimeout(() => {
         setIsAnalyzing(false);
         setStep(9);
+        setTypingComplete(false);
       }, 3500);
       return;
     }
 
     if (step < totalSteps - 1) {
       setStep((s) => s + 1);
+      setTypingComplete(false);
       return;
     }
 
@@ -1106,7 +1099,7 @@ export function OnboardingFlow() {
                           flexShrink: 0
                         }}
                       >
-                        <AppIcon name={card.icon as any} size={20} stroke={2} />
+                        <AppIcon name={card.icon as React.ComponentProps<typeof AppIcon>["name"]} size={20} stroke={2} />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>
