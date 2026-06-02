@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { FileText, BookOpen, Receipt, Landmark, Home, Mail, Calculator } from "lucide-react";
+import { FileText, BookOpen, Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
 import { PayslipDocument } from "./decoderDocs/PayslipDocument";
 import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
 import { MortgageESIS } from "./decoderDocs/MortgageESIS";
 import { PensionWelcomeLetter } from "./decoderDocs/PensionWelcomeLetter";
 import { SA302TaxCalc } from "./decoderDocs/SA302TaxCalc";
+import { StudentLoanStatement } from "./decoderDocs/StudentLoanStatement";
 
 type Document = {
   id: string;
@@ -31,6 +32,13 @@ const DOCUMENTS: Document[] = [
     icon: <Home size={24} />,
   },
   {
+    id: "student-loan",
+    title: "Student loan",
+    description: "Plan 2 statements, interest rates, thresholds and the 30-year write-off.",
+    tag: "Education",
+    icon: <GraduationCap size={24} />,
+  },
+  {
     id: "mortgage",
     title: "Mortgage (ESIS)",
     description: "Compare mortgage costs, APRC, fees, and early repayment charges.",
@@ -53,15 +61,23 @@ const DOCUMENTS: Document[] = [
   },
 ];
 
+const DOCUMENT_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => void }>> = {
+  payslip: PayslipDocument,
+  tenancy: TenancyAgreement,
+  "student-loan": StudentLoanStatement,
+  mortgage: MortgageESIS,
+  pension: PensionWelcomeLetter,
+  tax: SA302TaxCalc,
+};
+
 export function DecoderPage() {
   const navigate = useNavigate();
   const [openDoc, setOpenDoc] = useState<string | null>(null);
 
-  if (openDoc === "payslip") return <PayslipDocument onBack={() => setOpenDoc(null)} />;
-  if (openDoc === "tenancy") return <TenancyAgreement onBack={() => setOpenDoc(null)} />;
-  if (openDoc === "mortgage") return <MortgageESIS onBack={() => setOpenDoc(null)} />;
-  if (openDoc === "pension") return <PensionWelcomeLetter onBack={() => setOpenDoc(null)} />;
-  if (openDoc === "tax") return <SA302TaxCalc onBack={() => setOpenDoc(null)} />;
+  if (openDoc && DOCUMENT_COMPONENTS[openDoc]) {
+    const SelectedDoc = DOCUMENT_COMPONENTS[openDoc];
+    return <SelectedDoc onBack={() => setOpenDoc(null)} />;
+  }
 
   return (
     <div className="anp-app anp-lessons-bg">
