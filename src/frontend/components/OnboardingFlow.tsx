@@ -4,6 +4,7 @@ import type { UserProfile } from "../context/ProfileContext";
 import { AppIcon } from "./AppIcon";
 import { SageAvatar } from "./SageAvatar";
 import { getRecommendedSummary } from "../data/topics";
+import { supabase } from "@backend/supabaseClient";
 
 // Parse string with bold tags into clean text segments
 function parseParagraph(text: string) {
@@ -135,6 +136,8 @@ export function OnboardingFlow() {
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authConfirmPassword, setAuthConfirmPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [step, setStep] = useState(0);
   const [typingComplete, setTypingComplete] = useState(false);
@@ -188,9 +191,8 @@ export function OnboardingFlow() {
     }
   }, [isAnalyzing]);
 
-  const advance = () => {
+  const advance = async () => {
     if (step === 8) {
-      // Trigger smooth analyzing transition on completing Q7
       setIsAnalyzing(true);
       setTimeout(() => {
         setIsAnalyzing(false);
@@ -204,7 +206,8 @@ export function OnboardingFlow() {
       return;
     }
 
-    // Save profile data
+    // Final step — save profile
+    setIsSubmitting(true);
     const cleanSalary = salaryInput.trim().replace(/[^0-9.]/g, "") || "28000";
     const mappedCompany = upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer";
     const cleanEmail = registeredEmail.trim() || `${firstName.toLowerCase().replace(/\s+/g, "")}@example.com`;
@@ -234,7 +237,8 @@ export function OnboardingFlow() {
       usageFrequency: "A few times a week"
     };
 
-    completeOnboarding(profile);
+    await completeOnboarding(profile);
+    setIsSubmitting(false);
   };
 
   const handleSelectSingle = (setter: (v: string) => void, val: string) => {
@@ -531,32 +535,18 @@ export function OnboardingFlow() {
   if (screen === "login") {
     const isLoginValid = authEmail.trim().length > 0 && authPassword.trim().length > 0;
     
-    const handleLogin = () => {
-      const defaultMockProfile: UserProfile = {
-        firstName: "Maya",
+    const handleLogin = async () => {
+      setAuthError("");
+      setIsSubmitting(true);
+      const { error } = await supabase.auth.signInWithPassword({
         email: authEmail.trim(),
-        companyName: "your employer",
-        lifeStage: "I've just started my first job",
-        employmentType: "I've just started my first job",
-        sixMonthGoal: "Personal finance confidence",
-        upcomingEvents: [],
-        confidenceScores: {
-          tax: 3,
-          pensions: 3,
-          budgeting: 3,
-          investing: 3,
-          contracts: 3
-        },
-        livingSituation: "Renting — just moved in or about to",
-        planningToMove: "No",
-        salary: "28000",
-        studentLoan: "No",
-        hasDebt: "No",
-        interestedTopics: [],
-        motivation: "Improve general knowledge",
-        usageFrequency: "A few times a week"
-      };
-      completeOnboarding(defaultMockProfile);
+        password: authPassword,
+      });
+      setIsSubmitting(false);
+      if (error) {
+        setAuthError(error.message);
+      }
+      // On success, onAuthStateChange in ProfileContext fires SIGNED_IN and loads the profile automatically
     };
 
     return (
@@ -576,6 +566,7 @@ export function OnboardingFlow() {
             onClick={() => {
               setScreen("welcome");
               setAuthPassword("");
+              setAuthError("");
             }}
             style={{
               background: "none",
@@ -638,21 +629,26 @@ export function OnboardingFlow() {
 
         {/* Bottom submit button */}
         <div style={{ marginTop: "auto", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          {authError && (
+            <p style={{ fontSize: 13, color: "#ffe285", fontFamily: "var(--p-sans)", textAlign: "center", marginBottom: 12, marginTop: 0 }}>
+              {authError}
+            </p>
+          )}
           <button
-            disabled={!isLoginValid}
-            onClick={handleLogin}
+            disabled={!isLoginValid || isSubmitting}
+            onClick={() => { void handleLogin(); }}
             style={{
               width: "100%",
               padding: "16px",
-              background: isLoginValid ? "#ffffff" : "rgba(255, 255, 255, 0.2)",
-              color: isLoginValid ? "var(--p-coral, #e9694a)" : "rgba(255, 255, 255, 0.4)",
+              background: isLoginValid && !isSubmitting ? "#ffffff" : "rgba(255, 255, 255, 0.2)",
+              color: isLoginValid && !isSubmitting ? "var(--p-coral, #e9694a)" : "rgba(255, 255, 255, 0.4)",
               border: "none",
               borderRadius: "16px",
               fontFamily: "var(--p-display)",
               fontWeight: 700,
               fontSize: 15,
-              cursor: isLoginValid ? "pointer" : "not-allowed",
-              boxShadow: isLoginValid ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
+              cursor: isLoginValid && !isSubmitting ? "pointer" : "not-allowed",
+              boxShadow: isLoginValid && !isSubmitting ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
               transition: "all 0.25s ease",
               display: "flex",
               alignItems: "center",
@@ -660,8 +656,8 @@ export function OnboardingFlow() {
               gap: 8
             }}
           >
-            <span>Log In</span>
-            <AppIcon name="arrowRight" size={16} stroke={2.5} />
+            <span>{isSubmitting ? "Logging in..." : "Log In"}</span>
+            {!isSubmitting && <AppIcon name="arrowRight" size={16} stroke={2.5} />}
           </button>
         </div>
       </div>
@@ -674,11 +670,21 @@ export function OnboardingFlow() {
     const isConfirmPasswordValid = authPassword === authConfirmPassword;
     const isRegisterValid = isEmailValid && isPasswordValid && isConfirmPasswordValid;
 
-    const handleRegisterSubmit = () => {
-      if (isRegisterValid) {
-        setRegisteredEmail(authEmail.trim());
-        setScreen("onboarding");
+    const handleRegisterSubmit = async () => {
+      if (!isRegisterValid) return;
+      setAuthError("");
+      setIsSubmitting(true);
+      const { error } = await supabase.auth.signUp({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+      setIsSubmitting(false);
+      if (error) {
+        setAuthError(error.message);
+        return;
       }
+      setRegisteredEmail(authEmail.trim());
+      setScreen("onboarding");
     };
 
     return (
@@ -699,6 +705,7 @@ export function OnboardingFlow() {
               setScreen("welcome");
               setAuthPassword("");
               setAuthConfirmPassword("");
+              setAuthError("");
             }}
             style={{
               background: "none",
@@ -779,21 +786,26 @@ export function OnboardingFlow() {
 
         {/* Bottom submit button */}
         <div style={{ marginTop: "auto", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          {authError && (
+            <p style={{ fontSize: 13, color: "#ffe285", fontFamily: "var(--p-sans)", textAlign: "center", marginBottom: 12, marginTop: 0 }}>
+              {authError}
+            </p>
+          )}
           <button
-            disabled={!isRegisterValid}
-            onClick={handleRegisterSubmit}
+            disabled={!isRegisterValid || isSubmitting}
+            onClick={() => { void handleRegisterSubmit(); }}
             style={{
               width: "100%",
               padding: "16px",
-              background: isRegisterValid ? "#ffffff" : "rgba(255, 255, 255, 0.2)",
-              color: isRegisterValid ? "var(--p-coral, #e9694a)" : "rgba(255, 255, 255, 0.4)",
+              background: isRegisterValid && !isSubmitting ? "#ffffff" : "rgba(255, 255, 255, 0.2)",
+              color: isRegisterValid && !isSubmitting ? "var(--p-coral, #e9694a)" : "rgba(255, 255, 255, 0.4)",
               border: "none",
               borderRadius: "16px",
               fontFamily: "var(--p-display)",
               fontWeight: 700,
               fontSize: 15,
-              cursor: isRegisterValid ? "pointer" : "not-allowed",
-              boxShadow: isRegisterValid ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
+              cursor: isRegisterValid && !isSubmitting ? "pointer" : "not-allowed",
+              boxShadow: isRegisterValid && !isSubmitting ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
               transition: "all 0.25s ease",
               display: "flex",
               alignItems: "center",
@@ -801,8 +813,8 @@ export function OnboardingFlow() {
               gap: 8
             }}
           >
-            <span>Create Account</span>
-            <AppIcon name="arrowRight" size={16} stroke={2.5} />
+            <span>{isSubmitting ? "Creating account..." : "Create Account"}</span>
+            {!isSubmitting && <AppIcon name="arrowRight" size={16} stroke={2.5} />}
           </button>
         </div>
       </div>
@@ -1105,29 +1117,29 @@ export function OnboardingFlow() {
       {typingComplete && (
         <div style={{ padding: "12px 20px max(20px, env(safe-area-inset-bottom)) 20px", flexShrink: 0, borderTop: "1px solid var(--p-line)", background: "var(--p-card)", animation: "anp-fade-in 0.3s ease both" }}>
           <button
-            disabled={!canAdvance}
-            onClick={advance}
+            disabled={!canAdvance || isSubmitting}
+            onClick={() => { void advance(); }}
             style={{
               width: "100%",
               padding: "15px",
-              background: canAdvance ? "var(--p-ink)" : "var(--p-line)",
-              color: canAdvance ? "#fff" : "var(--p-ink-3)",
+              background: canAdvance && !isSubmitting ? "var(--p-ink)" : "var(--p-line)",
+              color: canAdvance && !isSubmitting ? "#fff" : "var(--p-ink-3)",
               border: "none",
               borderRadius: 14,
               fontFamily: "var(--p-display)",
               fontWeight: 600,
               fontSize: 15,
-              cursor: canAdvance ? "pointer" : "not-allowed",
+              cursor: canAdvance && !isSubmitting ? "pointer" : "not-allowed",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              boxShadow: canAdvance ? "0 4px 0 #08070a" : "none",
+              boxShadow: canAdvance && !isSubmitting ? "0 4px 0 #08070a" : "none",
               transition: "all 0.15s ease"
             }}
           >
-            {step === 0 ? "Continue" : step === 1 ? "Let's do it" : step === 9 ? "Let's go" : "Continue"}
-            <AppIcon name="arrowRight" size={16} stroke={2} />
+            {isSubmitting ? "Setting up your account..." : step === 0 ? "Continue" : step === 1 ? "Let's do it" : step === 9 ? "Let's go" : "Continue"}
+            {!isSubmitting && <AppIcon name="arrowRight" size={16} stroke={2} />}
           </button>
           
           {/* Helper footer */}

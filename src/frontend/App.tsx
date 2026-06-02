@@ -16,22 +16,24 @@ import { TimelineProvider } from "./context/TimelineContext";
 import { LoadingScreen } from "./components/LoadingScreen";
 
 function MainApp() {
-  const { completedOnboarding } = useProfile();
+  const { completedOnboarding, isLoading: profileLoading } = useProfile();
   const platform = Capacitor.getPlatform();
   const isNative = platform === "android" || platform === "ios";
-  const [appLoading, setAppLoading] = useState(true);
+  const [animationDone, setAnimationDone] = useState(false);
+
+  const appLoading = !animationDone || profileLoading;
 
   if (appLoading) {
     if (isNative) {
       return (
         <div style={{ width: "100%", height: "100vh", background: "var(--p-coral, #e9694a)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}>
-          <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
+          <LoadingScreen onFinished={() => setAnimationDone(true)} fade={completedOnboarding} />
         </div>
       );
     }
     return (
       <PhoneFrame>
-        <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
+        <LoadingScreen onFinished={() => setAnimationDone(true)} fade={completedOnboarding} />
       </PhoneFrame>
     );
   }
