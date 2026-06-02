@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProfile } from "../context/ProfileContext";
 import type { UserProfile } from "../context/ProfileContext";
 import { AppIcon } from "./AppIcon";
 import { SageAvatar } from "./SageAvatar";
 
-// A list of 3-4 specific lesson cards with their personal reasons, picked dynamically
+// Dynamic selection of exactly 3 starting lesson cards
 function getRecommendedSummary(
   lifeStage: string,
   livingSituation: string,
@@ -15,16 +15,16 @@ function getRecommendedSummary(
 ) {
   const selected: { title: string; desc: string; topicId: string; subTopicId: string; icon: string }[] = [];
 
-  // 1. Tax confusion / low tax confidence -> Payslip lesson
-  if (moneyWorry === "I don't really understand how tax works" || confidence.payslip <= 2) {
+  // Card 1: Stressor / tax / payslip
+  if (moneyWorry === "I honestly don't get how tax works" || confidence.payslip <= 2) {
     selected.push({
       title: "Decoding your payslip",
-      desc: "You said tax confuses you. Let's make sense of your tax codes and deductions first.",
+      desc: "You mentioned tax confuses you and you have a new salary coming. Let's get this sorted first.",
       topicId: "starting-work",
       subTopicId: "lesson-01",
-      icon: "💼"
+      icon: "📑"
     });
-  } else if (lifeStage === "I've just started my first job" || upcomingEvents.includes("Starting a new job soon")) {
+  } else if (lifeStage === "I've just started my first proper job" || upcomingEvents.includes("Starting a new job soon")) {
     selected.push({
       title: "Decoding your payslip",
       desc: "Since you're starting a new job, let's make sure you understand your very first paycheck.",
@@ -32,76 +32,34 @@ function getRecommendedSummary(
       subTopicId: "lesson-01",
       icon: "💼"
     });
-  }
-
-  // 2. Budgeting rule / Nothing left -> 50/30/20 Rule
-  if (moneyWorry === "I never seem to have anything left at the end of the month" || confidence.budgeting <= 2) {
-    selected.push({
-      title: "The 50/30/20 Rule",
-      desc: "A simple, stress-free way to split your income and make sure you have enough left for the fun stuff.",
-      topicId: "starting-work",
-      subTopicId: "lesson-03",
-      icon: "📊"
-    });
-  }
-
-  // 3. Debt payoff strategies -> Debt Spectrum
-  if (moneyWorry === "I've got debt I'm trying to deal with" || lifeStage === "I'm not working at the moment") {
+  } else if (moneyWorry === "I've got debt I'm trying to clear") {
     selected.push({
       title: "The Debt Spectrum",
-      desc: "Dealing with debt is exhausting. Let's review payoff strategies and how to get free help.",
+      desc: "You mentioned debt stresses you out. Let's review payoff strategies and snowball methods.",
       topicId: "debt",
       subTopicId: "lesson-29",
       icon: "📉"
     });
-  }
-
-  // 4. Renting -> Deposits & Guarantors
-  if (livingSituation?.includes("Renting — just moved in") || upcomingEvents.includes("Moving out for the first time")) {
+  } else {
     selected.push({
-      title: "Deposits & Guarantors",
-      desc: "Since you're renting soon, let's make sure you protect your deposit and understand your contract.",
-      topicId: "renting",
-      subTopicId: "lesson-05",
-      icon: "🔑"
+      title: "The Power of Compound Interest",
+      desc: "The absolute foundation of wealth building. Let's see how small amounts grow over time.",
+      topicId: "foundations",
+      subTopicId: "lesson-36",
+      icon: "💡"
     });
   }
 
-  // 5. Mortgages / Buying -> Mortgages 101
-  if (livingSituation?.includes("Renting — been here a while") || upcomingEvents.includes("Thinking about buying a place")) {
+  // Card 2: Budgeting / Investing
+  if (moneyWorry === "I never seem to have anything left at the end of the month" || confidence.budgeting <= 2) {
     selected.push({
-      title: "Mortgages 101",
-      desc: "You want to buy a place. Let's demystify how much you can borrow and interest tiers.",
-      topicId: "buying-a-home",
-      subTopicId: "lesson-08",
-      icon: "🏡"
-    });
-  }
-
-  // 6. Student Loan -> Student Loan Repayments
-  if (studentLoan === "Yes and it comes off my payslip" || studentLoan === "I'm not sure actually") {
-    selected.push({
-      title: "Student Loan Repayments",
-      desc: "Let's review why this functions more like an extra graduate tax than a traditional debt.",
+      title: "The 50/30/20 rule",
+      desc: "You said you never have much left at the end of the month. This simple framework is going to change that.",
       topicId: "starting-work",
-      subTopicId: "lesson-04",
-      icon: "🎓"
+      subTopicId: "lesson-03",
+      icon: "📊"
     });
-  }
-
-  // 7. Pension Auto-Enrolment -> Auto-Enrolment Pension
-  if (moneyWorry === "I have no idea what my pension is doing" || confidence.pensions <= 2) {
-    selected.push({
-      title: "The Auto-Enrolment Pension",
-      desc: "Workplace pensions can be confusing, but you're turning down free match money if you opt out.",
-      topicId: "starting-work",
-      subTopicId: "lesson-02",
-      icon: "🏦"
-    });
-  }
-
-  // 8. Investing 101 -> Stocks & Shares ISAs
-  if (moneyWorry === "I want to start investing but don't know where to begin" || confidence.investing <= 2) {
+  } else if (moneyWorry === "I want to start investing but I'm stuck at square one" || confidence.investing <= 2) {
     selected.push({
       title: "Stocks & Shares ISAs",
       desc: "You want to start investing. Let's learn how to grow your wealth tax-free with index funds.",
@@ -109,91 +67,212 @@ function getRecommendedSummary(
       subTopicId: "lesson-43",
       icon: "📈"
     });
+  } else if (moneyWorry === "I have absolutely no idea what my pension is doing") {
+    selected.push({
+      title: "The Auto-Enrolment Pension",
+      desc: "You said you have no idea what your pension is doing. Let's claim your free employer money.",
+      topicId: "starting-work",
+      subTopicId: "lesson-02",
+      icon: "🏦"
+    });
+  } else {
+    selected.push({
+      title: "The Emergency Fund",
+      desc: "Your buffer against life's surprises. Let's build a cash cushion before you start saving.",
+      topicId: "foundations",
+      subTopicId: "lesson-37",
+      icon: "🛡️"
+    });
   }
 
-  // 9. Joint Accounts / Relationship Money -> The Money Talk
-  if (upcomingEvents.includes("Moving in with a partner")) {
+  // Card 3: Living Situation / Future Events
+  if (livingSituation?.includes("Renting (just") || upcomingEvents.includes("Moving out for the very first time")) {
+    selected.push({
+      title: "Deposits and guarantors",
+      desc: "Since you're moving out soon, you need to know this before you sign a single thing.",
+      topicId: "renting",
+      subTopicId: "lesson-05",
+      icon: "🔑"
+    });
+  } else if (livingSituation?.includes("Renting (been") || upcomingEvents.includes("Thinking about buying a place")) {
+    selected.push({
+      title: "Mortgages 101",
+      desc: "You're renting or thinking about buying. Let's see how much you can borrow from lenders.",
+      topicId: "buying-a-home",
+      subTopicId: "lesson-08",
+      icon: "🏡"
+    });
+  } else if (upcomingEvents.includes("Moving in with a partner")) {
     selected.push({
       title: "The Money Talk",
-      desc: "Moving in is exciting! Let's get on the same page about bills and joint accounts early.",
+      desc: "Moving in with a partner soon? Let's figure out how to split bills and joint accounts.",
       topicId: "relationships",
       subTopicId: "lesson-12",
       icon: "💑"
     });
-  }
-
-  // 10. Maternity & Paternity Pay -> Maternity & Paternity Pay
-  if (upcomingEvents.includes("Having a baby or just had one")) {
+  } else if (studentLoan?.includes("Yes") || studentLoan?.includes("sure")) {
     selected.push({
-      title: "Maternity & Paternity Pay",
-      desc: "Let's walk through your legal rights to statutory pay and what allowances you can claim.",
-      topicId: "family",
-      subTopicId: "lesson-15",
-      icon: "👶"
+      title: "Student Loan Repayments",
+      desc: "Let's review why your student loan behaves more like a tax than a standard debt.",
+      topicId: "starting-work",
+      subTopicId: "lesson-04",
+      icon: "🎓"
+    });
+  } else {
+    selected.push({
+      title: "Demystifying UK Credit Scores",
+      desc: "Learn what actually influences your score and how to build credit safely.",
+      topicId: "mastering-credit",
+      subTopicId: "lesson-40",
+      icon: "💳"
     });
   }
 
-  // 11. Salary Negotiation -> Salary Negotiation
-  if (upcomingEvents.includes("Getting a pay rise or changing jobs")) {
-    selected.push({
-      title: "Salary Negotiation",
-      desc: "Prepare a killer business case to ask for what you're worth and get that raise.",
-      topicId: "career",
-      subTopicId: "lesson-18",
-      icon: "📈"
-    });
-  }
+  return selected.slice(0, 3);
+}
 
-  // 12. Car Finance -> Car Finance Demystified
-  if (upcomingEvents.includes("Buying a car")) {
-    selected.push({
-      title: "Car Finance Demystified",
-      desc: "Buying a car is a major purchase. Let's look at PCP, HP, and the true cost of driving.",
-      topicId: "cars",
-      subTopicId: "lesson-24",
-      icon: "🚗"
-    });
-  }
-
-  // Fallbacks: If we have fewer than 3 cards, let's add foundational building blocks
-  if (selected.length < 3) {
-    if (!selected.some((s) => s.subTopicId === "lesson-37")) {
-      selected.push({
-        title: "The Emergency Fund",
-        desc: "Your financial safety net. Let's build a buffer so unexpected bills don't throw you off.",
-        topicId: "foundations",
-        subTopicId: "lesson-37",
-        icon: "💡"
-      });
+// Parse string with bold tags into clean text segments
+function parseParagraph(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return { text: part.slice(2, -2), isBold: true };
     }
-  }
-  if (selected.length < 3) {
-    if (!selected.some((s) => s.subTopicId === "lesson-36")) {
-      selected.push({
-        title: "The Power of Compound Interest",
-        desc: "The ultimate wealth builder. See how small savings grow exponentially over time.",
-        topicId: "foundations",
-        subTopicId: "lesson-36",
-        icon: "💡"
-      });
-    }
-  }
+    return { text: part, isBold: false };
+  });
+}
 
-  // Limit to at most 4 items
-  return selected.slice(0, 4);
+// Custom typewriter engine component
+function TypewriterMessage({
+  paragraphs,
+  onComplete,
+  speed = 35
+}: {
+  paragraphs: string[];
+  onComplete: () => void;
+  speed?: number;
+}) {
+  const [currentParagraphIdx, setCurrentParagraphIdx] = useState(0);
+  const [displayedLengths, setDisplayedLengths] = useState<number[]>(paragraphs.map(() => 0));
+  const [isTyping, setIsTyping] = useState(true);
+
+  // Initialize once on mount
+  useEffect(() => {
+    setCurrentParagraphIdx(0);
+    setDisplayedLengths(paragraphs.map(() => 0));
+    setIsTyping(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isTyping) return;
+    if (currentParagraphIdx >= paragraphs.length) {
+      setIsTyping(false);
+      onComplete();
+      return;
+    }
+
+    const targetText = paragraphs[currentParagraphIdx];
+    const segments = parseParagraph(targetText);
+    const totalLength = segments.reduce((sum, seg) => sum + seg.text.length, 0);
+
+    let charIdx = 0;
+
+    const interval = setInterval(() => {
+      setDisplayedLengths((prev) => {
+        const next = [...prev];
+        next[currentParagraphIdx] = charIdx + 1;
+        return next;
+      });
+      charIdx++;
+
+      if (charIdx >= totalLength) {
+        clearInterval(interval);
+        // Staggered pause (400ms) between paragraph blocks
+        setTimeout(() => {
+          setCurrentParagraphIdx((idx) => idx + 1);
+        }, 400);
+      }
+    }, speed);
+
+    return () => clearInterval(interval);
+  }, [currentParagraphIdx, paragraphs, isTyping, speed, onComplete]);
+
+  const renderSegments = (segments: ReturnType<typeof parseParagraph>, maxLength: number) => {
+    let charsLeft = maxLength;
+    return segments.map((seg, i) => {
+      if (charsLeft <= 0) return null;
+      const visibleText = seg.text.slice(0, charsLeft);
+      charsLeft -= seg.text.length;
+
+      if (seg.isBold) {
+        return <strong key={i}>{visibleText}</strong>;
+      }
+      return <span key={i}>{visibleText}</span>;
+    });
+  };
+
+  return (
+    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+      <SageAvatar size={50} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+        {paragraphs.map((paraText, idx) => {
+          if (idx > currentParagraphIdx) return null;
+          
+          const segments = parseParagraph(paraText);
+          const maxLength = displayedLengths[idx] ?? 0;
+          const totalLength = segments.reduce((sum, seg) => sum + seg.text.length, 0);
+          const isCurrent = idx === currentParagraphIdx && maxLength < totalLength;
+
+          return (
+            <div
+              key={idx}
+              style={{
+                background: "linear-gradient(135deg, #f7f9f6 0%, #edf3ee 100%)",
+                border: "1.5px solid #d8e6db",
+                borderRadius: idx === 0 ? "0px 16px 16px 16px" : "16px",
+                padding: "14px 16px",
+                fontSize: 14.5,
+                lineHeight: 1.45,
+                color: "var(--p-ink)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+                alignSelf: "flex-start",
+                maxWidth: "100%",
+                fontFamily: "var(--p-sans)"
+              }}
+            >
+              {renderSegments(segments, maxLength)}
+              {isCurrent && <span className="anp-cursor">|</span>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function OnboardingFlow() {
   const { completeOnboarding } = useProfile();
+
+  // Navigation and auth states
+  const [screen, setScreen] = useState<"welcome" | "login" | "register" | "onboarding">("welcome");
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [animateWelcome, setAnimateWelcome] = useState(false);
+
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authConfirmPassword, setAuthConfirmPassword] = useState("");
+
   const [step, setStep] = useState(0);
+  const [typingComplete, setTypingComplete] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzingText, setAnalyzingText] = useState("Looking at where you are right now...");
 
   // States
   const [firstName, setFirstName] = useState("");
-  const [email, setEmail] = useState("");
-  const [lifeStage, setLifeStage] = useState("");
-  const [livingSituation, setLivingSituation] = useState("");
+  const [lifeStage, setStepLifeStage] = useState("");
+  const [livingSituation, setStepLivingSituation] = useState("");
   const [upcomingEvents, setUpcomingEvents] = useState<string[]>([]);
-  const [moneyWorry, setMoneyWorry] = useState("");
+  const [moneyWorry, setStepMoneyWorry] = useState("");
   const [confidence, setConfidence] = useState<Record<string, number>>({
     payslip: 3,
     budgeting: 3,
@@ -201,29 +280,69 @@ export function OnboardingFlow() {
     investing: 3,
     renting: 3
   });
-  const [studentLoan, setStudentLoan] = useState("");
+  const [studentLoan, setStepStudentLoan] = useState("");
   const [salaryInput, setSalaryInput] = useState("");
 
-  const totalSteps = 9; // Welcome (0), Q1-Q7 (1-7), Summary (8)
+  const totalSteps = 10;
+
+  useEffect(() => {
+    setTypingComplete(false);
+  }, [step]);
+
+  useEffect(() => {
+    if (screen === "welcome") {
+      const timer = setTimeout(() => {
+        setAnimateWelcome(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [screen]);
+
+  useEffect(() => {
+    if (isAnalyzing) {
+      setAnalyzingText("Looking at where you are right now...");
+      const t1 = setTimeout(() => {
+        setAnalyzingText("Targeting your main money worries...");
+      }, 1100);
+      const t2 = setTimeout(() => {
+        setAnalyzingText("Setting up your custom dashboard...");
+      }, 2200);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [isAnalyzing]);
 
   const advance = () => {
+    if (step === 8) {
+      // Trigger smooth analyzing transition on completing Q7
+      setIsAnalyzing(true);
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setStep(9);
+      }, 3500);
+      return;
+    }
+
     if (step < totalSteps - 1) {
       setStep((s) => s + 1);
       return;
     }
 
-    // Map selections back to UserProfile fields
+    // Save profile data
     const cleanSalary = salaryInput.trim().replace(/[^0-9.]/g, "") || "28000";
     const mappedCompany = upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer";
+    const cleanEmail = registeredEmail.trim() || `${firstName.toLowerCase().replace(/\s+/g, "")}@example.com`;
 
     const profile: UserProfile = {
       firstName: firstName.trim() || "Maya",
-      email: email.trim() || "maya@example.com",
+      email: cleanEmail,
       companyName: mappedCompany,
       lifeStage: lifeStage,
       employmentType: lifeStage,
       sixMonthGoal: moneyWorry || "Personal finance confidence",
-      upcomingEvents: upcomingEvents.filter((x) => x !== "None of these right now"),
+      upcomingEvents: upcomingEvents.filter((x) => x !== "Nothing major right now"),
       confidenceScores: {
         tax: confidence.payslip,
         pensions: confidence.pensions,
@@ -232,10 +351,10 @@ export function OnboardingFlow() {
         contracts: confidence.renting
       },
       livingSituation: livingSituation,
-      planningToMove: upcomingEvents.includes("Moving out for the first time") ? "Yes" : "No",
+      planningToMove: upcomingEvents.includes("Moving out for the very first time") ? "Yes" : "No",
       salary: cleanSalary,
       studentLoan: studentLoan,
-      hasDebt: moneyWorry === "I've got debt I'm trying to deal with" ? "Yes" : "No",
+      hasDebt: moneyWorry?.includes("debt") ? "Yes" : "No",
       interestedTopics: [moneyWorry],
       motivation: "Improve general knowledge",
       usageFrequency: "A few times a week"
@@ -246,15 +365,16 @@ export function OnboardingFlow() {
 
   const handleSelectSingle = (setter: (v: string) => void, val: string) => {
     setter(val);
-    setTimeout(() => {
-      setStep((s) => s + 1);
-    }, 280);
+  };
+
+  const handleSelectRating = (key: string, val: number) => {
+    setConfidence((prev) => ({ ...prev, [key]: val }));
   };
 
   const toggleUpcomingEvent = (evt: string) => {
     setUpcomingEvents((prev) => {
-      if (evt === "None of these right now") return ["None of these right now"];
-      const filtered = prev.filter((x) => x !== "None of these right now");
+      if (evt === "Nothing major right now") return ["Nothing major right now"];
+      const filtered = prev.filter((x) => x !== "Nothing major right now");
       if (filtered.includes(evt)) {
         return filtered.filter((x) => x !== evt);
       } else {
@@ -265,27 +385,18 @@ export function OnboardingFlow() {
 
   // Validators
   const canAdvance = [
-    // Welcome / Info
-    firstName.trim().length > 0 && email.trim().length > 0,
-    // Q1
-    lifeStage.length > 0,
-    // Q2
-    livingSituation.length > 0,
-    // Q3 (Upcoming Events)
-    upcomingEvents.length > 0,
-    // Q4 (Money Worry)
-    moneyWorry.length > 0,
-    // Q5 (Confidence check)
-    true, // always valid to continue
-    // Q6 (Student Loan)
-    studentLoan.length > 0,
-    // Q7 (Salary)
-    true, // optional, can skip
-    // Summary
-    true
+    firstName.trim().length >= 2, // step 0 (Name only)
+    true, // step 1
+    lifeStage.length > 0, // step 2
+    livingSituation.length > 0, // step 3
+    upcomingEvents.length > 0, // step 4
+    moneyWorry.length > 0, // step 5
+    true, // step 6
+    studentLoan.length > 0, // step 7
+    salaryInput.trim().length > 0, // step 8
+    true // step 9
   ][step];
 
-  // Styling helpers
   const questionTitleStyle: React.CSSProperties = {
     fontFamily: "var(--p-sans)",
     fontSize: 11,
@@ -309,6 +420,20 @@ export function OnboardingFlow() {
     transition: "border-color 0.15s"
   };
 
+  const authInputStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    background: "rgba(255, 255, 255, 0.15)",
+    border: "1.5px solid rgba(255, 255, 255, 0.25)",
+    borderRadius: "14px",
+    padding: "14px 16px",
+    fontSize: 15,
+    color: "#ffffff",
+    outline: "none",
+    fontFamily: "var(--p-sans)",
+    transition: "all 0.15s ease",
+  };
+
   const rowChoiceStyle = (active: boolean): React.CSSProperties => ({
     width: "100%",
     border: active ? "2.2px solid var(--p-coral)" : "1.5px solid var(--p-line)",
@@ -327,7 +452,6 @@ export function OnboardingFlow() {
     justifyContent: "space-between"
   });
 
-  // Get recommendations for closing slide
   const recSummary = getRecommendedSummary(
     lifeStage,
     livingSituation,
@@ -337,20 +461,473 @@ export function OnboardingFlow() {
     studentLoan
   );
 
+  const stepParagraphs = [
+    // Step 0: Welcome & Name Catch
+    [
+      "Hey, I'm Sage, your personalised financial guide. Honestly, though? Think of me more as a friend who you can turn to for help.",
+      "Most money apps are boring as hell, but this one is completely custom-built around you.",
+      "Drop your first name below so I know who I'm talking to, and we'll get you set up."
+    ],
+    // Step 1: Nice to meet you transition
+    [
+      `Nice to meet you, ${firstName || "there"}.`,
+      "To make sure I only show you stuff that's actually relevant to your life right now, I just need a quick steer on where you're at.",
+      "No trick questions, and you can change any of this later if things shift."
+    ],
+    // Step 2: Q1 - Life Stage
+    [
+      "So, first things first — what best describes your day-to-day right now?"
+    ],
+    // Step 3: Q2 - Living Situation
+    [
+      "Got it. And what's your living situation looking like?"
+    ],
+    // Step 4: Q3 - Upcoming Events
+    [
+      "Life moves pretty fast. Is anything big coming up for you in the next few months? Tap anything that applies."
+    ],
+    // Step 5: Q4 - Money Worry
+    [
+      "Be real with me here — what's the single biggest thing that stresses you out about money right now?"
+    ],
+    // Step 6: Q5 - Confidence Check
+    [
+      "Let's do a quick pulse check on a few specific topics.",
+      "Be completely honest — this just helps me skip the basic stuff you already know inside out."
+    ],
+    // Step 7: Q6 - Student Loan
+    [
+      "Quick one regarding university — did you take out a student loan?"
+    ],
+    // Step 8: Q7 - Salary
+    [
+      "Last thing, and it's completely optional.",
+      "If you drop in your rough take-home salary, I can run the numbers in your lessons using your actual pay packet.",
+      "It means instead of saying 'imagine you earn £30k', I can show you exactly how things impact your wallet."
+    ],
+    // Step 9: Summary Reveal
+    [
+      `Perfect. Thanks, ${firstName || "Maya"}.`,
+      "Based on what you just shared, I've custom-built your priority track.",
+      "Here is exactly where we're starting today:"
+    ]
+  ][step];
+
+  // Analyzing processing micro-interaction UI
+  if (isAnalyzing) {
+    return (
+      <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--p-bg)", padding: 40, textAlign: "center" }}>
+        <SageAvatar size={100} />
+        <h2 style={{ fontFamily: "var(--p-display)", fontWeight: 800, fontSize: 22, marginTop: 24, color: "var(--p-ink)" }}>
+          {analyzingText}
+        </h2>
+        <p style={{ fontSize: 14, color: "var(--p-ink-2)", marginTop: 8, maxWidth: 280, lineHeight: 1.45, fontFamily: "var(--p-sans)" }}>
+          Sage is building your custom learning queue based on your stressors and life stage.
+        </p>
+        <div style={{ marginTop: 24, width: 45, height: 4, borderRadius: 2, background: "var(--p-coral)", animation: "anp-pulse 1.2s infinite ease-in-out" }} />
+        <style>{`
+          @keyframes anp-pulse {
+            0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+            50% { opacity: 1; transform: scaleX(1.3); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (screen === "welcome") {
+    return (
+      <div style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--p-coral, #e9694a)",
+        position: "relative",
+        padding: "24px",
+        boxSizing: "border-box",
+        overflow: "hidden"
+      }}>
+        {/* Animated logo/name wrapper */}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+          transition: "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+          transform: animateWelcome ? "translateY(-60px)" : "translateY(0px)"
+        }}>
+          <SageAvatar size={100} />
+          <div style={{
+            fontFamily: "var(--font-display, 'Bricolage Grotesque')",
+            fontWeight: 800,
+            fontSize: 32,
+            color: "#ffffff",
+            letterSpacing: "-0.03em",
+            textTransform: "lowercase",
+          }}>
+            anticipate.
+          </div>
+        </div>
+
+        {/* Buttons wrapper, fade in */}
+        <div style={{
+          position: "absolute",
+          bottom: "12%",
+          left: 24,
+          right: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          opacity: animateWelcome ? 1 : 0,
+          transform: animateWelcome ? "translateY(0)" : "translateY(24px)",
+          transition: "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+          pointerEvents: animateWelcome ? "auto" : "none"
+        }}>
+          <button
+            onClick={() => {
+              setAnimateWelcome(false);
+              setScreen("register");
+            }}
+            style={{
+              padding: "16px",
+              background: "#ffffff",
+              color: "var(--p-coral, #e9694a)",
+              border: "none",
+              borderRadius: "16px",
+              fontFamily: "var(--p-display)",
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              transition: "transform 0.15s ease, box-shadow 0.15s ease"
+            }}
+            onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.98)"}
+            onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
+          >
+            Get Started
+          </button>
+          
+          <button
+            onClick={() => {
+              setAnimateWelcome(false);
+              setScreen("login");
+            }}
+            style={{
+              padding: "16px",
+              background: "rgba(255, 255, 255, 0.15)",
+              color: "#ffffff",
+              border: "1.5px solid rgba(255, 255, 255, 0.25)",
+              borderRadius: "16px",
+              fontFamily: "var(--p-display)",
+              fontWeight: 600,
+              fontSize: 15,
+              cursor: "pointer",
+              transition: "background 0.2s ease, transform 0.15s ease"
+            }}
+            onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.98)"}
+            onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
+          >
+            Already have an account
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "login") {
+    const isLoginValid = authEmail.trim().length > 0 && authPassword.trim().length > 0;
+    
+    const handleLogin = () => {
+      const defaultMockProfile: UserProfile = {
+        firstName: "Maya",
+        email: authEmail.trim(),
+        companyName: "your employer",
+        lifeStage: "I've just started my first job",
+        employmentType: "I've just started my first job",
+        sixMonthGoal: "Personal finance confidence",
+        upcomingEvents: [],
+        confidenceScores: {
+          tax: 3,
+          pensions: 3,
+          budgeting: 3,
+          investing: 3,
+          contracts: 3
+        },
+        livingSituation: "Renting — just moved in or about to",
+        planningToMove: "No",
+        salary: "28000",
+        studentLoan: "No",
+        hasDebt: "No",
+        interestedTopics: [],
+        motivation: "Improve general knowledge",
+        usageFrequency: "A few times a week"
+      };
+      completeOnboarding(defaultMockProfile);
+    };
+
+    return (
+      <div className="anp-auth-slide-in" style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: "var(--p-coral, #e9694a)",
+        padding: "max(24px, env(safe-area-inset-top)) 24px 24px",
+        boxSizing: "border-box",
+        color: "#ffffff",
+        overflow: "hidden"
+      }}>
+        {/* Navigation */}
+        <div style={{ alignSelf: "flex-start", marginBottom: 12 }}>
+          <button
+            onClick={() => {
+              setScreen("welcome");
+              setAuthPassword("");
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#ffffff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 0",
+              fontFamily: "var(--p-sans)",
+              fontSize: 14,
+              fontWeight: 500,
+              opacity: 0.8,
+              transition: "opacity 0.2s"
+            }}
+          >
+            <AppIcon name="chevronLeft" size={20} stroke={2.5} />
+            <span>Back</span>
+          </button>
+        </div>
+
+        {/* Logo and title */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginTop: 10, marginBottom: 28 }}>
+          <SageAvatar size={60} />
+          <h2 style={{ fontFamily: "var(--font-display, 'Bricolage Grotesque')", fontWeight: 800, fontSize: 24, color: "#ffffff", margin: 0 }}>
+            Welcome Back
+          </h2>
+          <p style={{ fontFamily: "var(--p-sans)", fontSize: 13, color: "rgba(255, 255, 255, 0.75)", margin: 0, textAlign: "center" }}>
+            Log in to access your financial guide
+          </p>
+        </div>
+
+        {/* Fields */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontFamily: "var(--p-sans)", fontSize: 12, fontWeight: 600, color: "rgba(255, 255, 255, 0.8)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Email Address</label>
+            <input
+              type="email"
+              className="anp-auth-input"
+              style={authInputStyle}
+              placeholder="hello@example.com"
+              value={authEmail}
+              onChange={(e) => setAuthEmail(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontFamily: "var(--p-sans)", fontSize: 12, fontWeight: 600, color: "rgba(255, 255, 255, 0.8)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Password</label>
+            <input
+              type="password"
+              className="anp-auth-input"
+              style={authInputStyle}
+              placeholder="Enter your password"
+              value={authPassword}
+              onChange={(e) => setAuthPassword(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Bottom submit button */}
+        <div style={{ marginTop: "auto", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          <button
+            disabled={!isLoginValid}
+            onClick={handleLogin}
+            style={{
+              width: "100%",
+              padding: "16px",
+              background: isLoginValid ? "#ffffff" : "rgba(255, 255, 255, 0.2)",
+              color: isLoginValid ? "var(--p-coral, #e9694a)" : "rgba(255, 255, 255, 0.4)",
+              border: "none",
+              borderRadius: "16px",
+              fontFamily: "var(--p-display)",
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: isLoginValid ? "pointer" : "not-allowed",
+              boxShadow: isLoginValid ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
+              transition: "all 0.25s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            }}
+          >
+            <span>Log In</span>
+            <AppIcon name="arrowRight" size={16} stroke={2.5} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "register") {
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authEmail.trim());
+    const isPasswordValid = authPassword.length >= 6;
+    const isConfirmPasswordValid = authPassword === authConfirmPassword;
+    const isRegisterValid = isEmailValid && isPasswordValid && isConfirmPasswordValid;
+
+    const handleRegisterSubmit = () => {
+      if (isRegisterValid) {
+        setRegisteredEmail(authEmail.trim());
+        setScreen("onboarding");
+      }
+    };
+
+    return (
+      <div className="anp-auth-slide-in" style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: "var(--p-coral, #e9694a)",
+        padding: "max(24px, env(safe-area-inset-top)) 24px 24px",
+        boxSizing: "border-box",
+        color: "#ffffff",
+        overflow: "hidden"
+      }}>
+        {/* Navigation */}
+        <div style={{ alignSelf: "flex-start", marginBottom: 12 }}>
+          <button
+            onClick={() => {
+              setScreen("welcome");
+              setAuthPassword("");
+              setAuthConfirmPassword("");
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#ffffff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 0",
+              fontFamily: "var(--p-sans)",
+              fontSize: 14,
+              fontWeight: 500,
+              opacity: 0.8,
+              transition: "opacity 0.2s"
+            }}
+          >
+            <AppIcon name="chevronLeft" size={20} stroke={2.5} />
+            <span>Back</span>
+          </button>
+        </div>
+
+        {/* Logo and title */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginTop: 10, marginBottom: 28 }}>
+          <SageAvatar size={60} />
+          <h2 style={{ fontFamily: "var(--font-display, 'Bricolage Grotesque')", fontWeight: 800, fontSize: 24, color: "#ffffff", margin: 0 }}>
+            Create Account
+          </h2>
+          <p style={{ fontFamily: "var(--p-sans)", fontSize: 13, color: "rgba(255, 255, 255, 0.75)", margin: 0, textAlign: "center" }}>
+            Sign up to build your personalised financial guide
+          </p>
+        </div>
+
+        {/* Fields */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontFamily: "var(--p-sans)", fontSize: 12, fontWeight: 600, color: "rgba(255, 255, 255, 0.8)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Email Address</label>
+            <input
+              type="email"
+              className="anp-auth-input"
+              style={authInputStyle}
+              placeholder="hello@example.com"
+              value={authEmail}
+              onChange={(e) => setAuthEmail(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontFamily: "var(--p-sans)", fontSize: 12, fontWeight: 600, color: "rgba(255, 255, 255, 0.8)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Password</label>
+            <input
+              type="password"
+              className="anp-auth-input"
+              style={authInputStyle}
+              placeholder="Min. 6 characters"
+              value={authPassword}
+              onChange={(e) => setAuthPassword(e.target.value)}
+            />
+            {authPassword.length > 0 && authPassword.length < 6 && (
+              <span style={{ fontSize: 12, color: "#ffe285", fontFamily: "var(--p-sans)" }}>Password must be at least 6 characters.</span>
+            )}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontFamily: "var(--p-sans)", fontSize: 12, fontWeight: 600, color: "rgba(255, 255, 255, 0.8)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Confirm Password</label>
+            <input
+              type="password"
+              className="anp-auth-input"
+              style={authInputStyle}
+              placeholder="Confirm password"
+              value={authConfirmPassword}
+              onChange={(e) => setAuthConfirmPassword(e.target.value)}
+            />
+            {authConfirmPassword.length > 0 && authPassword !== authConfirmPassword && (
+              <span style={{ fontSize: 12, color: "#ffe285", fontFamily: "var(--p-sans)" }}>Passwords do not match.</span>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom submit button */}
+        <div style={{ marginTop: "auto", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          <button
+            disabled={!isRegisterValid}
+            onClick={handleRegisterSubmit}
+            style={{
+              width: "100%",
+              padding: "16px",
+              background: isRegisterValid ? "#ffffff" : "rgba(255, 255, 255, 0.2)",
+              color: isRegisterValid ? "var(--p-coral, #e9694a)" : "rgba(255, 255, 255, 0.4)",
+              border: "none",
+              borderRadius: "16px",
+              fontFamily: "var(--p-display)",
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: isRegisterValid ? "pointer" : "not-allowed",
+              boxShadow: isRegisterValid ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
+              transition: "all 0.25s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            }}
+          >
+            <span>Create Account</span>
+            <AppIcon name="arrowRight" size={16} stroke={2.5} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "var(--p-bg)", overflow: "hidden" }}>
-      {/* Onboarding Header */}
+      {/* Header bar */}
       <div style={{ padding: "max(24px, env(safe-area-inset-top)) 20px 16px", flexShrink: 0, borderBottom: "1px solid var(--p-line-2)", background: "var(--p-bg)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
           <div style={{ fontFamily: "var(--p-display)", fontWeight: 800, fontSize: 20, letterSpacing: "-0.03em", textTransform: "lowercase", color: "var(--p-ink)" }}>
             anticipate.
           </div>
-          <div style={{ fontFamily: "var(--p-mono)", fontSize: 9.5, letterSpacing: "0.02em", color: "var(--p-ink-3)", textTransform: "uppercase" }}>
-            {step === 0 ? "Welcome" : step === 8 ? "Tailored plan" : `Question ${step} of 7`}
-          </div>
         </div>
-        {/* Step indicator bar */}
-        <div style={{ display: "flex", gap: 5, justifyContent: "center", marginTop: 8 }}>
+        {/* Step indicator */}
+        <div style={{ display: "flex", gap: 3, justifyContent: "center", marginTop: 8 }}>
           {Array.from({ length: totalSteps }, (_, i) => (
             <div
               key={i}
@@ -366,356 +943,368 @@ export function OnboardingFlow() {
         </div>
       </div>
 
-      {/* Main Conversation Scroll Area */}
+      {/* Message Log scroll body */}
       <div className="anp-scroll" style={{ flex: 1, padding: "20px 20px 24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           
-          {/* SAGE CHAT BUBBLE (Steps 0 to 7) */}
-          {step < 8 && (
-            <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 8 }}>
-              <SageAvatar size={42} />
-              <div style={{
-                background: "#fff",
-                border: "1.5px solid var(--p-line)",
-                borderRadius: "0px 16px 16px 16px",
-                padding: "14px 16px",
-                fontSize: 14.5,
-                lineHeight: 1.45,
-                color: "var(--p-ink)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                flex: 1,
-                fontFamily: "var(--p-sans)"
-              }}>
-                {step === 0 && "Before we get started, I want to make sure everything I show you is actually relevant to you. I'm going to ask you a few things — no wrong answers, and you can update any of this later."}
-                {step === 1 && "So first things first — what best describes where you are right now?"}
-                {step === 2 && "Where are you living at the moment?"}
-                {step === 3 && "Is anything big coming up for you in the next few months? Pick everything that applies."}
-                {step === 4 && "Be honest — what's the thing that stresses you out most about money right now?"}
-                {step === 5 && "Quick one — how would you rate yourself on each of these? Be honest, this just helps me skip stuff you already know."}
-                {step === 6 && "Did you go to university and take out a student loan?"}
-                {step === 7 && "Last one and completely optional — if you drop in your rough take home salary, I can make the lessons use your actual numbers instead of hypotheticals. So instead of 'imagine you earn £30,000' I'll just say what you actually take home."}
-              </div>
-            </div>
-          )}
+          <TypewriterMessage
+            key={step}
+            paragraphs={stepParagraphs}
+            onComplete={() => setTypingComplete(true)}
+          />
 
-          {/* STEP 0: Welcome & Profile Info */}
-          {step === 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your first name?</label>
-                <input style={inputStyle} placeholder="e.g. Maya" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>What is your email address?</label>
-                <input style={inputStyle} type="email" placeholder="e.g. maya@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-            </div>
-          )}
-
-          {/* STEP 1: Q1 - Life Stage */}
-          {step === 1 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { label: "I'm still at university", val: "I'm still at university" },
-                { label: "I've just started my first job", val: "I've just started my first job" },
-                { label: "I've been working for a year or two", val: "I've been working for a year or two" },
-                { label: "I'm self employed or doing freelance work", val: "I'm self employed or doing freelance work" },
-                { label: "I'm not working at the moment", val: "I'm not working at the moment" }
-              ].map((opt) => (
-                <button key={opt.val} style={rowChoiceStyle(lifeStage === opt.val)} onClick={() => handleSelectSingle(setLifeStage, opt.val)}>
-                  <span>{opt.label}</span>
-                  {lifeStage === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* STEP 2: Q2 - Living Situation */}
-          {step === 2 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { label: "At home with family", val: "At home with family" },
-                { label: "Renting — just moved in or about to", val: "Renting — just moved in or about to" },
-                { label: "Renting — been here a while", val: "Renting — been here a while" },
-                { label: "I own my place", val: "I own my place" },
-                { label: "Student accommodation", val: "Student accommodation" }
-              ].map((opt) => (
-                <button key={opt.val} style={rowChoiceStyle(livingSituation === opt.val)} onClick={() => handleSelectSingle(setLivingSituation, opt.val)}>
-                  <span>{opt.label}</span>
-                  {livingSituation === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* STEP 3: Q3 - Upcoming Events (Multi-Select) */}
-          {step === 3 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                "Starting a new job soon",
-                "Moving out for the first time",
-                "Thinking about buying a place",
-                "Moving in with a partner",
-                "Having a baby or just had one",
-                "Getting a pay rise or changing jobs",
-                "Buying a car",
-                "None of these right now"
-              ].map((evt) => {
-                const active = upcomingEvents.includes(evt);
-                return (
-                  <button key={evt} style={rowChoiceStyle(active)} onClick={() => toggleUpcomingEvent(evt)}>
-                    <span>{evt}</span>
-                    {active && <AppIcon name="check" size={14} stroke={2.4} />}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* STEP 4: Q4 - Money Worry */}
-          {step === 4 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { label: "I don't really understand how tax works", val: "I don't really understand how tax works" },
-                { label: "I never seem to have anything left at the end of the month", val: "I never seem to have anything left at the end of the month" },
-                { label: "I've got debt I'm trying to deal with", val: "I've got debt I'm trying to deal with" },
-                { label: "I don't know if I'm saving enough or doing it right", val: "I don't know if I'm saving enough or doing it right" },
-                { label: "I have no idea what my pension is doing", val: "I have no idea what my pension is doing" },
-                { label: "I want to start investing but don't know where to begin", val: "I want to start investing but don't know where to begin" },
-                { label: "I feel like I'm missing out on money the government owes me", val: "I feel like I'm missing out on money the government owes me" },
-                { label: "Honestly I don't know what I don't know", val: "Honestly I don't know what I don't know" }
-              ].map((opt) => (
-                <button key={opt.val} style={rowChoiceStyle(moneyWorry === opt.val)} onClick={() => handleSelectSingle(setMoneyWorry, opt.val)}>
-                  <span style={{ maxWidth: "88%" }}>{opt.label}</span>
-                  {moneyWorry === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* STEP 5: Q5 - Confidence Matrix */}
-          {step === 5 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {[
-                { key: "payslip", label: "Understanding your payslip and tax" },
-                { key: "budgeting", label: "Budgeting and managing money day to day" },
-                { key: "pensions", label: "Pensions and retirement saving" },
-                { key: "investing", label: "Investing and ISAs" },
-                { key: "renting", label: "Your rights as a renter or buyer" }
-              ].map(({ key, label }) => {
-                const rating = confidence[key] || 3;
-                return (
-                  <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1.5px solid var(--p-line)", borderRadius: 14, padding: "12px 14px" }}>
-                    <span style={{ fontSize: 13, color: "var(--p-ink-2)", fontWeight: 600, fontFamily: "var(--p-sans)" }}>{label}</span>
-                    <div style={{ display: "flex", gap: 8, justifyContent: "space-between", marginTop: 4 }}>
-                      {[1, 2, 3, 4, 5].map((val) => {
-                        const isSelected = val <= rating;
-                        const isExact = val === rating;
-                        return (
-                          <button
-                            key={val}
-                            onClick={() => setConfidence((prev) => ({ ...prev, [key]: val }))}
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: "50%",
-                              border: "none",
-                              cursor: "pointer",
-                              background: isExact ? "var(--p-coral)" : isSelected ? "var(--p-coral-tint)" : "var(--p-line)",
-                              color: isExact ? "#fff" : "var(--p-ink-2)",
-                              fontWeight: 700,
-                              fontSize: 12,
-                              fontFamily: "var(--p-mono)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.1s ease"
-                            }}
-                          >
-                            {val}
-                          </button>
-                        );
-                      })}
-                    </div>
+          {/* Render inputs ONLY after Sage finishes typing */}
+          {typingComplete && (
+            <div style={{ animation: "anp-fade-in 0.3s ease both" }}>
+              {/* Step 0: Name info */}
+              {step === 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <input
+                      className="anp-name-input"
+                      style={inputStyle}
+                      placeholder="Your name..."
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
                   </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* STEP 6: Q6 - Student Loan */}
-          {step === 6 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { label: "Yes and it comes off my payslip", val: "Yes and it comes off my payslip" },
-                { label: "Yes but I haven't started repaying yet", val: "Yes but I haven't started repaying yet" },
-                { label: "No I didn't take one out", val: "No I didn't take one out" },
-                { label: "I'm not sure actually", val: "I'm not sure actually" }
-              ].map((opt) => (
-                <button key={opt.val} style={rowChoiceStyle(studentLoan === opt.val)} onClick={() => handleSelectSingle(setStudentLoan, opt.val)}>
-                  <span>{opt.label}</span>
-                  {studentLoan === opt.val && <AppIcon name="check" size={14} stroke={2.4} />}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* STEP 7: Q7 - Salary Input */}
-          {step === 7 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={questionTitleStyle}>Take home salary (optional)</label>
-                <div style={{ position: "relative" }}>
-                  <span style={{ position: "absolute", left: 14, top: 12, color: "var(--p-ink-3)", fontWeight: 600, fontSize: 16 }}>£</span>
-                  <input
-                    style={{ ...inputStyle, paddingLeft: 28 }}
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="e.g. 28,000"
-                    value={salaryInput}
-                    onChange={(e) => setSalaryInput(e.target.value)}
-                  />
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* STEP 8: CLOSING MESSAGE / PERSOMALISATION SUMMARY */}
-          {step === 8 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <SageAvatar size={46} />
-                <div style={{
-                  background: "#fff",
-                  border: "1.5px solid var(--p-line)",
-                  borderRadius: "0px 16px 16px 16px",
-                  padding: "14px 16px",
-                  fontSize: 14.5,
-                  lineHeight: 1.45,
-                  color: "var(--p-ink)",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                  flex: 1,
-                  fontFamily: "var(--p-sans)"
-                }}>
-                  Ok <b>{firstName || "Maya"}</b>. Based on what you've told me, here's where I'm starting you off.
+              {/* Step 1: Transition slide (no input, just continues) */}
+              {step === 1 && null}
+
+              {/* Step 2: Q1 - Life stage */}
+              {step === 2 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    "I'm still at uni",
+                    "I've just started my first proper job",
+                    "I've been working for a year or two",
+                    "I'm doing the freelance / self-employed thing",
+                    "I'm not working at the moment"
+                  ].map((opt) => (
+                    <button key={opt} style={rowChoiceStyle(lifeStage === opt)} onClick={() => handleSelectSingle(setStepLifeStage, opt)}>
+                      <span>{opt}</span>
+                      {lifeStage === opt && <AppIcon name="check" size={14} stroke={2.4} />}
+                    </button>
+                  ))}
                 </div>
-              </div>
+              )}
 
-              {/* List of recommended cards */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
-                {recSummary.map((card, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      background: "#fff",
-                      border: "1.5px solid var(--p-line)",
-                      borderRadius: 18,
-                      padding: "16px 16px",
-                      display: "flex",
-                      gap: 14,
-                      alignItems: "flex-start",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.02)"
-                    }}
-                  >
-                    <div
+              {/* Step 3: Q2 - Living situation */}
+              {step === 3 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    "Living at home with family",
+                    "Renting (just moved in, or about to)",
+                    "Renting (been here a while now)",
+                    "I own my place",
+                    "Student accommodation"
+                  ].map((opt) => (
+                    <button key={opt} style={rowChoiceStyle(livingSituation === opt)} onClick={() => handleSelectSingle(setStepLivingSituation, opt)}>
+                      <span>{opt}</span>
+                      {livingSituation === opt && <AppIcon name="check" size={14} stroke={2.4} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 4: Q3 - Upcoming events (Multi) */}
+              {step === 4 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    "Starting a new job soon",
+                    "Moving out for the very first time",
+                    "Thinking about buying a place",
+                    "Moving in with a partner",
+                    "Having a baby (or just had one)",
+                    "Getting a pay rise or switching roles",
+                    "Buying a car",
+                    "Nothing major right now"
+                  ].map((evt) => {
+                    const active = upcomingEvents.includes(evt);
+                    return (
+                      <button key={evt} style={rowChoiceStyle(active)} onClick={() => toggleUpcomingEvent(evt)}>
+                        <span>{evt}</span>
+                        {active && <AppIcon name="check" size={14} stroke={2.4} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Step 5: Q4 - Money worry */}
+              {step === 5 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    "I honestly don't get how tax works",
+                    "I never seem to have anything left at the end of the month",
+                    "I've got debt I'm trying to clear",
+                    "I don't know if I'm saving right, or saving enough",
+                    "I have absolutely no idea what my pension is doing",
+                    "I want to start investing but I'm stuck at square one",
+                    "I feel like I'm missing out on free government cash",
+                    "Honestly? I don't even know what I don't know"
+                  ].map((opt) => (
+                    <button key={opt} style={rowChoiceStyle(moneyWorry === opt)} onClick={() => handleSelectSingle(setStepMoneyWorry, opt)}>
+                      <span style={{ maxWidth: "88%" }}>{opt}</span>
+                      {moneyWorry === opt && <AppIcon name="check" size={14} stroke={2.4} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 6: Q5 - Confidence Check (Consolidated) */}
+              {step === 6 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ alignSelf: "center", fontSize: 13, fontWeight: 600, color: "var(--p-ink-3)", fontFamily: "var(--p-sans)", marginBottom: 4 }}>
+                    1 = Clueless • 5 = Expert
+                  </div>
+                  {[
+                    { label: "Decoding your payslip and tax", key: "payslip" },
+                    { label: "Managing cash flow and day-to-day budgeting", key: "budgeting" },
+                    { label: "Pensions and saving for the future", key: "pensions" },
+                    { label: "Investing, ISAs, and growing wealth", key: "investing" },
+                    { label: "Your rights as a tenant or home buyer", key: "renting" }
+                  ].map(({ label, key }) => (
+                    <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>{label}</span>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "space-between", background: "#fff", border: "1.5px solid var(--p-line)", borderRadius: 12, padding: "8px" }}>
+                        {[1, 2, 3, 4, 5].map((val) => {
+                          const isSelected = val === confidence[key];
+                          return (
+                            <button
+                              key={val}
+                              onClick={() => handleSelectRating(key, val)}
+                              style={{
+                                flex: 1,
+                                height: 36,
+                                borderRadius: 8,
+                                border: isSelected ? "2.2px solid var(--p-coral)" : "1.5px solid var(--p-line)",
+                                background: isSelected ? "var(--p-coral-tint)" : "var(--p-line-2)",
+                                color: isSelected ? "var(--p-coral)" : "var(--p-ink)",
+                                fontWeight: 700,
+                                fontSize: 13,
+                                cursor: "pointer",
+                                fontFamily: "var(--p-mono)"
+                              }}
+                            >
+                              {val}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 7: Q6 - Student loan */}
+              {step === 7 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    "Yes, and it's actively coming off my payslip",
+                    "Yes, but I haven't started paying it back yet",
+                    "No, I didn't take one out",
+                    "I'm not entirely sure, actually"
+                  ].map((opt) => (
+                    <button key={opt} style={rowChoiceStyle(studentLoan === opt)} onClick={() => handleSelectSingle(setStepStudentLoan, opt)}>
+                      <span>{opt}</span>
+                      {studentLoan === opt && <AppIcon name="check" size={14} stroke={2.4} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Step 8: Q7 - Salary */}
+              {step === 8 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <label style={questionTitleStyle}>Take home salary (optional)</label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: 14, top: 12, color: "var(--p-ink-3)", fontWeight: 600, fontSize: 16 }}>£</span>
+                      <input
+                        style={{ ...inputStyle, paddingLeft: 28 }}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g. 28,000"
+                        value={salaryInput}
+                        onChange={(e) => setSalaryInput(e.target.value)}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSalaryInput("");
+                        advance();
+                      }}
                       style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 12,
-                        background: "var(--p-coral-tint)",
+                        background: "transparent",
+                        border: "none",
                         color: "var(--p-coral)",
-                        fontSize: 18,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0
+                        fontFamily: "var(--p-sans)",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        padding: "8px 12px",
+                        marginTop: 12,
+                        alignSelf: "center",
+                        textDecoration: "underline"
                       }}
                     >
-                      {card.icon}
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>
-                        {card.title}
-                      </div>
-                      <div style={{ fontSize: 12.5, color: "var(--p-ink-2)", lineHeight: 1.4, fontFamily: "var(--p-sans)" }}>
-                        {card.desc}
-                      </div>
-                    </div>
+                      Skip for now
+                    </button>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Step 9: Summary learning queue reveal */}
+              {step === 9 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+                  {recSummary.map((card, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        background: "#fff",
+                        border: "1.5px solid var(--p-line)",
+                        borderRadius: 18,
+                        padding: "16px 16px",
+                        display: "flex",
+                        gap: 14,
+                        alignItems: "flex-start",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.02)"
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 12,
+                          background: "var(--p-coral-tint)",
+                          color: "var(--p-coral)",
+                          fontSize: 18,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0
+                        }}
+                      >
+                        {card.icon}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>
+                          {card.title}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: "var(--p-ink-2)", lineHeight: 1.4, fontFamily: "var(--p-sans)" }}>
+                          {card.desc}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             </div>
           )}
 
         </div>
       </div>
 
-      {/* Onboarding Bottom Action Bar */}
-      <div style={{ padding: "12px 20px max(20px, env(safe-area-inset-bottom)) 20px", flexShrink: 0, borderTop: "1px solid var(--p-line)", background: "var(--p-card)" }}>
-        <button
-          disabled={!canAdvance}
-          onClick={advance}
-          style={{
-            width: "100%",
-            padding: "15px",
-            background: canAdvance ? "var(--p-ink)" : "var(--p-line)",
-            color: canAdvance ? "#fff" : "var(--p-ink-3)",
-            border: "none",
-            borderRadius: 14,
-            fontFamily: "var(--p-display)",
-            fontWeight: 600,
-            fontSize: 15,
-            cursor: canAdvance ? "pointer" : "not-allowed",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            boxShadow: canAdvance ? "0 4px 0 #08070a" : "none",
-            transition: "all 0.15s ease"
-          }}
-        >
-          {step === 0 ? "Let's start" : step === 8 ? "Let's go" : "Continue"}
-          <AppIcon name="arrowRight" size={16} stroke={2} />
-        </button>
-        
-        {/* Back and Skip buttons */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-          {step > 0 && step < 8 && (
-            <button
-              onClick={() => setStep((s) => s - 1)}
-              style={{
-                padding: "8px 12px",
-                background: "transparent",
-                border: "none",
-                color: "var(--p-ink-3)",
-                fontFamily: "var(--p-sans)",
-                fontSize: 13,
-                cursor: "pointer"
-              }}
-            >
-              Back
-            </button>
-          )}
-          {step === 7 && (
-            <button
-              onClick={advance}
-              style={{
-                padding: "8px 12px",
-                background: "transparent",
-                border: "none",
-                color: "var(--p-coral)",
-                fontFamily: "var(--p-sans)",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer"
-              }}
-            >
-              Skip
-            </button>
-          )}
+      {/* Action panel */}
+      {typingComplete && (
+        <div style={{ padding: "12px 20px max(20px, env(safe-area-inset-bottom)) 20px", flexShrink: 0, borderTop: "1px solid var(--p-line)", background: "var(--p-card)", animation: "anp-fade-in 0.3s ease both" }}>
+          <button
+            disabled={!canAdvance}
+            onClick={advance}
+            style={{
+              width: "100%",
+              padding: "15px",
+              background: canAdvance ? "var(--p-ink)" : "var(--p-line)",
+              color: canAdvance ? "#fff" : "var(--p-ink-3)",
+              border: "none",
+              borderRadius: 14,
+              fontFamily: "var(--p-display)",
+              fontWeight: 600,
+              fontSize: 15,
+              cursor: canAdvance ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: canAdvance ? "0 4px 0 #08070a" : "none",
+              transition: "all 0.15s ease"
+            }}
+          >
+            {step === 0 ? "Continue" : step === 1 ? "Let's do it" : step === 9 ? "Let's go" : "Continue"}
+            <AppIcon name="arrowRight" size={16} stroke={2} />
+          </button>
+          
+          {/* Helper footer */}
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
+            {step > 0 && step < 9 && (
+              <button
+                onClick={() => setStep((s) => s - 1)}
+                style={{
+                  padding: "8px 12px",
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--p-ink-3)",
+                  fontFamily: "var(--p-sans)",
+                  fontSize: 13,
+                  cursor: "pointer"
+                }}
+              >
+                Back
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Embedded Animations styles */}
+      <style>{`
+        @keyframes anp-fade-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes anp-blink {
+          0%, 100% { opacity: 0; }
+          50% { opacity: 1; }
+        }
+        .anp-cursor {
+          animation: anp-blink 0.8s infinite;
+          color: var(--p-coral);
+          font-weight: bold;
+          margin-left: 2px;
+          display: inline-block;
+        }
+        .anp-name-input::placeholder {
+          color: var(--p-ink-3);
+          font-weight: 400;
+          opacity: 0.8;
+        }
+        .anp-auth-slide-in {
+          animation: anp-auth-fade-slide 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes anp-auth-fade-slide {
+          from {
+            opacity: 0;
+            transform: translateX(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        .anp-auth-input::placeholder {
+          color: rgba(255, 255, 255, 0.55);
+        }
+        .anp-auth-input:focus {
+          background: rgba(255, 255, 255, 0.22) !important;
+          border-color: #ffffff !important;
+          box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+        }
+      `}</style>
     </div>
   );
 }
