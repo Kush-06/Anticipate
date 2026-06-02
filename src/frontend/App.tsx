@@ -25,13 +25,13 @@ function MainApp() {
     if (isNative) {
       return (
         <div style={{ width: "100%", height: "100vh", background: "var(--p-coral, #e9694a)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}>
-          <LoadingScreen onFinished={() => setAppLoading(false)} />
+          <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
         </div>
       );
     }
     return (
       <PhoneFrame>
-        <LoadingScreen onFinished={() => setAppLoading(false)} />
+        <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
       </PhoneFrame>
     );
   }
