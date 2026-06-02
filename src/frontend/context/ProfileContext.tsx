@@ -16,6 +16,18 @@ export interface UserProfile {
     investing: number;
     contracts: number;
   };
+  ageRange?: string;
+  education?: string;
+  livingSituation?: string;
+  livingDuration?: string;
+  planningToMove?: string;
+  salary?: string;
+  studentLoan?: string;
+  financialProducts?: string[];
+  hasDebt?: string;
+  interestedTopics?: string[];
+  motivation?: string;
+  usageFrequency?: string;
 }
 
 interface ProfileContextType {
