@@ -3,7 +3,7 @@ import { useProfile } from "../context/ProfileContext";
 import { useTimeline } from "../context/TimelineContext";
 import type { SpineItem } from "../context/TimelineContext";
 import { useProgress } from "../context/ProgressContext";
-import { topics } from "../data/topics";
+import { topics, getRecommendedTopics } from "../data/topics";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 
@@ -56,6 +56,43 @@ export function HomeScreen() {
   const firstName = profile?.firstName ?? "there";
   const company = profile?.companyName ?? "your employer";
 
+  // Recommendation logic - filter out fully completed topics
+  const recs = getRecommendedTopics(profile).filter((id) => {
+    const t = topics.find((topic) => topic.id === id);
+    if (!t) return false;
+    const completedCount = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
+    return completedCount < t.subTopics.length;
+  });
+
+  // Fallback to first incomplete topic if all recommendations are completed or if there are none
+  const incompleteTopics = topics.filter((t) => {
+    const completedCount = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
+    return completedCount < t.subTopics.length;
+  });
+
+  const recTopic = topics.find((t) => recs.includes(t.id)) ?? incompleteTopics[0] ?? topics[0];
+
+  let sageNudgeText = `Your first payslip from <b>${company}</b> lands in 3 days. Let's walk through it now so you're ready — it takes <b>4 minutes</b>.`;
+  if (recTopic) {
+    if (recTopic.id === "buying-a-home") {
+      sageNudgeText = `Based on your goal to buy a home, I recommend starting with the <b>Buying a Home</b> module. It covers mortgages and Lifetime ISAs!`;
+    } else if (recTopic.id === "debt") {
+      sageNudgeText = `I noticed you want to keep on top of debt. Let's start with the <b>Managing Debt</b> module to review payoff strategies together.`;
+    } else if (recTopic.id === "investing-101") {
+      sageNudgeText = `You mentioned an interest in investing. Let's explore <b>Investing 101</b> to learn about stock markets, risk, and index funds.`;
+    } else if (recTopic.id === "renting") {
+      sageNudgeText = `Since you have tenancy questions, let's explore <b>Renting</b> to learn about deposits, bill budgeting, and tenancy rights.`;
+    } else if (recTopic.id === "starting-work") {
+      sageNudgeText = `Let's make sure you understand your payslip. It's the best foundation for learning about taxes and PAYE!`;
+    } else if (recTopic.id === "foundations") {
+      sageNudgeText = `I recommend starting with <b>The Foundations</b>. Let's explore compound interest and building emergency funds.`;
+    } else if (recTopic.id === "taxes-wealth") {
+      sageNudgeText = `Let's tackle tax brackets and capital gains. I recommend starting with <b>Taxes & Wealth Building</b>!`;
+    } else if (recTopic.id === "career") {
+      sageNudgeText = `Want to improve your pay? Let's walk through <b>Career & Pay</b> to review negotiation and pension consolidation.`;
+    }
+  }
+
   // Find the active topic for the continue card
   const topicCompletions = topics.map((t) => {
     const done = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
@@ -90,11 +127,9 @@ export function HomeScreen() {
           <div className="av-sage__row">
             <SageAvatar size={46} />
             <div>
-              <div className="av-sage__eyebrow">Sage</div>
-              <div className="av-sage__text">
-                Your first payslip from <b>{company}</b> lands in 3 days. Let's walk through it now so you're ready — it takes <b>4 minutes</b>.
-              </div>
-              <button className="av-sage__cta" onClick={() => navigate("/learn")}>
+              <div className="av-sage__eyebrow">Sage recommendation</div>
+              <div className="av-sage__text" dangerouslySetInnerHTML={{ __html: sageNudgeText }} />
+              <button className="av-sage__cta" onClick={() => navigate(recTopic ? `/topic/${recTopic.id}` : "/learn")}>
                 Start the lesson <AppIcon name="arrowRight" size={13} stroke={2} />
               </button>
             </div>

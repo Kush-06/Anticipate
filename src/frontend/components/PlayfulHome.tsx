@@ -16,8 +16,9 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { topics } from "../data/topics";
+import { topics, getRecommendedTopics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { useProfile } from "../context/ProfileContext";
 
 const TOPIC_ICONS: Record<string, LucideIcon> = {
   "starting-work":    Briefcase,
@@ -92,13 +93,14 @@ function TrackIcon({ topicId, status }: { topicId: string; status: TrackStatus }
   return Icon ? <Icon size={22} strokeWidth={1.5} /> : null;
 }
 
-function TrackTile({ topic, status, completedCount, minutes, pct, color, onClick }: {
+function TrackTile({ topic, status, completedCount, minutes, pct, color, isRecommended, onClick }: {
   topic: typeof topics[0];
   status: TrackStatus;
   completedCount: number;
   minutes: number;
   pct: number;
   color: string;
+  isRecommended?: boolean;
   onClick: () => void;
 }) {
   const total = topic.subTopics.length;
@@ -114,6 +116,7 @@ function TrackTile({ topic, status, completedCount, minutes, pct, color, onClick
         <div className="anp-l-track-title">
           {topic.title}
           {status === "active" && <span className="now-tag">NOW</span>}
+          {isRecommended && <span className="rec-tag">FOR YOU</span>}
         </div>
         <div className="anp-l-track-sub">{TOPIC_SUBTITLES[topic.id]}</div>
         <div className="anp-l-track-progress">
@@ -133,6 +136,7 @@ function TrackTile({ topic, status, completedCount, minutes, pct, color, onClick
 export function PlayfulHome() {
   const navigate = useNavigate();
   const { completedSubTopicIds } = useProgress();
+  const { profile } = useProfile();
 
   const completions = topics.map((t) => {
     const done = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
@@ -151,8 +155,24 @@ export function PlayfulHome() {
   const nextModuleIndex = activeTopic.subTopics.indexOf(nextModule) + 1;
   const ringCirc = 2 * Math.PI * 18;
 
+  // Filter recommendations to show on non-completed topics
+  const recs = getRecommendedTopics(profile).filter((id) => {
+    const t = topics.find((topic) => topic.id === id);
+    if (!t) return false;
+    const completedCount = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
+    return completedCount < t.subTopics.length;
+  });
+
   const foundational = topics.filter((t) => FOUNDATIONAL_IDS.has(t.id));
-  const suggested = topics.filter((t) => !FOUNDATIONAL_IDS.has(t.id));
+  const suggested = topics
+    .filter((t) => !FOUNDATIONAL_IDS.has(t.id))
+    .sort((a, b) => {
+      const aRec = recs.includes(a.id);
+      const bRec = recs.includes(b.id);
+      if (aRec && !bRec) return -1;
+      if (!aRec && bRec) return 1;
+      return 0;
+    });
 
   const renderTrackTile = (topic: typeof topics[0]) => {
     const globalIdx = topics.indexOf(topic);
@@ -162,6 +182,7 @@ export function PlayfulHome() {
     const pct = (completedCount / Math.max(total, 1)) * 100;
     const minutes = total * MINS_PER_SUBTOPIC;
     const color = SIDE_COLORS[globalIdx % SIDE_COLORS.length];
+    const isRecommended = recs.includes(topic.id);
     return (
       <TrackTile
         key={topic.id}
@@ -171,6 +192,7 @@ export function PlayfulHome() {
         minutes={minutes}
         pct={pct}
         color={color}
+        isRecommended={isRecommended}
         onClick={() => navigate(`/topic/${topic.id}`)}
       />
     );

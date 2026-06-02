@@ -209,6 +209,8 @@ export const topics: Topic[] = [
   },
 ];
 
+import type { UserProfile } from "../context/ProfileContext";
+
 export function getTopicById(id: string): Topic | undefined {
   return topics.find(topic => topic.id === id);
 }
@@ -216,4 +218,54 @@ export function getTopicById(id: string): Topic | undefined {
 export function getSubTopicById(topicId: string, subTopicId: string): SubTopic | undefined {
   const topic = getTopicById(topicId);
   return topic?.subTopics.find(sub => sub.id === subTopicId);
+}
+
+export function getRecommendedTopics(profile: UserProfile | null): string[] {
+  if (!profile) return [];
+  const recs: string[] = [];
+
+  // 1. Debt priority
+  if (profile.hasDebt === "Yes") {
+    recs.push("debt");
+  }
+
+  // 2. Interest selections (direct recommendation)
+  const interests = profile.interestedTopics || [];
+  interests.forEach((topic) => {
+    if (topic === "Understanding my payslip" || topic === "Tax and PAYE") {
+      recs.push("starting-work");
+    } else if (topic === "Renting") {
+      recs.push("renting");
+    } else if (topic === "Buying a home") {
+      recs.push("buying-a-home");
+    } else if (topic === "Investing") {
+      recs.push("investing-101");
+    } else if (topic === "Pensions") {
+      recs.push("taxes-wealth");
+    } else if (topic === "Budgeting" || topic === "Saving and ISAs") {
+      recs.push("foundations");
+    } else if (topic === "Debt management") {
+      recs.push("debt");
+    } else if (topic === "Self-employment / freelancing") {
+      recs.push("taxes-wealth");
+    } else if (topic === "Student finance") {
+      recs.push("starting-work");
+    }
+  });
+
+  // 3. Move plans
+  if (profile.planningToMove === "Yes") {
+    recs.push("renting");
+    recs.push("buying-a-home");
+  }
+
+  // 4. Low confidence scores (if they rated 1 or 2)
+  const cs = profile.confidenceScores || {};
+  if (cs.pensions <= 2) recs.push("taxes-wealth");
+  if (cs.investing <= 2) recs.push("investing-101");
+  if (cs.tax <= 2) recs.push("starting-work");
+  if (cs.budgeting <= 2) recs.push("foundations");
+
+  // De-duplicate keeping order of appearance
+  return Array.from(new Set(recs));
 }

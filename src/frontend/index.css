@@ -2220,3 +2220,17 @@ body {
   letter-spacing: 0.04em;
   font-family: var(--font-body);
 }
+
+.anp-l-track-title .rec-tag {
+  background: var(--p-coral-tint);
+  color: var(--p-coral);
+  font-family: var(--p-mono);
+  font-size: calc(8.5px * var(--d));
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  display: inline-block;
+  vertical-align: middle;
+}
