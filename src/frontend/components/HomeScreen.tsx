@@ -50,7 +50,7 @@ function SpineNode({ item, isLast, onNavigate }: { item: SpineItem; isLast: bool
 export function HomeScreen() {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { groups } = useTimeline();
+  const { groups, isLoading: timelineLoading } = useTimeline();
   const { completedSubTopicIds } = useProgress();
 
   const firstName = profile?.firstName ?? "there";
@@ -202,22 +202,36 @@ export function HomeScreen() {
         </div>
 
         <div className="av-spine">
-          {groups.map((group) => (
-            <div key={group.key}>
-              <div className="av-spine__group-h">
-                {group.label}
-                <span className="n">· {group.items.length}</span>
-              </div>
-              {group.items.map((item, i) => (
-                <SpineNode
-                  key={item.id}
-                  item={item}
-                  isLast={i === group.items.length - 1 && group.key === "later"}
-                  onNavigate={navigate}
-                />
+          {timelineLoading ? (
+            <div style={{ padding: "24px 0", display: "flex", flexDirection: "column", gap: 16 }}>
+              {[80, 120, 96].map((w, i) => (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: "var(--p-line)", flexShrink: 0, marginTop: 4 }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+                    <div style={{ height: 12, width: `${w}px`, borderRadius: 6, background: "var(--p-line)" }} />
+                    <div style={{ height: 10, width: "60%", borderRadius: 6, background: "var(--p-line)" }} />
+                  </div>
+                </div>
               ))}
             </div>
-          ))}
+          ) : (
+            groups.map((group) => (
+              <div key={group.key}>
+                <div className="av-spine__group-h">
+                  {group.label}
+                  <span className="n">· {group.items.length}</span>
+                </div>
+                {group.items.map((item, i) => (
+                  <SpineNode
+                    key={item.id}
+                    item={item}
+                    isLast={i === group.items.length - 1 && group.key === "later"}
+                    onNavigate={navigate}
+                  />
+                ))}
+              </div>
+            ))
+          )}
         </div>
 
         <div style={{ height: 32 }} />
