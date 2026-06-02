@@ -1,9 +1,14 @@
 import { useNavigate, useParams } from "react-router";
+import { useEffect } from "react";
 import { topics } from "../data/topics";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { TopicIcon } from "./TopicIcon";
 import { useProfile } from "../context/ProfileContext";
+import { supabase } from "@backend/supabaseClient";
+import { fetchStoryFacts } from "@backend/profileService";
+import { createNudge, sendPushNudge } from "@backend/nudgeService";
+import { isTopicOffProfile, buildNudgeQuestion } from "../utils/offProfileDetector";
 
 function estimateNetPay(gross: number, profile: any): number {
   const personalAllowance = 12570;
@@ -174,6 +179,26 @@ export function PlayfulSubTopic() {
   const navigate = useNavigate();
   const { topicId, subTopicId } = useParams<{ topicId: string; subTopicId: string }>();
   const { profile } = useProfile();
+
+  // Fire-and-forget: check if user is starting a topic that seems off-profile
+  useEffect(() => {
+    if (!topicId) return;
+    void (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const facts = await fetchStoryFacts(session.user.id);
+      if (!isTopicOffProfile(topicId, facts)) return;
+      // Check for an unanswered nudge for this course to avoid re-asking
+      const nudge = await createNudge(
+        session.user.id,
+        { type: "course_start_off_profile", courseId: topicId, detail: `started ${topicId}` },
+        buildNudgeQuestion(topicId)
+      );
+      if (nudge) await sendPushNudge(nudge);
+    })();
+  // Intentionally only runs on first mount for this lesson
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topicId]);
 
   const topic = topics.find((t) => t.id === topicId);
   const subTopic = topic?.subTopics.find((s) => s.id === subTopicId);
