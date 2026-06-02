@@ -38,7 +38,7 @@ export const topics: Topic[] = [
   {
     id: "starting-work",
     title: "Starting Work",
-    icon: "💼",
+    icon: "briefcase",
     color: "#3b82f6",
     completion: 0,
     subTopics: [
@@ -52,7 +52,7 @@ export const topics: Topic[] = [
   {
     id: "renting",
     title: "Renting",
-    icon: "🔑",
+    icon: "house",
     color: "#10b981",
     completion: 0,
     subTopics: [
@@ -65,7 +65,7 @@ export const topics: Topic[] = [
   {
     id: "buying-a-home",
     title: "Buying a Home",
-    icon: "🏡",
+    icon: "house",
     color: "#f59e0b",
     completion: 0,
     subTopics: [
@@ -79,7 +79,7 @@ export const topics: Topic[] = [
   {
     id: "relationships",
     title: "Money & Relationships",
-    icon: "💑",
+    icon: "handshake",
     color: "#ec4899",
     completion: 0,
     subTopics: [
@@ -92,7 +92,7 @@ export const topics: Topic[] = [
   {
     id: "family",
     title: "Family Finances",
-    icon: "👶",
+    icon: "shield",
     color: "#8b5cf6",
     completion: 0,
     subTopics: [
@@ -105,7 +105,7 @@ export const topics: Topic[] = [
   {
     id: "career",
     title: "Career & Pay",
-    icon: "📈",
+    icon: "chart",
     color: "#f97316",
     completion: 0,
     subTopics: [
@@ -118,7 +118,7 @@ export const topics: Topic[] = [
   {
     id: "cars",
     title: "Cars & Transport",
-    icon: "🚗",
+    icon: "document",
     color: "#06b6d4",
     completion: 0,
     subTopics: [
@@ -130,7 +130,7 @@ export const topics: Topic[] = [
   {
     id: "debt",
     title: "Managing Debt",
-    icon: "📉",
+    icon: "chart",
     color: "#ef4444",
     completion: 0,
     subTopics: [
@@ -143,7 +143,7 @@ export const topics: Topic[] = [
   {
     id: "windfalls",
     title: "Windfalls & Allowances",
-    icon: "🎁",
+    icon: "sparkle",
     color: "#84cc16",
     completion: 0,
     subTopics: [
@@ -155,7 +155,7 @@ export const topics: Topic[] = [
   {
     id: "foundations",
     title: "The Foundations",
-    icon: "💡",
+    icon: "sparkle",
     color: "#6366f1",
     completion: 0,
     subTopics: [
@@ -169,7 +169,7 @@ export const topics: Topic[] = [
   {
     id: "mastering-credit",
     title: "Mastering Credit",
-    icon: "💳",
+    icon: "shield",
     color: "#14b8a6",
     completion: 0,
     subTopics: [
@@ -182,7 +182,7 @@ export const topics: Topic[] = [
   {
     id: "investing-101",
     title: "Investing 101",
-    icon: "📊",
+    icon: "chart",
     color: "#22c55e",
     completion: 0,
     subTopics: [
@@ -197,7 +197,7 @@ export const topics: Topic[] = [
   {
     id: "taxes-wealth",
     title: "Taxes & Wealth Building",
-    icon: "🏦",
+    icon: "bank",
     color: "#a855f7",
     completion: 0,
     subTopics: [
@@ -344,4 +344,139 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
   }
 
   return result;
+}
+
+export interface RecommendedCard {
+  title: string;
+  desc: string;
+  topicId: string;
+  subTopicId: string;
+  icon: string;
+}
+
+export function getRecommendedSummary(profile: UserProfile | null): RecommendedCard[] {
+  if (!profile) return [];
+  const selected: RecommendedCard[] = [];
+
+  const moneyWorry = profile.sixMonthGoal;
+  const confidence = profile.confidenceScores || { tax: 3, budgeting: 3, investing: 3, pensions: 3, contracts: 3 };
+  const lifeStage = profile.lifeStage;
+  const upcomingEvents = profile.upcomingEvents || [];
+  const livingSituation = profile.livingSituation || "";
+  const studentLoan = profile.studentLoan || "";
+
+  // Card 1: Stressor / tax / payslip
+  if (moneyWorry === "I honestly don't get how tax works" || (confidence.tax && confidence.tax <= 2)) {
+    selected.push({
+      title: "Decoding your payslip",
+      desc: "You mentioned tax confuses you and you have a new salary coming. Let's get this sorted first.",
+      topicId: "starting-work",
+      subTopicId: "lesson-01",
+      icon: "receipt"
+    });
+  } else if (lifeStage === "I've just started my first proper job" || upcomingEvents.includes("Starting a new job soon")) {
+    selected.push({
+      title: "Decoding your payslip",
+      desc: "Since you're starting a new job, let's make sure you understand your very first paycheck.",
+      topicId: "starting-work",
+      subTopicId: "lesson-01",
+      icon: "briefcase"
+    });
+  } else if (moneyWorry === "I've got debt I'm trying to clear") {
+    selected.push({
+      title: "The Debt Spectrum",
+      desc: "You mentioned debt stresses you out. Let's review payoff strategies and snowball methods.",
+      topicId: "debt",
+      subTopicId: "lesson-29",
+      icon: "chart"
+    });
+  } else {
+    selected.push({
+      title: "The Power of Compound Interest",
+      desc: "The absolute foundation of wealth building. Let's see how small amounts grow over time.",
+      topicId: "foundations",
+      subTopicId: "lesson-36",
+      icon: "sparkle"
+    });
+  }
+
+  // Card 2: Budgeting / Investing
+  if (moneyWorry === "I never seem to have anything left at the end of the month" || (confidence.budgeting && confidence.budgeting <= 2)) {
+    selected.push({
+      title: "The 50/30/20 rule",
+      desc: "You said you never have much left at the end of the month. This simple framework is going to change that.",
+      topicId: "starting-work",
+      subTopicId: "lesson-03",
+      icon: "piggy"
+    });
+  } else if (moneyWorry === "I want to start investing but I'm stuck at square one" || (confidence.investing && confidence.investing <= 2)) {
+    selected.push({
+      title: "Stocks & Shares ISAs",
+      desc: "You want to start investing. Let's learn how to grow your wealth tax-free with index funds.",
+      topicId: "investing-101",
+      subTopicId: "lesson-43",
+      icon: "chart"
+    });
+  } else if (moneyWorry === "I have absolutely no idea what my pension is doing") {
+    selected.push({
+      title: "The Auto-Enrolment Pension",
+      desc: "You said you have no idea what your pension is doing. Let's claim your free employer money.",
+      topicId: "starting-work",
+      subTopicId: "lesson-02",
+      icon: "bank"
+    });
+  } else {
+    selected.push({
+      title: "The Emergency Fund",
+      desc: "Your buffer against life's surprises. Let's build a cash cushion before you start saving.",
+      topicId: "foundations",
+      subTopicId: "lesson-37",
+      icon: "shield"
+    });
+  }
+
+  // Card 3: Living Situation / Future Events
+  if (livingSituation?.includes("Renting (just") || livingSituation?.includes("Renting — just") || upcomingEvents.includes("Moving out for the very first time") || upcomingEvents.includes("Moving out for the first time")) {
+    selected.push({
+      title: "Deposits and guarantors",
+      desc: "Since you're moving out soon, you need to know this before you sign a single thing.",
+      topicId: "renting",
+      subTopicId: "lesson-05",
+      icon: "lock"
+    });
+  } else if (livingSituation?.includes("Renting (been") || livingSituation?.includes("Renting — been") || upcomingEvents.includes("Thinking about buying a place")) {
+    selected.push({
+      title: "Mortgages 101",
+      desc: "You're renting or thinking about buying. Let's see how much you can borrow from lenders.",
+      topicId: "buying-a-home",
+      subTopicId: "lesson-08",
+      icon: "house"
+    });
+  } else if (upcomingEvents.includes("Moving in with a partner")) {
+    selected.push({
+      title: "The Money Talk",
+      desc: "Moving in with a partner soon? Let's figure out how to split bills and joint accounts.",
+      topicId: "relationships",
+      subTopicId: "lesson-12",
+      icon: "handshake"
+    });
+  } else if (studentLoan?.includes("Yes") || studentLoan?.includes("sure")) {
+    selected.push({
+      title: "Student Loan Repayments",
+      desc: "Let's review why your student loan behaves more like a tax than a standard debt.",
+      topicId: "starting-work",
+      subTopicId: "lesson-04",
+      icon: "document"
+    });
+  } else {
+    selected.push({
+      title: "Demystifying UK Credit Scores",
+      desc: "Learn what actually influences your score and how to build credit safely.",
+      topicId: "mastering-credit",
+      subTopicId: "lesson-40",
+      icon: "shield"
+    });
+  }
+
+  return selected.slice(0, 3);
 }

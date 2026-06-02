@@ -3,133 +3,7 @@ import { useProfile } from "../context/ProfileContext";
 import type { UserProfile } from "../context/ProfileContext";
 import { AppIcon } from "./AppIcon";
 import { SageAvatar } from "./SageAvatar";
-
-// Dynamic selection of exactly 3 starting lesson cards
-function getRecommendedSummary(
-  lifeStage: string,
-  livingSituation: string,
-  upcomingEvents: string[],
-  moneyWorry: string,
-  confidence: Record<string, number>,
-  studentLoan: string
-) {
-  const selected: { title: string; desc: string; topicId: string; subTopicId: string; icon: string }[] = [];
-
-  // Card 1: Stressor / tax / payslip
-  if (moneyWorry === "I honestly don't get how tax works" || confidence.payslip <= 2) {
-    selected.push({
-      title: "Decoding your payslip",
-      desc: "You mentioned tax confuses you and you have a new salary coming. Let's get this sorted first.",
-      topicId: "starting-work",
-      subTopicId: "lesson-01",
-      icon: "📑"
-    });
-  } else if (lifeStage === "I've just started my first proper job" || upcomingEvents.includes("Starting a new job soon")) {
-    selected.push({
-      title: "Decoding your payslip",
-      desc: "Since you're starting a new job, let's make sure you understand your very first paycheck.",
-      topicId: "starting-work",
-      subTopicId: "lesson-01",
-      icon: "💼"
-    });
-  } else if (moneyWorry === "I've got debt I'm trying to clear") {
-    selected.push({
-      title: "The Debt Spectrum",
-      desc: "You mentioned debt stresses you out. Let's review payoff strategies and snowball methods.",
-      topicId: "debt",
-      subTopicId: "lesson-29",
-      icon: "📉"
-    });
-  } else {
-    selected.push({
-      title: "The Power of Compound Interest",
-      desc: "The absolute foundation of wealth building. Let's see how small amounts grow over time.",
-      topicId: "foundations",
-      subTopicId: "lesson-36",
-      icon: "💡"
-    });
-  }
-
-  // Card 2: Budgeting / Investing
-  if (moneyWorry === "I never seem to have anything left at the end of the month" || confidence.budgeting <= 2) {
-    selected.push({
-      title: "The 50/30/20 rule",
-      desc: "You said you never have much left at the end of the month. This simple framework is going to change that.",
-      topicId: "starting-work",
-      subTopicId: "lesson-03",
-      icon: "📊"
-    });
-  } else if (moneyWorry === "I want to start investing but I'm stuck at square one" || confidence.investing <= 2) {
-    selected.push({
-      title: "Stocks & Shares ISAs",
-      desc: "You want to start investing. Let's learn how to grow your wealth tax-free with index funds.",
-      topicId: "investing-101",
-      subTopicId: "lesson-43",
-      icon: "📈"
-    });
-  } else if (moneyWorry === "I have absolutely no idea what my pension is doing") {
-    selected.push({
-      title: "The Auto-Enrolment Pension",
-      desc: "You said you have no idea what your pension is doing. Let's claim your free employer money.",
-      topicId: "starting-work",
-      subTopicId: "lesson-02",
-      icon: "🏦"
-    });
-  } else {
-    selected.push({
-      title: "The Emergency Fund",
-      desc: "Your buffer against life's surprises. Let's build a cash cushion before you start saving.",
-      topicId: "foundations",
-      subTopicId: "lesson-37",
-      icon: "🛡️"
-    });
-  }
-
-  // Card 3: Living Situation / Future Events
-  if (livingSituation?.includes("Renting (just") || upcomingEvents.includes("Moving out for the very first time")) {
-    selected.push({
-      title: "Deposits and guarantors",
-      desc: "Since you're moving out soon, you need to know this before you sign a single thing.",
-      topicId: "renting",
-      subTopicId: "lesson-05",
-      icon: "🔑"
-    });
-  } else if (livingSituation?.includes("Renting (been") || upcomingEvents.includes("Thinking about buying a place")) {
-    selected.push({
-      title: "Mortgages 101",
-      desc: "You're renting or thinking about buying. Let's see how much you can borrow from lenders.",
-      topicId: "buying-a-home",
-      subTopicId: "lesson-08",
-      icon: "🏡"
-    });
-  } else if (upcomingEvents.includes("Moving in with a partner")) {
-    selected.push({
-      title: "The Money Talk",
-      desc: "Moving in with a partner soon? Let's figure out how to split bills and joint accounts.",
-      topicId: "relationships",
-      subTopicId: "lesson-12",
-      icon: "💑"
-    });
-  } else if (studentLoan?.includes("Yes") || studentLoan?.includes("sure")) {
-    selected.push({
-      title: "Student Loan Repayments",
-      desc: "Let's review why your student loan behaves more like a tax than a standard debt.",
-      topicId: "starting-work",
-      subTopicId: "lesson-04",
-      icon: "🎓"
-    });
-  } else {
-    selected.push({
-      title: "Demystifying UK Credit Scores",
-      desc: "Learn what actually influences your score and how to build credit safely.",
-      topicId: "mastering-credit",
-      subTopicId: "lesson-40",
-      icon: "💳"
-    });
-  }
-
-  return selected.slice(0, 3);
-}
+import { getRecommendedSummary } from "../data/topics";
 
 // Parse string with bold tags into clean text segments
 function parseParagraph(text: string) {
@@ -452,14 +326,32 @@ export function OnboardingFlow() {
     justifyContent: "space-between"
   });
 
-  const recSummary = getRecommendedSummary(
-    lifeStage,
-    livingSituation,
-    upcomingEvents,
-    moneyWorry,
-    confidence,
-    studentLoan
-  );
+  const tempProfileForRecs: UserProfile = {
+    firstName: firstName.trim() || "Maya",
+    email: registeredEmail,
+    companyName: upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer",
+    lifeStage: lifeStage,
+    employmentType: lifeStage,
+    sixMonthGoal: moneyWorry || "Personal finance confidence",
+    upcomingEvents: upcomingEvents.filter((x) => x !== "Nothing major right now"),
+    confidenceScores: {
+      tax: confidence.payslip,
+      pensions: confidence.pensions,
+      budgeting: confidence.budgeting,
+      investing: confidence.investing,
+      contracts: confidence.renting
+    },
+    livingSituation: livingSituation,
+    planningToMove: upcomingEvents.includes("Moving out for the very first time") ? "Yes" : "No",
+    salary: salaryInput.trim().replace(/[^0-9.]/g, "") || "28000",
+    studentLoan: studentLoan,
+    hasDebt: moneyWorry?.includes("debt") ? "Yes" : "No",
+    interestedTopics: [moneyWorry],
+    motivation: "Improve general knowledge",
+    usageFrequency: "A few times a week"
+  };
+
+  const recSummary = getRecommendedSummary(tempProfileForRecs);
 
   const stepParagraphs = [
     // Step 0: Welcome & Name Catch
@@ -1182,14 +1074,13 @@ export function OnboardingFlow() {
                           borderRadius: 12,
                           background: "var(--p-coral-tint)",
                           color: "var(--p-coral)",
-                          fontSize: 18,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           flexShrink: 0
                         }}
                       >
-                        {card.icon}
+                        <AppIcon name={card.icon as any} size={20} stroke={2} />
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>
