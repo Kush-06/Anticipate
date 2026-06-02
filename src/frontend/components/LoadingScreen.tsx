@@ -1,24 +1,34 @@
 import { useEffect, useState } from "react";
 import { SageAvatar } from "./SageAvatar";
 
-export function LoadingScreen({ onFinished }: { onFinished: () => void }) {
+export function LoadingScreen({ onFinished, fade = true }: { onFinished: () => void; fade?: boolean }) {
   const [fadeAway, setFadeAway] = useState(false);
 
   useEffect(() => {
-    // Start fading out slightly before the 1.5 second loading ends
-    const fadeTimer = setTimeout(() => {
-      setFadeAway(true);
-    }, 1200);
+    if (fade) {
+      // Start fading out slightly before the 1.5 second loading ends
+      const fadeTimer = setTimeout(() => {
+        setFadeAway(true);
+      }, 1200);
 
-    const finishTimer = setTimeout(() => {
-      onFinished();
-    }, 1500);
+      const finishTimer = setTimeout(() => {
+        onFinished();
+      }, 1500);
 
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(finishTimer);
-    };
-  }, [onFinished]);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(finishTimer);
+      };
+    } else {
+      const finishTimer = setTimeout(() => {
+        onFinished();
+      }, 1200);
+
+      return () => {
+        clearTimeout(finishTimer);
+      };
+    }
+  }, [onFinished, fade]);
 
   return (
     <div
