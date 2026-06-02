@@ -1,7 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@backend/supabaseClient";
-import { fetchTimeline } from "@backend/timelineService";
+import { fetchTimeline, seedTimeline } from "@backend/timelineService";
+import { useProfile } from "./ProfileContext";
+import { generateTimeline } from "../utils/timelineGenerator";
 import type { SpineGroup, SpineItem } from "../utils/timelineGenerator";
 
 export type { SpineStatus, SpineGroup, SpineItem } from "../utils/timelineGenerator";
@@ -27,48 +29,66 @@ const GROUP_LABELS: Record<SpineGroup, string> = {
 
 const TimelineContext = createContext<TimelineContextType | undefined>(undefined);
 
+function itemsToGroups(items: SpineItem[]): TimelineGroup[] {
+  return (["this-week", "coming-up", "later"] as SpineGroup[]).map((key) => ({
+    key,
+    label: GROUP_LABELS[key],
+    items: items.filter((item) => item.group === key),
+  }));
+}
+
 export function TimelineProvider({ children }: { children: React.ReactNode }) {
+  const { profile } = useProfile();
   const [groups, setGroups] = useState<TimelineGroup[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadTimeline = useCallback(async (uid: string) => {
+  const loadTimeline = useCallback(async (uid: string, currentProfile: typeof profile) => {
     setIsLoading(true);
-    const items = await fetchTimeline(uid);
+    const dbItems = await fetchTimeline(uid);
 
-    const grouped = (["this-week", "coming-up", "later"] as SpineGroup[]).map((key) => ({
-      key,
-      label: GROUP_LABELS[key],
-      items: items
-        .filter((item) => item.spineGroup === key)
-        .map((item) => ({
-          id: item.itemKey,
-          status: item.status,
-          when: item.whenLabel,
-          title: item.title,
-          tag: item.tag,
-          lessonPath: item.lessonPath,
-          group: item.spineGroup,
-        } satisfies SpineItem)),
-    }));
+    if (dbItems.length > 0) {
+      // Map DB rows → SpineItem shape
+      const spineItems: SpineItem[] = dbItems.map((item) => ({
+        id: item.itemKey,
+        status: item.status,
+        when: item.whenLabel,
+        title: item.title,
+        tag: item.tag,
+        lessonPath: item.lessonPath,
+        group: item.spineGroup,
+      }));
+      setGroups(itemsToGroups(spineItems));
+    } else {
+      // No DB rows yet — seed from profile and fall back to generated timeline
+      const generated = generateTimeline(currentProfile);
+      const allItems = generated.flatMap((g) => g.items);
+      if (allItems.length > 0) {
+        void seedTimeline(uid, allItems);
+      }
+      setGroups(generated);
+    }
 
-    setGroups(grouped);
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        void loadTimeline(session.user.id, profile);
+      } else {
+        // No session — fall back to runtime generation from profile
+        setGroups(generateTimeline(profile));
+        setIsLoading(false);
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "INITIAL_SESSION") {
-          if (session?.user) {
-            setUserId(session.user.id);
-            await loadTimeline(session.user.id);
-          } else {
-            setIsLoading(false);
-          }
-        } else if (event === "SIGNED_IN" && session?.user) {
+      (event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
           setUserId(session.user.id);
-          await loadTimeline(session.user.id);
+          void loadTimeline(session.user.id, profile);
         } else if (event === "SIGNED_OUT") {
           setUserId(null);
           setGroups([]);
@@ -78,11 +98,13 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
+  // profile intentionally excluded — loadTimeline captures it at call time
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTimeline]);
 
   const refreshTimeline = useCallback(async () => {
-    if (userId) await loadTimeline(userId);
-  }, [userId, loadTimeline]);
+    if (userId) await loadTimeline(userId, profile);
+  }, [userId, profile, loadTimeline]);
 
   return (
     <TimelineContext.Provider value={{ groups, isLoading, refreshTimeline }}>

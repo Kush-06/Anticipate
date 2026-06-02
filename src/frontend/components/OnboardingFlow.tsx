@@ -237,8 +237,11 @@ export function OnboardingFlow() {
       usageFrequency: "A few times a week"
     };
 
-    await completeOnboarding(profile);
-    setIsSubmitting(false);
+    try {
+      await completeOnboarding(profile);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSelectSingle = (setter: (v: string) => void, val: string) => {
@@ -538,15 +541,19 @@ export function OnboardingFlow() {
     const handleLogin = async () => {
       setAuthError("");
       setIsSubmitting(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email: authEmail.trim(),
-        password: authPassword,
-      });
-      setIsSubmitting(false);
-      if (error) {
-        setAuthError(error.message);
+      try {
+        await supabase.auth.signOut();
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail.trim(),
+          password: authPassword,
+        });
+        if (error) setAuthError(error.message);
+        // On success, onAuthStateChange in ProfileContext fires SIGNED_IN and loads the profile
+      } catch {
+        setAuthError("Something went wrong. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
-      // On success, onAuthStateChange in ProfileContext fires SIGNED_IN and loads the profile automatically
     };
 
     return (
@@ -674,17 +681,24 @@ export function OnboardingFlow() {
       if (!isRegisterValid) return;
       setAuthError("");
       setIsSubmitting(true);
-      const { error } = await supabase.auth.signUp({
-        email: authEmail.trim(),
-        password: authPassword,
-      });
-      setIsSubmitting(false);
-      if (error) {
-        setAuthError(error.message);
-        return;
+      try {
+        // Clear any stale session (e.g. leftover anonymous token) before signing up
+        await supabase.auth.signOut();
+        const { error } = await supabase.auth.signUp({
+          email: authEmail.trim(),
+          password: authPassword,
+        });
+        if (error) {
+          setAuthError(error.message);
+          return;
+        }
+        setRegisteredEmail(authEmail.trim());
+        setScreen("onboarding");
+      } catch {
+        setAuthError("Something went wrong. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
-      setRegisteredEmail(authEmail.trim());
-      setScreen("onboarding");
     };
 
     return (

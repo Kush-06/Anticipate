@@ -48,7 +48,6 @@ const STORAGE_KEY = "anticipate_profile_v2";
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(() => {
-    // Fast-path cache: avoid flashing onboarding while async session check runs
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw) as UserProfile;
@@ -60,18 +59,25 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Explicit getSession() is more reliable than waiting for INITIAL_SESSION event
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const dbProfile = await fetchProfile(session.user.id);
+        if (dbProfile) {
+          setProfile(dbProfile);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
+        } else {
+          // Session exists but no profile row — orphaned anonymous session.
+          // Sign out so it doesn't block future auth calls.
+          await supabase.auth.signOut();
+        }
+      }
+      setIsLoading(false);
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "INITIAL_SESSION") {
-          if (session?.user) {
-            const dbProfile = await fetchProfile(session.user.id);
-            if (dbProfile) {
-              setProfile(dbProfile);
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
-            }
-          }
-          setIsLoading(false);
-        } else if (event === "SIGNED_IN" && session?.user) {
+        if (event === "SIGNED_IN" && session?.user) {
           const dbProfile = await fetchProfile(session.user.id);
           if (dbProfile) {
             setProfile(dbProfile);
@@ -88,7 +94,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const completeOnboarding = async (p: UserProfile) => {
-    // Write to localStorage immediately so the app transitions without waiting
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
     setProfile(p);
 
@@ -104,9 +109,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetProfile = async () => {
-    await supabase.auth.signOut();
+    // Always clear local state first so the UI responds immediately
     localStorage.removeItem(STORAGE_KEY);
     setProfile(null);
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // signOut failure doesn't matter — local state is already cleared
+    }
   };
 
   return (

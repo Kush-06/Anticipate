@@ -19,16 +19,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        const ids = await fetchProgress(session.user.id);
+        setCompletedSubTopicIds(ids);
+      }
+      setIsLoading(false);
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "INITIAL_SESSION") {
-          if (session?.user) {
-            setUserId(session.user.id);
-            const ids = await fetchProgress(session.user.id);
-            setCompletedSubTopicIds(ids);
-          }
-          setIsLoading(false);
-        } else if (event === "SIGNED_IN" && session?.user) {
+        if (event === "SIGNED_IN" && session?.user) {
           setUserId(session.user.id);
           const ids = await fetchProgress(session.user.id);
           setCompletedSubTopicIds(ids);
