@@ -19,25 +19,27 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function initSession() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      let uid = sessionData.session?.user.id ?? null;
-
-      if (!uid) {
-        const { data: signInData } = await supabase.auth.signInAnonymously();
-        uid = signInData.user?.id ?? null;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "INITIAL_SESSION") {
+          if (session?.user) {
+            setUserId(session.user.id);
+            const ids = await fetchProgress(session.user.id);
+            setCompletedSubTopicIds(ids);
+          }
+          setIsLoading(false);
+        } else if (event === "SIGNED_IN" && session?.user) {
+          setUserId(session.user.id);
+          const ids = await fetchProgress(session.user.id);
+          setCompletedSubTopicIds(ids);
+        } else if (event === "SIGNED_OUT") {
+          setUserId(null);
+          setCompletedSubTopicIds([]);
+        }
       }
+    );
 
-      if (uid) {
-        setUserId(uid);
-        const ids = await fetchProgress(uid);
-        setCompletedSubTopicIds(ids);
-      }
-
-      setIsLoading(false);
-    }
-
-    void initSession();
+    return () => subscription.unsubscribe();
   }, []);
 
   const completeSubTopic = (subTopicId: string) => {
