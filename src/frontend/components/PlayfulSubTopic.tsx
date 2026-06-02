@@ -3,10 +3,177 @@ import { topics } from "../data/topics";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { TopicIcon } from "./TopicIcon";
+import { useProfile } from "../context/ProfileContext";
+
+function estimateNetPay(gross: number, profile: any): number {
+  const personalAllowance = 12570;
+  const basicLimit = 50270;
+
+  // 1. Tax
+  let taxable = Math.max(0, gross - personalAllowance);
+  let basicTaxable = Math.min(taxable, basicLimit - personalAllowance);
+  let higherTaxable = Math.max(0, gross - basicLimit);
+  let tax = (basicTaxable * 0.2) + (higherTaxable * 0.4);
+
+  // 2. National Insurance (roughly 8% on earnings above £12,570 up to £50,270, 2% above)
+  let niable = Math.max(0, gross - 12570);
+  let basicNiable = Math.min(niable, basicLimit - 12570);
+  let higherNiable = Math.max(0, gross - basicLimit);
+  let ni = (basicNiable * 0.08) + (higherNiable * 0.02);
+
+  // 3. Student Loan
+  let studentLoanDeduction = 0;
+  if (profile?.studentLoan?.includes("payslip") || profile?.studentLoan?.includes("deducted") || profile?.studentLoan === "Yes and it comes off my payslip") {
+    const threshold = 27295;
+    studentLoanDeduction = Math.max(0, (gross - threshold) * 0.09);
+  }
+
+  // 4. Pension (5% on earnings above £6,240 up to £50,270)
+  let pensionBase = Math.max(0, Math.min(gross, basicLimit) - 6240);
+  let pension = pensionBase * 0.05;
+
+  let netAnnual = gross - tax - ni - studentLoanDeduction - pension;
+  return Math.round(netAnnual / 12);
+}
+
+function customizeLessonText(content: string, subTopicId: string, salary: number, profile: any): string {
+  let text = content;
+  const formattedSalary = "£" + salary.toLocaleString("en-GB", { maximumFractionDigits: 0 });
+
+  // 1. Replace default starting-work example (£30,000) in Lesson 1
+  if (subTopicId === "lesson-01") {
+    text = text.replace(/£30,000/g, formattedSalary);
+  }
+
+  // 2. Replace student loan Plan 2 example in Lesson 4
+  if (subTopicId === "lesson-04") {
+    const threshold = 27295;
+    const over = salary - threshold;
+    if (over <= 0) {
+      const plan2Replacement = `Example: If you are on Plan 2 and earn ${formattedSalary} a year, you are under the £27,295 threshold, so your current repayments are **£0** (you pay 9% of £0).`;
+      text = text.replace(/Example: If you are on Plan 2 and earn £30,295 a year, you are £3,000 over the threshold\. You pay 9% of that £3,000\. That's £270 a year, or just \*\*£22\.50 a month\*\*\./g, plan2Replacement);
+    } else {
+      const yearly = Math.round(over * 0.09);
+      const monthly = (over * 0.09 / 12).toFixed(2);
+      const plan2Replacement = `Example: If you are on Plan 2 and earn ${formattedSalary} a year, you are £${over.toLocaleString("en-GB")} over the threshold. You pay 9% of that £${over.toLocaleString("en-GB")}. That's £${yearly.toLocaleString("en-GB")} a year, or just **£${monthly} a month**.`;
+      text = text.replace(/Example: If you are on Plan 2 and earn £30,295 a year, you are £3,000 over the threshold\. You pay 9% of that £3,000\. That's £270 a year, or just \*\*£22\.50 a month\*\*\./g, plan2Replacement);
+    }
+  }
+
+  // 3. Replace mortgages multiplier in Lesson 8
+  if (subTopicId === "lesson-08") {
+    const singleLoan = Math.round(salary * 4.5);
+    const jointLoan = Math.round((salary + 35000) * 4.5);
+
+    text = text.replace(
+      /- \*\*Single applicant:\*\* £30,000 × 4.5 = maximum loan of \*\*£135,000\*\*/g,
+      `- **Single applicant:** ${formattedSalary} × 4.5 = maximum loan of **£${singleLoan.toLocaleString("en-GB")}**`
+    );
+    text = text.replace(
+      /- \*\*Joint applicants:\*\* \(£30,000 \+ £35,000\) × 4.5 = maximum loan of \*\*£292,500\*\*/g,
+      `- **Joint applicants:** (${formattedSalary} + £35,000) × 4.5 = maximum loan of **£${jointLoan.toLocaleString("en-GB")}**`
+    );
+  }
+
+  // 4. Customize Script pitch target in Lesson 18
+  if (subTopicId === "lesson-18") {
+    const minSalary = Math.round(salary * 1.05);
+    const maxSalary = Math.round(salary * 1.15);
+    const targetSalary = Math.round(salary * 1.10);
+
+    text = text.replace(
+      /between £X and £Y/g,
+      `between £${minSalary.toLocaleString("en-GB")} and £${maxSalary.toLocaleString("en-GB")}`
+    );
+    text = text.replace(
+      /adjusting my salary to £Z/g,
+      `adjusting my salary to £${targetSalary.toLocaleString("en-GB")}`
+    );
+  }
+
+  // 5. Replace lifestyle creep raise examples in Lesson 19
+  if (subTopicId === "lesson-19") {
+    const raise = Math.round((salary * 0.08) / 12 / 10) * 10 || 200;
+    const save = raise / 2;
+    const formattedRaise = "£" + raise.toLocaleString("en-GB");
+    const formattedSave = "£" + save.toLocaleString("en-GB");
+
+    text = text.replace(
+      /increases by £200 a month/g,
+      `increases by ${formattedRaise} a month`
+    );
+    text = text.replace(
+      /move £100 into your ISA/g,
+      `move ${formattedSave} into your ISA`
+    );
+    text = text.replace(
+      /increasing your contribution by £100/g,
+      `increasing your contribution by ${formattedSave}`
+    );
+    text = text.replace(
+      /cost you \*\*less than £100\*\*/g,
+      `cost you **less than ${formattedSave}**`
+    );
+  }
+
+  // 6. Tax Bracket example in Lesson 48
+  if (subTopicId === "lesson-48") {
+    const sBase = salary;
+    const sRaise = salary + 2000;
+    const isHigher = sBase >= 50270;
+
+    if (!isHigher) {
+      text = text.replace(
+        /Imagine your annual salary increases from £50,000 to £52,000\. This puts you £1,730 over the Higher Rate threshold\./g,
+        `Imagine your annual salary increases from £${sBase.toLocaleString("en-GB")} to £${sRaise.toLocaleString("en-GB")}.`
+      );
+      text = text.replace(
+        /- You pay 0% on your first £12,570\.\n- You pay 20% on the next £37,700 \(the basic rate layer\)\.\n- You only pay the 40% rate on the £1,730 that crossed over the line\./g,
+        `- You pay 0% on your first £12,570.\n- You pay 20% on the portion above £12,570 up to your new salary.\n- You pay 0% higher rate tax because your earnings didn't cross the £50,270 boundary.`
+      );
+    } else {
+      const crossover = sRaise - Math.max(sBase, 50270);
+      text = text.replace(
+        /Imagine your annual salary increases from £50,000 to £52,000\. This puts you £1,730 over the Higher Rate threshold\./g,
+        `Imagine your annual salary increases from £${sBase.toLocaleString("en-GB")} to £${sRaise.toLocaleString("en-GB")}. This puts your raise in the Higher Rate (40%) bracket.`
+      );
+      text = text.replace(
+        /You only pay the 40% rate on the £1,730 that crossed over the line\./g,
+        `You only pay the 40% rate on the £${crossover.toLocaleString("en-GB")} that crossed over the line.`
+      );
+    }
+  }
+
+  // 7. Add estimated 50/30/20 split context in Lesson 3
+  if (subTopicId === "lesson-03") {
+    const netPay = estimateNetPay(salary, profile);
+    const needs = Math.round(netPay * 0.5);
+    const wants = Math.round(netPay * 0.3);
+    const savings = Math.round(netPay * 0.2);
+
+    const splitContext = `
+---
+
+## Your Personal 50/30/20 Split
+
+Based on your salary of **${formattedSalary}** a year, your estimated monthly take-home pay is **£${netPay.toLocaleString("en-GB")}** (after estimated tax, NI, pension, and student loan). Here is how you could divide it:
+
+- **50% Needs:** **£${needs.toLocaleString("en-GB")}** (rent, bills, food)
+- **30% Wants:** **£${wants.toLocaleString("en-GB")}** (fun, dining out, subs)
+- **20% Savings:** **£${savings.toLocaleString("en-GB")}** (emergency buffer, investing)
+
+*Adjust these boundaries as needed — if you live in a high-cost area, a 60/20/20 split is perfectly fine!*
+`;
+    text = text + splitContext;
+  }
+
+  return text;
+}
 
 export function PlayfulSubTopic() {
   const navigate = useNavigate();
   const { topicId, subTopicId } = useParams<{ topicId: string; subTopicId: string }>();
+  const { profile } = useProfile();
 
   const topic = topics.find((t) => t.id === topicId);
   const subTopic = topic?.subTopics.find((s) => s.id === subTopicId);
@@ -20,6 +187,9 @@ export function PlayfulSubTopic() {
       </div>
     );
   }
+
+  const salaryNum = profile?.salary ? parseFloat(profile.salary.replace(/[^0-9.]/g, "")) : 28000;
+  const processedContent = customizeLessonText(subTopic.content, subTopic.id, salaryNum || 28000, profile);
 
   const renderInline = (text: string): ReactNode[] => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -166,7 +336,7 @@ export function PlayfulSubTopic() {
 
         {/* Content Area */}
         <div className="anp-subtopic__content">
-          {renderContent(subTopic.content)}
+          {renderContent(processedContent)}
         </div>
 
         {/* Quiz CTA */}

@@ -224,48 +224,124 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
   if (!profile) return [];
   const recs: string[] = [];
 
-  // 1. Debt priority
-  if (profile.hasDebt === "Yes") {
+  // 1. Debt priority (from Q4 or general profile)
+  if (profile.hasDebt === "Yes" || profile.sixMonthGoal === "I've got debt I'm trying to deal with") {
     recs.push("debt");
   }
 
-  // 2. Interest selections (direct recommendation)
-  const interests = profile.interestedTopics || [];
-  interests.forEach((topic) => {
-    if (topic === "Understanding my payslip" || topic === "Tax and PAYE") {
-      recs.push("starting-work");
-    } else if (topic === "Renting") {
-      recs.push("renting");
-    } else if (topic === "Buying a home") {
-      recs.push("buying-a-home");
-    } else if (topic === "Investing") {
-      recs.push("investing-101");
-    } else if (topic === "Pensions") {
-      recs.push("taxes-wealth");
-    } else if (topic === "Budgeting" || topic === "Saving and ISAs") {
-      recs.push("foundations");
-    } else if (topic === "Debt management") {
-      recs.push("debt");
-    } else if (topic === "Self-employment / freelancing") {
-      recs.push("taxes-wealth");
-    } else if (topic === "Student finance") {
-      recs.push("starting-work");
-    }
-  });
-
-  // 3. Move plans
-  if (profile.planningToMove === "Yes") {
-    recs.push("renting");
+  // 2. Question 4 — Money worry specific mappings
+  const worry = profile.sixMonthGoal;
+  if (worry === "I don't really understand how tax works") {
+    recs.push("starting-work");
+    recs.push("taxes-wealth");
+  } else if (worry === "I never seem to have anything left at the end of the month") {
+    recs.push("starting-work");
+    recs.push("foundations");
+    recs.push("career");
+  } else if (worry === "I've got debt I'm trying to deal with") {
+    recs.push("debt");
+  } else if (worry === "I don't know if I'm saving enough or doing it right") {
+    recs.push("foundations");
+    recs.push("investing-101");
+  } else if (worry === "I have no idea what my pension is doing") {
+    recs.push("starting-work");
+    recs.push("career");
+    recs.push("taxes-wealth");
+  } else if (worry === "I want to start investing but don't know where to begin") {
+    recs.push("investing-101");
+  } else if (worry === "I feel like I'm missing out on money the government owes me") {
+    recs.push("relationships");
+    recs.push("family");
     recs.push("buying-a-home");
+  } else if (worry === "Honestly I don't know what I don't know") {
+    recs.push("foundations");
   }
 
-  // 4. Low confidence scores (if they rated 1 or 2)
-  const cs = profile.confidenceScores || {};
-  if (cs.pensions <= 2) recs.push("taxes-wealth");
-  if (cs.investing <= 2) recs.push("investing-101");
-  if (cs.tax <= 2) recs.push("starting-work");
-  if (cs.budgeting <= 2) recs.push("foundations");
+  // 3. Question 1 — Life stage inferences
+  const stage = profile.lifeStage;
+  if (stage === "I'm still at university") {
+    recs.push("starting-work"); // has Student Loan
+    recs.push("foundations");
+  } else if (stage === "I've just started my first job") {
+    recs.push("starting-work");
+  } else if (stage === "I've been working for a year or two") {
+    recs.push("taxes-wealth");
+    recs.push("investing-101");
+    recs.push("mastering-credit");
+    recs.push("career");
+  } else if (stage === "I'm self employed or doing freelance work") {
+    recs.push("taxes-wealth");
+  } else if (stage === "I'm not working at the moment") {
+    recs.push("debt");
+    recs.push("foundations");
+  }
 
-  // De-duplicate keeping order of appearance
-  return Array.from(new Set(recs));
+  // 4. Question 2 — Living situation inferences
+  const living = profile.livingSituation;
+  if (living === "At home with family") {
+    recs.push("renting");
+    recs.push("buying-a-home");
+  } else if (living === "Renting — just moved in or about to") {
+    recs.push("renting");
+  } else if (living === "Renting — been here a while") {
+    recs.push("buying-a-home");
+  } else if (living === "I own my place") {
+    recs.push("investing-101");
+    recs.push("taxes-wealth");
+  } else if (living === "Student accommodation") {
+    recs.push("foundations");
+    recs.push("starting-work");
+  }
+
+  // 5. Question 3 — Upcoming events
+  const evts = profile.upcomingEvents || [];
+  if (evts.includes("Starting a new job soon")) {
+    recs.push("starting-work");
+  }
+  if (evts.includes("Moving out for the first time")) {
+    recs.push("renting");
+  }
+  if (evts.includes("Thinking about buying a place")) {
+    recs.push("buying-a-home");
+  }
+  if (evts.includes("Moving in with a partner")) {
+    recs.push("relationships");
+  }
+  if (evts.includes("Having a baby or just had one")) {
+    recs.push("family");
+  }
+  if (evts.includes("Getting a pay rise or changing jobs")) {
+    recs.push("career");
+  }
+  if (evts.includes("Buying a car")) {
+    recs.push("cars");
+  }
+
+  // 6. Question 5 — Confidence check (rated 1 or 2 pushes to front)
+  const cs = profile.confidenceScores || {};
+  const lowConfidenceTopics: string[] = [];
+  if (cs.tax <= 2) lowConfidenceTopics.push("starting-work");
+  if (cs.pensions <= 2) lowConfidenceTopics.push("taxes-wealth");
+  if (cs.budgeting <= 2) lowConfidenceTopics.push("foundations");
+  if (cs.investing <= 2) lowConfidenceTopics.push("investing-101");
+  if (cs.contracts <= 2) lowConfidenceTopics.push("renting");
+
+  // De-duplicate keeping order of appearance: low confidence first, then the rest
+  const combined = [...lowConfidenceTopics, ...recs];
+  
+  // Clean up order to align with deprioritization rules
+  let result = Array.from(new Set(combined));
+  
+  // Still at university -> deprioritise buying-a-home and taxes-wealth (pensions)
+  if (stage === "I'm still at university") {
+    result = result.filter(id => id !== "buying-a-home" && id !== "taxes-wealth");
+    result.push("buying-a-home");
+    result.push("taxes-wealth");
+  }
+  // Own place -> deprioritise renting and buying-a-home entirely
+  if (living === "I own my place") {
+    result = result.filter(id => id !== "renting" && id !== "buying-a-home");
+  }
+
+  return result;
 }
