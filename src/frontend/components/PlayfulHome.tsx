@@ -192,7 +192,7 @@ export function PlayfulHome() {
     const pct = (completedCount / Math.max(total, 1)) * 100;
     const minutes = total * MINS_PER_SUBTOPIC;
     const color = SIDE_COLORS[globalIdx % SIDE_COLORS.length];
-    const isRecommended = recs.includes(topic.id);
+    const isRecommended = recTopicIds.includes(topic.id);
     return (
       <TrackTile
         key={topic.id}
