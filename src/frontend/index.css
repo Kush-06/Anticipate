@@ -1118,6 +1118,7 @@ body {
 .anp-scroll {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   scrollbar-width: none;
 }

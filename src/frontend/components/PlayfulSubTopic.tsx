@@ -609,7 +609,7 @@ export function PlayfulSubTopic() {
           display: "flex", 
           alignItems: "center", 
           justifyContent: "space-between", 
-          padding: "16px 20px 10px 20px", 
+          padding: "max(12px, env(safe-area-inset-top)) 20px 10px 20px", 
           backgroundColor: "#f4f0e6", 
           flexShrink: 0 
         }}
@@ -649,6 +649,7 @@ export function PlayfulSubTopic() {
         style={{ 
           flex: 1, 
           overflowY: "auto", 
+          overflowX: "hidden", 
           paddingLeft: "20px", 
           paddingRight: "20px", 
           paddingBottom: "40px", 

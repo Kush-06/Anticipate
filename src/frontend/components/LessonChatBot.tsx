@@ -43,6 +43,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -61,10 +62,23 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
     }
   }, [messages, loading, active, open])
 
+  // Listen to visual viewport changes to dynamically size the drawer when the keyboard shows up on iOS
   useEffect(() => {
-    if (!active || !open) return
-    inputRef.current?.focus({ preventScroll: true })
-  }, [open, active])
+    if (!open) return
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const handleResize = () => {
+      setViewportHeight(vv.height)
+    }
+
+    vv.addEventListener('resize', handleResize)
+    handleResize()
+
+    return () => {
+      vv.removeEventListener('resize', handleResize)
+    }
+  }, [open])
 
   if (!active) return null
 
@@ -131,6 +145,9 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
             className={`lcb-panel ${isClosing ? 'lcb-panel--closing' : ''}`} 
             role="dialog" 
             aria-label="Sage AI tutor"
+            style={{
+              height: `${viewportHeight * 0.85}px`
+            }}
           >
             <div className="lcb-header">
               <div className="lcb-header__left">
@@ -242,7 +259,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
         .lcb-fab img { border-radius: 50%; object-fit: cover; }
 
         .lcb-backdrop {
-          position: absolute;
+          position: fixed;
           top: 0;
           left: 0;
           right: 0;
@@ -266,8 +283,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
         }
 
         .lcb-panel {
-          position: absolute;
-          top: 15%;
+          position: fixed;
           left: 0;
           right: 0;
           bottom: 0;
