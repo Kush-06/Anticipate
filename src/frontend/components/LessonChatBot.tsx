@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { User } from 'lucide-react'
 import { hasActiveProvider, sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
 
@@ -37,26 +38,49 @@ function renderMessage(text: string): ReactNode[] {
 
 export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: LessonChatBotProps) {
   const [open, setOpen] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const active = hasActiveProvider()
 
   useEffect(() => {
-    if (!active) return
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading, active])
+    if (!active || !open) return
+    const container = messagesContainerRef.current
+    if (container) {
+      setTimeout(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        })
+      }, 60)
+    }
+  }, [messages, loading, active, open])
 
   useEffect(() => {
     if (!active || !open) return
-    inputRef.current?.focus()
+    inputRef.current?.focus({ preventScroll: true })
   }, [open, active])
 
   if (!active) return null
+
+  function openPanel() {
+    setOpen(true)
+    setIsClosing(false)
+  }
+
+  function closePanel() {
+    setIsClosing(true)
+    setTimeout(() => {
+      setOpen(false)
+      setIsClosing(false)
+      setError(null)
+    }, 280)
+  }
 
   async function handleSend() {
     const trimmed = input.trim()
@@ -84,51 +108,79 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
     }
   }
 
-  function closePanel() {
-    setOpen(false)
-    setError(null)
-  }
-
   return (
     <>
-      {!open && (
+      {!open && !isClosing && (
         <button
           className="lcb-fab"
-          onClick={() => setOpen(true)}
-          aria-label="Ask Anticipate AI tutor"
+          onClick={openPanel}
+          aria-label="Ask Sage AI tutor"
         >
           <SageAvatar size={34} />
         </button>
       )}
 
-      {open && (
+      {(open || isClosing) && (
         <>
-          <div className="lcb-backdrop" onClick={closePanel} aria-hidden="true" />
-          <div className="lcb-panel" role="dialog" aria-label="Anticipate AI tutor">
+          <div 
+            className={`lcb-backdrop ${isClosing ? 'lcb-backdrop--closing' : ''}`} 
+            onClick={closePanel} 
+            aria-hidden="true" 
+          />
+          <div 
+            className={`lcb-panel ${isClosing ? 'lcb-panel--closing' : ''}`} 
+            role="dialog" 
+            aria-label="Sage AI tutor"
+          >
             <div className="lcb-header">
               <div className="lcb-header__left">
                 <SageAvatar size={28} />
-                <span className="lcb-header__title">Ask Anticipate</span>
+                <span className="lcb-header__title">Ask Sage</span>
               </div>
               <button className="lcb-header__close" onClick={closePanel} aria-label="Close chat">✕</button>
             </div>
 
-            <div className="lcb-messages">
+            <div className="lcb-messages" ref={messagesContainerRef}>
               {messages.length === 0 && !loading && (
-                <p className="lcb-empty">Ask me anything about this lesson!</p>
-              )}
-              {messages.map((m, i) => (
-                <div key={i} className={`lcb-bubble lcb-bubble--${m.role}`}>
-                  {renderMessage(m.content)}
+                <div className="lcb-empty">
+                  <div className="lcb-empty__avatar-wrapper">
+                    <SageAvatar size={48} />
+                  </div>
+                  <p className="lcb-empty__title">Chat with Sage</p>
+                  <p className="lcb-empty__desc">Ask me anything about this lesson! I can help explain concepts, give analogies, or answer questions.</p>
                 </div>
-              ))}
+              )}
+              {messages.map((m, i) => {
+                const isUser = m.role === 'user';
+                return (
+                  <div key={i} className={`lcb-row lcb-row--${m.role}`}>
+                    {!isUser && (
+                      <div className="lcb-msg-avatar">
+                        <SageAvatar size={28} />
+                      </div>
+                    )}
+                    <div className={`lcb-bubble lcb-bubble--${m.role}`}>
+                      {renderMessage(m.content)}
+                    </div>
+                    {isUser && (
+                      <div className="lcb-msg-avatar lcb-msg-avatar--user">
+                        <User size={15} style={{ color: '#ffffff' }} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {loading && (
-                <div className="lcb-bubble lcb-bubble--assistant lcb-bubble--loading">
-                  <span className="lcb-dots"><span /><span /><span /></span>
+                <div className="lcb-row lcb-row--assistant">
+                  <div className="lcb-msg-avatar">
+                    <SageAvatar size={28} />
+                  </div>
+                  <div className="lcb-bubble lcb-bubble--assistant lcb-bubble--loading">
+                    <span className="lcb-dots"><span /><span /><span /></span>
+                  </div>
                 </div>
               )}
               {error && <p className="lcb-error">{error}</p>}
-              <div ref={bottomRef} />
             </div>
 
             <div className="lcb-input-row">
@@ -182,20 +234,35 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
         }
         .lcb-fab:hover {
           box-shadow: 0 6px 18px rgba(233, 105, 74, 0.25);
+          transform: translateY(-2px);
         }
         .lcb-fab:active {
           transform: scale(0.95);
         }
-        .lcb-fab img    { border-radius: 50%; object-fit: cover; }
+        .lcb-fab img { border-radius: 50%; object-fit: cover; }
 
         .lcb-backdrop {
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
-          bottom: 85%;
+          bottom: 0;
           z-index: 19;
-          background: rgba(28, 26, 36, 0.28);
+          background: rgba(28, 26, 36, 0.35);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          animation: lcb-fade-in 0.24s ease-out both;
+        }
+        .lcb-backdrop--closing {
+          animation: lcb-fade-out 0.24s ease-out both;
+        }
+        @keyframes lcb-fade-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes lcb-fade-out {
+          from { opacity: 1; }
+          to   { opacity: 0; }
         }
 
         .lcb-panel {
@@ -205,26 +272,35 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           right: 0;
           bottom: 0;
           z-index: 20;
-          border-radius: 24px 24px 0 0;
-          border-top: 1.5px solid var(--p-line);
-          background: var(--p-bg-2);
+          border-radius: 28px 28px 0 0;
+          background: #f4f0e6;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          animation: lcb-slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+          animation: lcb-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .lcb-panel--closing {
+          animation: lcb-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         @keyframes lcb-slide-up {
-          from { transform: translateY(100%); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+        @keyframes lcb-slide-down {
+          from { transform: translateY(0); }
+          to   { transform: translateY(100%); }
         }
 
         .lcb-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 16px 20px 14px;
-          border-bottom: 1px solid var(--p-line);
+          padding: 16px 20px 12px;
           flex-shrink: 0;
+          background: #f4f0e6;
+          border-bottom: 1.5px solid #e6dbc4;
+          z-index: 5;
         }
         .lcb-header__left {
           display: flex;
@@ -232,75 +308,146 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           gap: 10px;
         }
         .lcb-header__title {
-          font-family: var(--font-display);
-          font-size: 15px;
-          font-weight: 800;
-          color: var(--p-ink);
+          font-family: Georgia, serif;
+          font-size: 16px;
+          font-weight: bold;
+          color: #1c1a24;
         }
         .lcb-header__close {
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          border: 1.5px solid var(--p-line);
-          background: var(--p-card);
+          border: none;
+          background: #ffffff;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 13px;
-          color: var(--p-ink-3);
-          transition: background 0.15s ease;
+          font-size: 14px;
+          color: #5f5848;
+          transition: background-color 0.15s ease, transform 0.15s ease;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
           flex-shrink: 0;
         }
-        .lcb-header__close:hover { background: var(--p-line); }
+        .lcb-header__close:hover { background: #ebe7dd; }
+        .lcb-header__close:active { transform: scale(0.95); }
 
         .lcb-messages {
           flex: 1;
           overflow-y: auto;
-          padding: 16px 16px 8px;
+          padding: 16px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 16px;
           scrollbar-width: none;
         }
         .lcb-messages::-webkit-scrollbar { display: none; }
 
-        .lcb-empty {
-          font-size: 13px;
-          color: var(--p-ink-3);
-          text-align: center;
-          margin-top: 28px;
+        .lcb-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 8px;
+          max-width: 100%;
         }
+        .lcb-row--user {
+          justify-content: flex-end;
+        }
+        .lcb-row--assistant {
+          justify-content: flex-start;
+        }
+
+        .lcb-msg-avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          overflow: hidden;
+        }
+        .lcb-msg-avatar--user {
+          background: #95a4bb;
+        }
+
+        .lcb-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 40px 24px;
+          margin-top: auto;
+          margin-bottom: auto;
+        }
+        .lcb-empty__avatar-wrapper {
+          margin-bottom: 16px;
+          position: relative;
+        }
+        .lcb-empty__avatar-wrapper::after {
+          content: '';
+          position: absolute;
+          top: -4px;
+          left: -4px;
+          right: -4px;
+          bottom: -4px;
+          border: 2px solid #ff9b7d;
+          border-radius: 50%;
+          opacity: 0.4;
+          animation: lcb-ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes lcb-ping {
+          75%, 100% { transform: scale(1.18); opacity: 0; }
+        }
+        .lcb-empty__title {
+          font-family: Georgia, serif;
+          font-size: 18px;
+          font-weight: bold;
+          color: #1c1a24;
+          margin: 0 0 8px;
+        }
+        .lcb-empty__desc {
+          font-size: 13px;
+          color: #5f5848;
+          line-height: 1.5;
+          max-width: 240px;
+          margin: 0;
+        }
+
         .lcb-error {
           font-size: 12px;
-          color: var(--p-coral);
-          background: var(--p-coral-tint);
-          border-radius: 10px;
-          padding: 8px 12px;
+          color: #c93b2b;
+          background: #fde8e4;
+          border-radius: 12px;
+          padding: 10px 14px;
           text-align: center;
+          border: 1px solid #f9c0b5;
         }
 
         .lcb-bubble {
-          max-width: 82%;
-          padding: 10px 14px;
-          border-radius: 18px;
+          max-width: 75%;
+          padding: 12px 16px;
           font-size: 14px;
           line-height: 1.5;
           white-space: pre-wrap;
           word-break: break-word;
+          animation: lcb-bubble-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes lcb-bubble-in {
+          from { transform: translateY(8px); opacity: 0; }
+          to   { transform: translateY(0); opacity: 1; }
         }
         .lcb-bubble--user {
-          align-self: flex-end;
-          background: var(--p-navy);
+          background: #1c2a47;
           color: #ffffff;
-          border-bottom-right-radius: 4px;
+          border-radius: 18px 18px 4px 18px;
         }
         .lcb-bubble--assistant {
-          align-self: flex-start;
-          background: var(--p-card);
-          color: var(--p-ink-2);
-          border: 1px solid var(--p-line);
-          border-bottom-left-radius: 4px;
+          background: #ffffff;
+          color: #1c1a24;
+          border: none;
+          border-radius: 18px 18px 18px 4px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
         }
         .lcb-bubble--loading { padding: 12px 16px; }
         .lcb-dots {
@@ -312,7 +459,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: var(--p-ink-3);
+          background: #95a4bb;
           animation: lcb-dot-bounce 1.2s infinite ease-in-out;
         }
         .lcb-dots span:nth-child(1) { animation-delay: 0s; }
@@ -327,36 +474,38 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           display: flex;
           align-items: flex-end;
           gap: 8px;
-          padding: 12px 16px;
-          padding-bottom: max(12px, env(safe-area-inset-bottom));
-          border-top: 1px solid var(--p-line);
+          padding: 14px 16px;
+          padding-bottom: max(14px, env(safe-area-inset-bottom));
           flex-shrink: 0;
-          background: var(--p-bg-2);
+          background: #f4f0e6;
+          border-top: 1.5px solid #e6dbc4;
+          z-index: 5;
         }
         .lcb-textarea {
           flex: 1;
           resize: none;
-          border: 1.5px solid var(--p-line);
-          border-radius: 14px;
-          padding: 10px 14px;
-          font-family: var(--font-body);
+          border: none;
+          border-radius: 20px;
+          padding: 10px 16px;
+          font-family: system-ui, -apple-system, sans-serif;
           font-size: 14px;
-          color: var(--p-ink);
-          background: var(--p-card);
+          color: #1c1a24;
+          background: #ffffff;
           outline: none;
-          max-height: 120px;
+          max-height: 100px;
           overflow-y: auto;
           line-height: 1.45;
-          transition: border-color 0.15s ease;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+          transition: background-color 0.15s ease;
         }
-        .lcb-textarea:focus   { border-color: var(--p-navy); }
+        .lcb-textarea:focus   { background: #ffffff; }
         .lcb-textarea:disabled { opacity: 0.5; }
         .lcb-send {
           width: 40px;
           height: 40px;
           border-radius: 50%;
           border: none;
-          background: var(--p-navy);
+          background: #ff7350;
           color: #ffffff;
           font-size: 15px;
           cursor: pointer;
@@ -364,9 +513,13 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          transition: opacity 0.15s ease, transform 0.1s ease;
+          transition: opacity 0.15s ease, transform 0.1s ease, background-color 0.15s ease;
+          box-shadow: 0 2px 8px rgba(255, 115, 80, 0.2);
         }
-        .lcb-send:disabled            { opacity: 0.35; cursor: not-allowed; }
+        .lcb-send:hover {
+          background: #e9694a;
+        }
+        .lcb-send:disabled            { opacity: 0.35; cursor: not-allowed; background: #e6dbc4; box-shadow: none; color: #95a4bb; }
         .lcb-send:not(:disabled):active { transform: scale(0.92); }
       `}</style>
     </>
