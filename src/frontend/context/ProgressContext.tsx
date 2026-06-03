@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { topics } from "../data/topics";
 import { supabase } from "@backend/supabaseClient";
 import { fetchProgress, saveProgress } from "@backend/progressService";
+import { UID_KEY } from "./ProfileContext";
 
 interface ProgressContextType {
   completedSubTopicIds: string[];
@@ -19,27 +20,20 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === "INITIAL_SESSION" || event === "SIGNED_IN") && session?.user) {
         setUserId(session.user.id);
         const ids = await fetchProgress(session.user.id);
         setCompletedSubTopicIds(ids);
+        setIsLoading(false);
+      } else if (event === "INITIAL_SESSION" && !session) {
+        setIsLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        setUserId(null);
+        setCompletedSubTopicIds([]);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          setUserId(session.user.id);
-          const ids = await fetchProgress(session.user.id);
-          setCompletedSubTopicIds(ids);
-        } else if (event === "SIGNED_OUT") {
-          setUserId(null);
-          setCompletedSubTopicIds([]);
-        }
-      }
-    );
 
     return () => subscription.unsubscribe();
   }, []);

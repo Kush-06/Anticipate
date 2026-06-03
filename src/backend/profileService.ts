@@ -42,7 +42,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
 }
 
 export async function upsertProfile(userId: string, profile: UserProfile): Promise<void> {
-  await supabase.from('user_profiles').upsert({
+  const { error } = await supabase.from('user_profiles').upsert({
     user_id: userId,
     first_name: profile.firstName,
     email: profile.email,
@@ -66,6 +66,7 @@ export async function upsertProfile(userId: string, profile: UserProfile): Promi
     confidence_contracts: profile.confidenceScores.contracts,
     updated_at: new Date().toISOString(),
   })
+  if (error) throw new Error(`upsertProfile failed: ${error.message}`)
 }
 
 // Inserts one user_story_facts row per significant onboarding field.

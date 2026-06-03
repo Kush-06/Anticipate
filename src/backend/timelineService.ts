@@ -28,7 +28,8 @@ export async function seedTimeline(userId: string, items: SpineItemLike[]): Prom
     is_dismissed: false,
   }))
 
-  await supabase.from('user_timeline_items').insert(rows)
+  const { error } = await supabase.from('user_timeline_items').insert(rows)
+  if (error) throw new Error(`seedTimeline failed: ${error.message}`)
 }
 
 export async function fetchTimeline(userId: string): Promise<TimelineItem[]> {

@@ -38,85 +38,81 @@ interface ProfileContextType {
   completedOnboarding: boolean;
   profile: UserProfile | null;
   isLoading: boolean;
-  completeOnboarding: (p: UserProfile) => Promise<void>;
+  completeOnboarding: (p: UserProfile) => void;
   resetProfile: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 const STORAGE_KEY = "anticipate_profile_v2";
+export const UID_KEY = "anticipate_uid";
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw) as UserProfile;
-    } catch {
-      // corrupt data — ignore
-    }
+    } catch { /* corrupt — ignore */ }
     return null;
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Explicit getSession() is more reliable than waiting for INITIAL_SESSION event
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const dbProfile = await fetchProfile(session.user.id);
-        if (dbProfile) {
-          setProfile(dbProfile);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
-        } else {
-          // Session exists but no profile row — orphaned anonymous session.
-          // Sign out so it doesn't block future auth calls.
-          await supabase.auth.signOut();
-        }
-      }
-      setIsLoading(false);
-    });
+  // currentUserId reads from localStorage so it's available synchronously on mount
+  const [currentUserId, setCurrentUserId] = useState<string | null>(
+    () => localStorage.getItem(UID_KEY)
+  );
 
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          const dbProfile = await fetchProfile(session.user.id);
+        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
+          const uid = session.user.id;
+          localStorage.setItem(UID_KEY, uid);
+          setCurrentUserId(uid);
+          const dbProfile = await fetchProfile(uid);
           if (dbProfile) {
             setProfile(dbProfile);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
           }
+          setIsLoading(false);
+        } else if (event === "INITIAL_SESSION" && !session) {
+          setIsLoading(false);
         } else if (event === "SIGNED_OUT") {
-          setProfile(null);
+          localStorage.removeItem(UID_KEY);
           localStorage.removeItem(STORAGE_KEY);
+          setCurrentUserId(null);
+          setProfile(null);
+          setIsLoading(false);
         }
       }
     );
-
     return () => subscription.unsubscribe();
   }, []);
 
-  const completeOnboarding = async (p: UserProfile) => {
+  const completeOnboarding = (p: UserProfile) => {
+    // Navigate immediately — never block the user on DB writes
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
     setProfile(p);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const uid = session.user.id;
-      await upsertProfile(uid, p);
-      await seedStoryFacts(uid, p);
-      const groups = generateTimeline(p);
-      const allItems = groups.flatMap((g) => g.items);
-      await seedTimeline(uid, allItems);
+    // Sync to DB in background; silently swallow errors
+    if (currentUserId) {
+      const uid = currentUserId;
+      upsertProfile(uid, p)
+        .then(() => seedStoryFacts(uid, p))
+        .then(() => {
+          const allItems = generateTimeline(p).flatMap((g) => g.items);
+          return seedTimeline(uid, allItems);
+        })
+        .catch(() => {});
     }
   };
 
   const resetProfile = async () => {
-    // Always clear local state first so the UI responds immediately
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(UID_KEY);
+    setCurrentUserId(null);
     setProfile(null);
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // signOut failure doesn't matter — local state is already cleared
-    }
+    try { await supabase.auth.signOut(); } catch { /* ignore */ }
   };
 
   return (

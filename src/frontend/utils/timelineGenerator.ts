@@ -2,6 +2,222 @@ import type { UserProfile } from "../context/ProfileContext";
 import { getRecommendedSummary } from "../data/topics";
 import type { SpineItem, SpineGroup } from "../../shared/types";
 
+// Maps each "upcoming events" onboarding option (step 4) to a set of milestone items.
+// Items are seeded into the DB on onboarding completion and displayed on the home timeline.
+const UPCOMING_EVENT_ITEMS: Record<string, SpineItem[]> = {
+  "Starting a new job soon": [
+    {
+      id: "new-job-pension",
+      status: "pending",
+      when: "In 3 months",
+      title: "Pension auto-enrolment kicks in",
+      tag: "New job · pension",
+      lessonPath: "/topic/starting-work/subtopic/lesson-02",
+      group: "this-week",
+    },
+    {
+      id: "new-job-budget",
+      status: "pending",
+      when: "Before first payday",
+      title: "Set up your 50/30/20 budget",
+      tag: "New job · budgeting",
+      lessonPath: "/topic/starting-work/subtopic/lesson-03",
+      group: "coming-up",
+    },
+    {
+      id: "new-job-isa",
+      status: "pending",
+      when: "5 Apr",
+      title: "Use your ISA allowance before tax year ends",
+      tag: "Tax calendar",
+      group: "later",
+    },
+  ],
+  "Moving out for the very first time": [
+    {
+      id: "move-deposit",
+      status: "pending",
+      when: "Before move-in",
+      title: "Check tenancy deposit is in a protected scheme",
+      tag: "Moving out · deposit",
+      lessonPath: "/topic/renting/subtopic/lesson-05",
+      group: "this-week",
+    },
+    {
+      id: "move-insurance",
+      status: "pending",
+      when: "In 2 weeks",
+      title: "Arrange renters' insurance",
+      tag: "Moving out · insurance",
+      lessonPath: "/topic/renting/subtopic/lesson-07",
+      group: "coming-up",
+    },
+    {
+      id: "move-bills",
+      status: "pending",
+      when: "Before you move in",
+      title: "Build your first bills budget",
+      tag: "Moving out · bills",
+      lessonPath: "/topic/renting/subtopic/lesson-06",
+      group: "coming-up",
+    },
+    {
+      id: "move-lisa",
+      status: "pending",
+      when: "Before 5 Apr",
+      title: "Open a LISA — 25% bonus on savings up to £4,000/yr",
+      tag: "Home buying",
+      lessonPath: "/topic/buying-a-home/subtopic/lesson-09",
+      group: "later",
+    },
+  ],
+  "Thinking about buying a place": [
+    {
+      id: "buy-mortgage-mip",
+      status: "pending",
+      when: "This week",
+      title: "Get a mortgage in principle (MIP)",
+      tag: "Home buying · mortgage",
+      lessonPath: "/topic/buying-a-home/subtopic/lesson-08",
+      group: "this-week",
+    },
+    {
+      id: "buy-lisa",
+      status: "pending",
+      when: "Before 30 Jun",
+      title: "Open a Lifetime ISA (LISA)",
+      tag: "Home buying · LISA",
+      lessonPath: "/topic/buying-a-home/subtopic/lesson-09",
+      group: "coming-up",
+    },
+    {
+      id: "buy-hidden-costs",
+      status: "pending",
+      when: "Before you offer",
+      title: "Budget for stamp duty and solicitor fees",
+      tag: "Home buying · costs",
+      lessonPath: "/topic/buying-a-home/subtopic/lesson-10",
+      group: "coming-up",
+    },
+    {
+      id: "buy-approval-bootcamp",
+      status: "pending",
+      when: "In 3 months",
+      title: "Mortgage Approval Bootcamp",
+      tag: "Home buying · lesson",
+      lessonPath: "/topic/buying-a-home/subtopic/lesson-11",
+      group: "later",
+    },
+  ],
+  "Moving in with a partner": [
+    {
+      id: "partner-money-talk",
+      status: "pending",
+      when: "This weekend",
+      title: "Discuss how you'll split bills and expenses",
+      tag: "Relationships · money talk",
+      lessonPath: "/topic/relationships/subtopic/lesson-12",
+      group: "this-week",
+    },
+    {
+      id: "partner-joint-account",
+      status: "pending",
+      when: "Before you move",
+      title: "Decide whether to open a joint account",
+      tag: "Relationships · banking",
+      lessonPath: "/topic/relationships/subtopic/lesson-13",
+      group: "coming-up",
+    },
+    {
+      id: "partner-marriage-allowance",
+      status: "pending",
+      when: "Next tax year",
+      title: "Check marriage allowance — up to £252 free",
+      tag: "Relationships · tax",
+      lessonPath: "/topic/relationships/subtopic/lesson-14",
+      group: "later",
+    },
+  ],
+  "Having a baby (or just had one)": [
+    {
+      id: "baby-mat-pay",
+      status: "pending",
+      when: "This week",
+      title: "Check maternity/paternity pay entitlement with HR",
+      tag: "Family · parental pay",
+      lessonPath: "/topic/family/subtopic/lesson-15",
+      group: "this-week",
+    },
+    {
+      id: "baby-child-benefit",
+      status: "pending",
+      when: "In 3 months",
+      title: "Register for Child Benefit within 3 months of birth",
+      tag: "Family · benefits",
+      lessonPath: "/topic/family/subtopic/lesson-16",
+      group: "coming-up",
+    },
+    {
+      id: "baby-jisa",
+      status: "pending",
+      when: "Before 5 Apr",
+      title: "Open a Junior ISA — £9,000/yr tax-free for your child",
+      tag: "Family · savings",
+      lessonPath: "/topic/family/subtopic/lesson-17",
+      group: "later",
+    },
+  ],
+  "Getting a pay rise or switching roles": [
+    {
+      id: "payrise-prep",
+      status: "pending",
+      when: "Before your review",
+      title: "Prepare your salary negotiation talking points",
+      tag: "Career · negotiation",
+      lessonPath: "/topic/career/subtopic/lesson-18",
+      group: "this-week",
+    },
+    {
+      id: "payrise-creep",
+      status: "pending",
+      when: "After your raise",
+      title: "Review monthly spend — avoid lifestyle creep",
+      tag: "Career · budgeting",
+      lessonPath: "/topic/career/subtopic/lesson-19",
+      group: "coming-up",
+    },
+    {
+      id: "payrise-pension",
+      status: "pending",
+      when: "This quarter",
+      title: "Track down and consolidate old pension pots",
+      tag: "Career · pension",
+      lessonPath: "/topic/career/subtopic/lesson-20",
+      group: "later",
+    },
+  ],
+  "Buying a car": [
+    {
+      id: "car-finance",
+      status: "pending",
+      when: "Before you commit",
+      title: "Compare PCP vs HP car finance options",
+      tag: "Car buying · finance",
+      lessonPath: "/topic/cars/subtopic/lesson-24",
+      group: "this-week",
+    },
+    {
+      id: "car-true-cost",
+      status: "pending",
+      when: "Before buying",
+      title: "Calculate full cost including insurance and VED",
+      tag: "Car buying · costs",
+      lessonPath: "/topic/cars/subtopic/lesson-25",
+      group: "coming-up",
+    },
+  ],
+};
+
 export type { SpineItem, SpineGroup };
 export type { SpineStatus } from "../../shared/types";
 
@@ -132,147 +348,95 @@ export function generateTimeline(
   const livingSituation = profile.livingSituation || "";
   const studentLoan = profile.studentLoan || "";
 
-  if (lifeStage.includes("first proper job") || evts.includes("Starting a new job soon")) {
+  // Seed items for each selected upcoming event (step 4 of onboarding)
+  for (const evt of evts) {
+    const items = UPCOMING_EVENT_ITEMS[evt];
+    if (!items) continue;
+    for (const item of items) {
+      if (item.group === "this-week") thisWeekItems.push(item);
+      else if (item.group === "coming-up") comingUpItems.push(item);
+      else laterItems.push(item);
+    }
+  }
+
+  // Life stage: already in first job (not captured by upcoming events)
+  if (lifeStage.includes("first proper job") && !evts.includes("Starting a new job soon")) {
     thisWeekItems.push({
       id: "pension-enrolment",
       status: "pending",
-      when: "Thu 5 Jun",
+      when: "In 3 months",
       title: "Pension auto-enrolment kicks in",
-      tag: "First job",
+      tag: "Starting work · pension",
+      lessonPath: "/topic/starting-work/subtopic/lesson-02",
       group: "this-week",
     });
   }
-  if (evts.includes("Moving out for the very first time") || evts.includes("Moving out for the first time")) {
-    thisWeekItems.push({
-      id: "tenancy-signing",
-      status: "pending",
-      when: "In 4 days",
-      title: "Tenancy agreement signing window",
-      tag: "Moving out",
-      group: "this-week",
-    });
-  }
-  if (evts.includes("Moving in with a partner")) {
-    thisWeekItems.push({
-      id: "partner-split-chat",
-      status: "pending",
-      when: "This weekend",
-      title: "Joint expense chat with partner",
-      tag: "Relationships",
-      group: "this-week",
-    });
-  }
+
+  // Debt paydown
   if (profile.hasDebt === "Yes" || profile.sixMonthGoal?.includes("debt")) {
     thisWeekItems.push({
       id: "debt-dd-setup",
       status: "pending",
       when: "Tomorrow",
-      title: "Direct Debit setup for debt paydown",
+      title: "Set up a Direct Debit for debt paydown",
       tag: "Debt paydown",
+      lessonPath: "/topic/debt/subtopic/lesson-30",
       group: "this-week",
     });
   }
 
-  if (thisWeekItems.length === 1) {
-    thisWeekItems.push({
-      id: "weekly-budget-check",
-      status: "pending",
-      when: "Sun 8 Jun",
-      title: "Weekly budgeting pulse check",
-      tag: "Daily finances",
-      group: "this-week",
-    });
-  }
-
+  // Student loan repayment
   if (studentLoan.includes("actively coming off") || studentLoan.includes("Yes")) {
     comingUpItems.push({
       id: "student-loan-start",
       status: "pending",
       when: "1 Jul",
       title: "Student loan repayment starts",
-      tag: "Student Loan",
+      tag: "Student loan",
+      lessonPath: "/topic/starting-work/subtopic/lesson-04",
       group: "coming-up",
     });
   }
-  if (evts.includes("Thinking about buying a place") || livingSituation.includes("Renting (been") || livingSituation.includes("Renting — been")) {
+
+  // Long-term renter considering buying (not already captured by "Thinking about buying a place")
+  if (
+    !evts.includes("Thinking about buying a place") &&
+    (livingSituation.includes("Renting (been") || livingSituation.includes("Renting — been"))
+  ) {
     comingUpItems.push({
       id: "lisa-open",
       status: "pending",
-      when: "Before 25 Jun",
-      title: "Open a Lifetime ISA (LISA) for home deposit bonus",
-      tag: "Buying a home",
-      group: "coming-up",
-    });
-  }
-  if (evts.includes("Getting a pay rise or switching roles") || evts.includes("Getting a pay rise or changing jobs")) {
-    comingUpItems.push({
-      id: "salary-negotiation-review",
-      status: "pending",
-      when: "Before review date",
-      title: "Salary negotiation review",
-      tag: "Career",
-      group: "coming-up",
-    });
-  }
-  if (evts.includes("Buying a car")) {
-    comingUpItems.push({
-      id: "car-finance-check",
-      status: "pending",
-      when: "Next week",
-      title: "Check PCP vs. HP car loan calculator",
-      tag: "Car buying",
+      when: "Before 5 Apr",
+      title: "Open a Lifetime ISA (LISA) for your home deposit",
+      tag: "Home buying",
+      lessonPath: "/topic/buying-a-home/subtopic/lesson-09",
       group: "coming-up",
     });
   }
 
-  if (comingUpItems.length === 1) {
-    comingUpItems.push({
-      id: "emergency-fund-target",
-      status: "pending",
-      when: "Before 30 Jun",
-      title: "Set emergency fund targets",
-      tag: "Foundations",
-      group: "coming-up",
-    });
-  }
-
-  if (profile.sixMonthGoal?.includes("investing") || profile.sixMonthGoal?.includes("saving") || profile.sixMonthGoal?.includes("tax")) {
+  // ISA deadline for savers/investors
+  if (
+    profile.sixMonthGoal?.includes("investing") ||
+    profile.sixMonthGoal?.includes("saving") ||
+    profile.sixMonthGoal?.includes("tax")
+  ) {
     laterItems.push({
       id: "isa-deadline",
       status: "pending",
       when: "5 Apr",
-      title: "ISA tax-free deadline",
+      title: "ISA tax-year deadline — use your allowance",
       tag: "Tax calendar",
       group: "later",
     });
   }
-  if (evts.includes("Having a baby (or just had one)") || evts.includes("Having a baby or just had one")) {
-    laterItems.push({
-      id: "child-benefit",
-      status: "pending",
-      when: "In 2 months",
-      title: "Child Benefit claim window opens",
-      tag: "Family",
-      group: "later",
-    });
-  }
+
+  // Freelance / self-employed self-assessment
   if (lifeStage.includes("freelance") || lifeStage.includes("self-employed")) {
     laterItems.push({
       id: "self-assessment-deadline",
       status: "pending",
       when: "5 Oct",
-      title: "Submit Self Assessment register form",
-      tag: "Tax calendar",
-      group: "later",
-    });
-  }
-
-  if (laterItems.length === 1) {
-    laterItems.push({
-      id: "tax-year-end",
-      status: "pending",
-      when: "5 Apr",
-      title: "ISA tax-free deadline",
+      title: "Register for Self Assessment with HMRC",
       tag: "Tax calendar",
       group: "later",
     });

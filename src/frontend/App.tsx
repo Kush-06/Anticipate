@@ -21,61 +21,33 @@ function MainApp() {
   const isNative = platform === "android" || platform === "ios";
   const [appLoading, setAppLoading] = useState(true);
 
-  if (appLoading) {
-    if (isNative) {
-      return (
-        <div style={{ width: "100%", height: "100vh", background: "var(--p-coral, #e9694a)", overflow: "hidden", display: "flex", flexDirection: "column", position: "relative" }}>
-          <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
-        </div>
-      );
-    }
-    return (
-      <PhoneFrame>
-        <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
-      </PhoneFrame>
-    );
-  }
-
-  if (!completedOnboarding) {
-    const shell = (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-        <OnboardingFlow />
-      </div>
-    );
-    if (isNative) {
-      return (
-        <BrowserRouter>
-          <div style={{ width: "100%", height: "100vh", background: "var(--p-bg)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            {shell}
-          </div>
-        </BrowserRouter>
-      );
-    }
-    return (
-      <BrowserRouter>
-        <PhoneFrame>{shell}</PhoneFrame>
-      </BrowserRouter>
-    );
-  }
-
-  const AppRoutes = (
+  // ProgressProvider and TimelineProvider live here — above the completedOnboarding
+  // gate — so they mount at app startup and receive INITIAL_SESSION before any
+  // route renders. Moving them inside the gate meant they mounted after INITIAL_SESSION
+  // had already fired, so they never saw the existing session on page refresh.
+  const inner = (
     <ProgressProvider>
       <TimelineProvider>
-        <Routes>
-          {/* Main tab views */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<HomeScreen />} />
-            <Route path="/learn" element={<PlayfulHome />} />
-            <Route path="/profile" element={<ProfileScreen />} />
-          </Route>
-
-          {/* Full-screen lesson pages — no tab bar */}
-          <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
-          <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
-          <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
-          <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
-          <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
-        </Routes>
+        {appLoading ? (
+          <LoadingScreen onFinished={() => setAppLoading(false)} fade={completedOnboarding} />
+        ) : !completedOnboarding ? (
+          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+            <OnboardingFlow />
+          </div>
+        ) : (
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<HomeScreen />} />
+              <Route path="/learn" element={<PlayfulHome />} />
+              <Route path="/profile" element={<ProfileScreen />} />
+            </Route>
+            <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
+            <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
+            <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
+            <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
+            <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
+          </Routes>
+        )}
       </TimelineProvider>
     </ProgressProvider>
   );
@@ -84,7 +56,7 @@ function MainApp() {
     return (
       <BrowserRouter>
         <div style={{ width: "100%", height: "100vh", background: "var(--p-bg)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          {AppRoutes}
+          {inner}
         </div>
       </BrowserRouter>
     );
@@ -92,7 +64,7 @@ function MainApp() {
 
   return (
     <BrowserRouter>
-      <PhoneFrame>{AppRoutes}</PhoneFrame>
+      <PhoneFrame>{inner}</PhoneFrame>
     </BrowserRouter>
   );
 }

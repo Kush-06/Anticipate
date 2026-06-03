@@ -214,8 +214,17 @@ export function HomeScreen() {
                 </div>
               ))}
             </div>
+          ) : totalItems === 0 ? (
+            <div style={{ padding: "32px 0 16px", textAlign: "center" }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--p-ink)", fontFamily: "var(--p-sans)", marginBottom: 6 }}>
+                Nothing on your radar yet
+              </div>
+              <div style={{ fontSize: 13, color: "var(--p-ink-2)", fontFamily: "var(--p-sans)", lineHeight: 1.5 }}>
+                Sage will fill in your upcoming milestones<br />once you complete your profile.
+              </div>
+            </div>
           ) : (
-            groups.map((group) => (
+            groups.filter((g) => g.items.length > 0).map((group) => (
               <div key={group.key}>
                 <div className="av-spine__group-h">
                   {group.label}

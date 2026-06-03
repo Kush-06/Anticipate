@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@backend/supabaseClient";
 import { fetchTimeline, seedTimeline } from "@backend/timelineService";
-import { useProfile } from "./ProfileContext";
+import { useProfile, UID_KEY } from "./ProfileContext";
 import { generateTimeline } from "../utils/timelineGenerator";
 import type { SpineGroup, SpineItem } from "../utils/timelineGenerator";
 
@@ -45,57 +45,51 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
 
   const loadTimeline = useCallback(async (uid: string, currentProfile: typeof profile) => {
     setIsLoading(true);
-    const dbItems = await fetchTimeline(uid);
+    try {
+      const dbItems = await fetchTimeline(uid);
 
-    if (dbItems.length > 0) {
-      // Map DB rows → SpineItem shape
-      const spineItems: SpineItem[] = dbItems.map((item) => ({
-        id: item.itemKey,
-        status: item.status,
-        when: item.whenLabel,
-        title: item.title,
-        tag: item.tag,
-        lessonPath: item.lessonPath,
-        group: item.spineGroup,
-      }));
-      setGroups(itemsToGroups(spineItems));
-    } else {
-      // No DB rows yet — seed from profile and fall back to generated timeline
-      const generated = generateTimeline(currentProfile);
-      const allItems = generated.flatMap((g) => g.items);
-      if (allItems.length > 0) {
-        void seedTimeline(uid, allItems);
+      if (dbItems.length > 0) {
+        // Map DB rows → SpineItem shape
+        const spineItems: SpineItem[] = dbItems.map((item) => ({
+          id: item.itemKey,
+          status: item.status,
+          when: item.whenLabel,
+          title: item.title,
+          tag: item.tag,
+          lessonPath: item.lessonPath,
+          group: item.spineGroup,
+        }));
+        setGroups(itemsToGroups(spineItems));
+      } else {
+        // No DB rows yet — seed from profile and fall back to generated timeline
+        const generated = generateTimeline(currentProfile);
+        const allItems = generated.flatMap((g) => g.items);
+        if (allItems.length > 0) {
+          seedTimeline(uid, allItems).catch(() => {});
+        }
+        setGroups(generated);
       }
-      setGroups(generated);
+    } catch {
+      setGroups([]);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "INITIAL_SESSION" || event === "SIGNED_IN") && session?.user) {
         setUserId(session.user.id);
         void loadTimeline(session.user.id, profile);
-      } else {
-        // No session — fall back to runtime generation from profile
+      } else if (event === "INITIAL_SESSION" && !session) {
         setGroups(generateTimeline(profile));
+        setIsLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        setUserId(null);
+        setGroups([]);
         setIsLoading(false);
       }
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          setUserId(session.user.id);
-          void loadTimeline(session.user.id, profile);
-        } else if (event === "SIGNED_OUT") {
-          setUserId(null);
-          setGroups([]);
-          setIsLoading(false);
-        }
-      }
-    );
 
     return () => subscription.unsubscribe();
   // profile intentionally excluded — loadTimeline captures it at call time

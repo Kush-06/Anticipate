@@ -200,7 +200,6 @@ export function OnboardingFlow() {
     }
 
     // Final step — save profile
-    setIsSubmitting(true);
     const cleanSalary = salaryInput.trim().replace(/[^0-9.]/g, "") || "28000";
     const mappedCompany = upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer";
     const cleanEmail = registeredEmail.trim() || `${firstName.toLowerCase().replace(/\s+/g, "")}@example.com`;
@@ -230,11 +229,7 @@ export function OnboardingFlow() {
       usageFrequency: "A few times a week"
     };
 
-    try {
-      await completeOnboarding(profile);
-    } finally {
-      setIsSubmitting(false);
-    }
+    completeOnboarding(profile);
   };
 
   const handleSelectSingle = (setter: (v: string) => void, val: string) => {
@@ -675,15 +670,31 @@ export function OnboardingFlow() {
       setAuthError("");
       setIsSubmitting(true);
       try {
-        // Clear any stale session (e.g. leftover anonymous token) before signing up
+        // Clear any stale session before signing up
         await supabase.auth.signOut();
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: authEmail.trim(),
           password: authPassword,
         });
         if (error) {
           setAuthError(error.message);
           return;
+        }
+        // If signUp returns no session, email confirmation is required.
+        // Attempt a direct sign-in (works when confirmation is disabled in Supabase).
+        if (!data.session) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: authEmail.trim(),
+            password: authPassword,
+          });
+          if (signInErr) {
+            setAuthError(
+              signInErr.message.toLowerCase().includes("confirm")
+                ? "Check your inbox and click the confirmation link, then use \"Already have an account\" to log in."
+                : signInErr.message
+            );
+            return;
+          }
         }
         setRegisteredEmail(authEmail.trim());
         setScreen("onboarding");
@@ -1123,6 +1134,11 @@ export function OnboardingFlow() {
       {/* Action panel */}
       {typingComplete && (
         <div style={{ padding: "12px 20px max(20px, env(safe-area-inset-bottom)) 20px", flexShrink: 0, borderTop: "1px solid var(--p-line)", background: "var(--p-card)", animation: "anp-fade-in 0.3s ease both" }}>
+          {authError && (
+            <p style={{ fontSize: 13, color: "#c0392b", fontFamily: "var(--p-sans)", textAlign: "center", marginBottom: 10, marginTop: 0 }}>
+              {authError}
+            </p>
+          )}
           <button
             disabled={!canAdvance || isSubmitting}
             onClick={() => { void advance(); }}
