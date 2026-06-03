@@ -55,7 +55,7 @@ function SectionCard({ label, children }: { label: string; children: React.React
 
 export function ProfileScreen() {
   const navigate = useNavigate();
-  const { profile, resetProfile } = useProfile();
+  const { profile, logout } = useProfile();
 
   const firstName    = profile?.firstName    ?? "you";
   const email        = profile?.email        ?? "—";
@@ -186,9 +186,9 @@ export function ProfileScreen() {
           </SectionCard>
         </div>
 
-        {/* Reset */}
+        {/* Log out */}
         <button
-          onClick={resetProfile}
+          onClick={logout}
           style={{
             width: "calc(100% - calc(40px * var(--d)))", margin: "calc(6px * var(--d)) calc(20px * var(--d)) 0",
             background: "transparent", border: "1px solid var(--p-line)", color: "var(--p-ink-2)",
@@ -196,7 +196,7 @@ export function ProfileScreen() {
             padding: "calc(13px * var(--d))", borderRadius: "calc(14px * var(--d))", cursor: "pointer",
           }}
         >
-          Reset my profile
+          Log out
         </button>
 
         <div style={{ height: 32 }} />

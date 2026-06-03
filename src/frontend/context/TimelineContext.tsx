@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@backend/supabaseClient";
 import { fetchTimeline, seedTimeline } from "@backend/timelineService";
-import { useProfile, UID_KEY } from "./ProfileContext";
+import { useProfile } from "./ProfileContext";
 import { generateTimeline } from "../utils/timelineGenerator";
 import type { SpineGroup, SpineItem } from "../utils/timelineGenerator";
 
@@ -49,8 +49,9 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
       const dbItems = await fetchTimeline(uid);
 
       if (dbItems.length > 0) {
-        // Map DB rows → SpineItem shape
-        const spineItems: SpineItem[] = dbItems.map((item) => ({
+        // Dedup by itemKey — guards against duplicate DB rows from concurrent seeds
+        const unique = Array.from(new Map(dbItems.map((i) => [i.itemKey, i])).values());
+        const spineItems: SpineItem[] = unique.map((item) => ({
           id: item.itemKey,
           status: item.status,
           when: item.whenLabel,
@@ -76,25 +77,33 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Synchronously track auth state — no async work inside this callback
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === "INITIAL_SESSION" || event === "SIGNED_IN") && session?.user) {
+      if (session?.user) {
         setUserId(session.user.id);
-        void loadTimeline(session.user.id, profile);
-      } else if (event === "INITIAL_SESSION" && !session) {
-        setGroups(generateTimeline(profile));
-        setIsLoading(false);
       } else if (event === "SIGNED_OUT") {
         setUserId(null);
         setGroups([]);
         setIsLoading(false);
+      } else if (event === "INITIAL_SESSION") {
+        // No session on load — show generated timeline
+        setGroups(generateTimeline(profile));
+        setIsLoading(false);
       }
     });
-
     return () => subscription.unsubscribe();
-  // profile intentionally excluded — loadTimeline captures it at call time
+  // profile excluded intentionally — only needed for the no-session fallback at setup time
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadTimeline]);
+  }, []);
+
+  // Async: load timeline from DB when userId is set
+  useEffect(() => {
+    if (!userId) return;
+    void loadTimeline(userId, profile);
+  // profile excluded — loadTimeline captures it at call time
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, loadTimeline]);
 
   const refreshTimeline = useCallback(async () => {
     if (userId) await loadTimeline(userId, profile);

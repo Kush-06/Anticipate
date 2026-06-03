@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { topics } from "../data/topics";
 import { supabase } from "@backend/supabaseClient";
 import { fetchProgress, saveProgress } from "@backend/progressService";
-import { UID_KEY } from "./ProfileContext";
 
 interface ProgressContextType {
   completedSubTopicIds: string[];
@@ -19,24 +18,34 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Synchronously track auth state — no async work inside this callback
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if ((event === "INITIAL_SESSION" || event === "SIGNED_IN") && session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
         setUserId(session.user.id);
-        const ids = await fetchProgress(session.user.id);
-        setCompletedSubTopicIds(ids);
-        setIsLoading(false);
-      } else if (event === "INITIAL_SESSION" && !session) {
-        setIsLoading(false);
       } else if (event === "SIGNED_OUT") {
         setUserId(null);
         setCompletedSubTopicIds([]);
         setIsLoading(false);
+      } else if (event === "INITIAL_SESSION") {
+        // No session on load
+        setIsLoading(false);
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
+
+  // Async: load progress from DB when userId is set
+  useEffect(() => {
+    if (!userId) return;
+    setIsLoading(true);
+    fetchProgress(userId)
+      .then((ids) => {
+        setCompletedSubTopicIds(ids);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [userId]);
 
   const completeSubTopic = (subTopicId: string) => {
     setCompletedSubTopicIds((prev) => {

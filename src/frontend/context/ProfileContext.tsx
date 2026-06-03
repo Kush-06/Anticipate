@@ -40,6 +40,7 @@ interface ProfileContextType {
   isLoading: boolean;
   completeOnboarding: (p: UserProfile) => void;
   resetProfile: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -56,45 +57,56 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     return null;
   });
   const [isLoading, setIsLoading] = useState(true);
-
-  // currentUserId reads from localStorage so it's available synchronously on mount
   const [currentUserId, setCurrentUserId] = useState<string | null>(
     () => localStorage.getItem(UID_KEY)
   );
+  // undefined = INITIAL_SESSION not yet received; null = no session; string = authenticated
+  const [sessionUserId, setSessionUserId] = useState<string | null | undefined>(undefined);
 
+  // Synchronously track auth state — never do async work inside this callback
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
-          const uid = session.user.id;
-          localStorage.setItem(UID_KEY, uid);
-          setCurrentUserId(uid);
-          const dbProfile = await fetchProfile(uid);
-          if (dbProfile) {
-            setProfile(dbProfile);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
-          }
-          setIsLoading(false);
-        } else if (event === "INITIAL_SESSION" && !session) {
-          setIsLoading(false);
-        } else if (event === "SIGNED_OUT") {
-          localStorage.removeItem(UID_KEY);
-          localStorage.removeItem(STORAGE_KEY);
-          setCurrentUserId(null);
-          setProfile(null);
-          setIsLoading(false);
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        localStorage.removeItem(UID_KEY);
+        localStorage.removeItem(STORAGE_KEY);
+        setCurrentUserId(null);
+        setProfile(null);
+        setIsLoading(false);
+        setSessionUserId(null);
+      } else if (session?.user) {
+        setSessionUserId(session.user.id);
+      } else if (event === "INITIAL_SESSION") {
+        // No session found on load — stop loading
+        setSessionUserId(null);
       }
-    );
+    });
     return () => subscription.unsubscribe();
   }, []);
 
+  // Async: load profile from DB whenever a valid session user ID becomes known
+  useEffect(() => {
+    if (sessionUserId === undefined) return; // auth state not yet known
+    if (!sessionUserId) {
+      setIsLoading(false);
+      return;
+    }
+    const uid = sessionUserId;
+    localStorage.setItem(UID_KEY, uid);
+    setCurrentUserId(uid);
+    void fetchProfile(uid)
+      .then((dbProfile) => {
+        if (dbProfile) {
+          setProfile(dbProfile);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
+        }
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [sessionUserId]);
+
   const completeOnboarding = (p: UserProfile) => {
-    // Navigate immediately — never block the user on DB writes
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
     setProfile(p);
-
-    // Sync to DB in background; silently swallow errors
     if (currentUserId) {
       const uid = currentUserId;
       upsertProfile(uid, p)
@@ -115,9 +127,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     try { await supabase.auth.signOut(); } catch { /* ignore */ }
   };
 
+  const logout = async () => {
+    try { await supabase.auth.signOut(); } catch { /* ignore */ }
+  };
+
   return (
     <ProfileContext.Provider
-      value={{ completedOnboarding: !!profile, profile, isLoading, completeOnboarding, resetProfile }}
+      value={{ completedOnboarding: !!profile, profile, isLoading, completeOnboarding, resetProfile, logout }}
     >
       {children}
     </ProfileContext.Provider>
