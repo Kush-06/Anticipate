@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Baby,
   Bell,
   Briefcase,
   Car,
+  ChevronDown,
   CreditCard,
   Gift,
   HeartHandshake,
@@ -16,7 +18,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { topics, getRecommendedTopics } from "../data/topics";
+import { topics, getRecommendedTopics, getRecommendedSummary } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
 import { useProfile } from "../context/ProfileContext";
 
@@ -137,6 +139,8 @@ export function PlayfulHome() {
   const navigate = useNavigate();
   const { completedSubTopicIds } = useProgress();
   const { profile } = useProfile();
+  const [foundationalOpen, setFoundationalOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   const completions = topics.map((t) => {
     const done = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
@@ -162,6 +166,12 @@ export function PlayfulHome() {
     const completedCount = t.subTopics.filter((s) => completedSubTopicIds.includes(s.id)).length;
     return completedCount < t.subTopics.length;
   });
+
+  const recSummary = getRecommendedSummary(profile);
+  const recTopicIds = Array.from(new Set(recSummary.map((c) => c.topicId)));
+  const suggestedTopics = recTopicIds
+    .map((id) => topics.find((t) => t.id === id))
+    .filter((t): t is typeof topics[0] => !!t);
 
   const foundational = topics.filter((t) => FOUNDATIONAL_IDS.has(t.id));
   const suggested = topics
@@ -256,21 +266,103 @@ export function PlayfulHome() {
           </div>
         </div>
 
-        {/* ── Foundational section — card wrapper ── */}
+        {/* ── Suggested for you ── */}
+        {suggestedTopics.length > 0 && (
+          <>
+            <div className="anp-sect-h" style={{ marginTop: "calc(4px * var(--d))" }}>
+              <h3>Suggested for you</h3>
+              <span className="count">Based on your profile</span>
+            </div>
+            <div className="anp-l-tracks">
+              {suggestedTopics.map(renderTrackTile)}
+            </div>
+          </>
+        )}
+
+        {/* ── Module Library — collapsible card ── */}
         <div style={{
           margin: "0 calc(16px * var(--d)) calc(16px * var(--d))",
+          background: "var(--p-bg-card, #fff)",
+          borderRadius: "calc(20px * var(--d))",
+          border: "1px solid var(--p-line-1)",
+          overflow: "hidden",
+        }}>
+          <button
+            onClick={() => setLibraryOpen((o) => !o)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "calc(14px * var(--d)) calc(14px * var(--d))",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "calc(6px * var(--d))" }}>
+              <span style={{
+                fontFamily: "var(--p-display)",
+                fontWeight: 600,
+                fontSize: "calc(16px * var(--d))",
+                letterSpacing: "-0.01em",
+                color: "var(--p-ink)",
+              }}>Module Library</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "calc(8px * var(--d))" }}>
+              <span style={{
+                fontFamily: "var(--p-mono)",
+                fontSize: "calc(9.5px * var(--d))",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase" as const,
+                color: "var(--p-ink-3)",
+              }}>All topics</span>
+              <ChevronDown
+                size={16}
+                color="var(--p-ink-3)"
+                style={{
+                  transition: "transform 0.25s ease",
+                  transform: libraryOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  flexShrink: 0,
+                }}
+              />
+            </div>
+          </button>
+
+          {libraryOpen && (
+            <div style={{
+              padding: "0 calc(14px * var(--d)) calc(14px * var(--d))",
+              display: "flex",
+              flexDirection: "column",
+              gap: "calc(10px * var(--d))",
+            }}>
+              {suggested.map(renderTrackTile)}
+            </div>
+          )}
+        </div>
+
+        {/* ── Foundational section — collapsible card ── */}
+        <div style={{
+          margin: "calc(16px * var(--d)) calc(16px * var(--d)) calc(16px * var(--d))",
           background: "linear-gradient(135deg, #fef9ee 0%, #faeac8 45%, #fdf5e2 100%)",
           borderRadius: "calc(20px * var(--d))",
-          padding: "calc(14px * var(--d)) calc(14px * var(--d)) calc(6px * var(--d))",
           border: "1px solid var(--p-gold-tint)",
+          overflow: "hidden",
         }}>
-          {/* Section header */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "calc(12px * var(--d))",
-          }}>
+          {/* Tappable header row */}
+          <button
+            onClick={() => setFoundationalOpen((o) => !o)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "calc(14px * var(--d)) calc(14px * var(--d))",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "calc(6px * var(--d))" }}>
               <span style={{ color: "var(--p-gold)", fontSize: "calc(14px * var(--d))", lineHeight: 1 }}>✦</span>
               <span style={{
@@ -281,29 +373,37 @@ export function PlayfulHome() {
                 color: "var(--p-ink)",
               }}>Foundational</span>
             </div>
-            <span style={{
-              fontFamily: "var(--p-mono)",
-              fontSize: "calc(9.5px * var(--d))",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase" as const,
-              color: "var(--p-gold)",
-            }}>Everyone starts here</span>
-          </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "calc(8px * var(--d))" }}>
+              <span style={{
+                fontFamily: "var(--p-mono)",
+                fontSize: "calc(9.5px * var(--d))",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase" as const,
+                color: "var(--p-gold)",
+              }}>Everyone starts here</span>
+              <ChevronDown
+                size={16}
+                color="var(--p-gold)"
+                style={{
+                  transition: "transform 0.25s ease",
+                  transform: foundationalOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  flexShrink: 0,
+                }}
+              />
+            </div>
+          </button>
 
-          {/* Foundational tiles — no outer padding since the card provides it */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "calc(10px * var(--d))" }}>
-            {foundational.map(renderTrackTile)}
-          </div>
-          <div style={{ height: "calc(8px * var(--d))" }} />
-        </div>
-
-        {/* ── Suggested section ── */}
-        <div className="anp-sect-h" style={{ marginTop: "calc(4px * var(--d))" }}>
-          <h3>Suggested for you</h3>
-          <span className="count">Tailored to your stage</span>
-        </div>
-        <div className="anp-l-tracks">
-          {suggested.map(renderTrackTile)}
+          {/* Collapsible content */}
+          {foundationalOpen && (
+            <div style={{
+              padding: "0 calc(14px * var(--d)) calc(14px * var(--d))",
+              display: "flex",
+              flexDirection: "column",
+              gap: "calc(10px * var(--d))",
+            }}>
+              {foundational.map(renderTrackTile)}
+            </div>
+          )}
         </div>
 
         <div style={{ height: 50 }} />
