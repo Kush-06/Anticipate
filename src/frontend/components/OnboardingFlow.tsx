@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
 import { useProfile } from "../context/ProfileContext";
 import type { UserProfile } from "../context/ProfileContext";
 import { AppIcon } from "./AppIcon";
@@ -18,7 +18,7 @@ function parseParagraph(text: string) {
 }
 
 // Custom typewriter engine component
-function TypewriterMessage({
+const TypewriterMessage = forwardRef(({
   paragraphs,
   onComplete,
   speed = 35
@@ -26,10 +26,31 @@ function TypewriterMessage({
   paragraphs: string[];
   onComplete: () => void;
   speed?: number;
-}) {
+}, ref) => {
   const [currentParagraphIdx, setCurrentParagraphIdx] = useState(0);
   const [displayedLengths, setDisplayedLengths] = useState<number[]>(paragraphs.map(() => 0));
   const [isTyping, setIsTyping] = useState(true);
+
+  // New: Ability to skip just the current box
+  const skipCurrent = useCallback(() => {
+    if (!isTyping || currentParagraphIdx >= paragraphs.length) return;
+
+    setDisplayedLengths((prev) => {
+      const next = [...prev];
+      const targetText = paragraphs[currentParagraphIdx];
+      const segments = parseParagraph(targetText);
+      next[currentParagraphIdx] = segments.reduce((sum, seg) => sum + seg.text.length, 0);
+      return next;
+    });
+    
+    // We don't advance the index here. We let the useEffect's interval catch that 
+    // the text is fully displayed and trigger the staggered advance naturally.
+    // This prevents race conditions between the manual skip and the running interval.
+  }, [currentParagraphIdx, paragraphs, isTyping]);
+
+  useImperativeHandle(ref, () => ({
+    skipCurrent
+  }));
 
   useEffect(() => {
     if (!isTyping) return;
@@ -45,27 +66,31 @@ function TypewriterMessage({
     const segments = parseParagraph(targetText);
     const totalLength = segments.reduce((sum, seg) => sum + seg.text.length, 0);
 
-    let charIdx = 0;
+    // If we've manually skipped to the end, just advance after the stagger
+    if (displayedLengths[currentParagraphIdx] >= totalLength) {
+        const timer = setTimeout(() => {
+          setCurrentParagraphIdx((idx) => idx + 1);
+        }, 150); // Shorter stagger when skipped manually
+        return () => clearTimeout(timer);
+    }
 
     const interval = setInterval(() => {
       setDisplayedLengths((prev) => {
         const next = [...prev];
-        next[currentParagraphIdx] = charIdx + 1;
+        const currentLen = next[currentParagraphIdx] ?? 0;
+        
+        if (currentLen >= totalLength) {
+           clearInterval(interval);
+           return next;
+        }
+        
+        next[currentParagraphIdx] = currentLen + 1;
         return next;
       });
-      charIdx++;
-
-      if (charIdx >= totalLength) {
-        clearInterval(interval);
-        // Staggered pause (400ms) between paragraph blocks
-        setTimeout(() => {
-          setCurrentParagraphIdx((idx) => idx + 1);
-        }, 400);
-      }
     }, speed);
 
     return () => clearInterval(interval);
-  }, [currentParagraphIdx, paragraphs, isTyping, speed, onComplete]);
+  }, [currentParagraphIdx, paragraphs, isTyping, speed, onComplete, displayedLengths]);
 
   const renderSegments = (segments: ReturnType<typeof parseParagraph>, maxLength: number) => {
     let charsLeft = maxLength;
@@ -82,7 +107,10 @@ function TypewriterMessage({
   };
 
   return (
-    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+    <div 
+      onClick={skipCurrent}
+      style={{ display: "flex", gap: 12, alignItems: "flex-start", cursor: isTyping ? "pointer" : "default" }}
+    >
       <SageAvatar size={50} />
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
         {paragraphs.map((paraText, idx) => {
@@ -118,10 +146,11 @@ function TypewriterMessage({
       </div>
     </div>
   );
-}
+});
 
 export function OnboardingFlow() {
   const { completeOnboarding } = useProfile();
+  const typewriterRef = useRef<{ skipCurrent: () => void }>(null);
 
   // Navigation and auth states
   const [screen, setScreen] = useState<"welcome" | "login" | "register" | "onboarding">("welcome");
@@ -840,7 +869,21 @@ export function OnboardingFlow() {
   }
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "var(--p-bg)", overflow: "hidden" }}>
+    <div 
+      onClick={() => {
+        if (!typingComplete && screen === "onboarding") {
+          typewriterRef.current?.skipCurrent();
+        }
+      }}
+      style={{ 
+        height: "100%", 
+        display: "flex", 
+        flexDirection: "column", 
+        background: "var(--p-bg)", 
+        overflow: "hidden",
+        cursor: (!typingComplete && screen === "onboarding") ? "pointer" : "default"
+      }}
+    >
       {/* Header bar */}
       <div style={{ padding: "max(24px, env(safe-area-inset-top)) 20px 16px", flexShrink: 0, borderBottom: "1px solid var(--p-line-2)", background: "var(--p-bg)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
@@ -870,6 +913,7 @@ export function OnboardingFlow() {
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           
           <TypewriterMessage
+            ref={typewriterRef}
             key={step}
             paragraphs={stepParagraphs}
             onComplete={() => setTypingComplete(true)}
