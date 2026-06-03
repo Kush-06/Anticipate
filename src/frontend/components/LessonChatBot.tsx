@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { hasActiveProvider, sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
 
@@ -25,6 +25,14 @@ HOW TO RESPOND
 - Think like a teacher: if someone didn't understand the lesson, explain it a different way — use analogies, real-life examples, or a simpler breakdown. Never just repeat the lesson text back at them
 - Match their level: plain English, no jargon unless you define it immediately
 - If they seem confused, ask one clarifying question before launching into a long explanation`
+}
+
+function renderMessage(text: string): ReactNode[] {
+  return text.split(/(\*\*.*?\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part as ReactNode
+  )
 }
 
 export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: LessonChatBotProps) {
@@ -111,7 +119,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
               )}
               {messages.map((m, i) => (
                 <div key={i} className={`lcb-bubble lcb-bubble--${m.role}`}>
-                  {m.content}
+                  {renderMessage(m.content)}
                 </div>
               ))}
               {loading && (
