@@ -181,7 +181,7 @@ const getReadingTime = (content: string): string => {
 };
 
 interface CardConfig {
-  icon: any;
+  icon: React.ElementType;
   color: string;
   bgColor: string;
   labelColor: string;
@@ -508,7 +508,7 @@ export function PlayfulSubTopic() {
         const rest = cardMatch[3].trim();
         
         let title = "";
-        let description = "";
+        let description: string;
         const sentenceBoundary = rest.indexOf(". ");
         if (sentenceBoundary !== -1) {
           title = rest.substring(0, sentenceBoundary + 1).trim();
