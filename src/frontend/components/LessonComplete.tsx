@@ -1,6 +1,7 @@
 import { useNavigate, useParams, useLocation } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { RotateCcw, BookOpen } from "lucide-react";
 
 interface CompleteState {
   timeTaken?: string;
@@ -96,17 +97,37 @@ export function LessonComplete() {
           <div style={{ display: "flex", gap: "calc(10px * var(--d))", marginTop: "calc(20px * var(--d))" }}>
             <button
               className="anp-result__btn anp-result__btn--secondary"
-              style={{ flex: 1, padding: "calc(12px * var(--d))", fontSize: "calc(13px * var(--d))", fontWeight: 600 }}
+              style={{ 
+                flex: 1, 
+                padding: "calc(12px * var(--d))", 
+                fontSize: "calc(13px * var(--d))", 
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px"
+              }}
               onClick={() => navigate(`/topic/${topicId}/subtopic/${subTopicId}/quiz`)}
             >
-              🔄 Retake Quiz
+              <RotateCcw size={14} />
+              <span>Retake Quiz</span>
             </button>
             <button
               className="anp-result__btn anp-result__btn--secondary"
-              style={{ flex: 1, padding: "calc(12px * var(--d))", fontSize: "calc(13px * var(--d))", fontWeight: 600 }}
+              style={{ 
+                flex: 1, 
+                padding: "calc(12px * var(--d))", 
+                fontSize: "calc(13px * var(--d))", 
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px"
+              }}
               onClick={() => navigate(`/topic/${topicId}/subtopic/${subTopicId}`)}
             >
-              📖 Review Lesson
+              <BookOpen size={14} />
+              <span>Review Lesson</span>
             </button>
           </div>
         </div>

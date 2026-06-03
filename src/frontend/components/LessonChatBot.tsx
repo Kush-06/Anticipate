@@ -156,26 +156,36 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
       )}
 
       <style>{`
+        @keyframes float-btn {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+          100% { transform: translateY(0px); }
+        }
         .lcb-fab {
           position: absolute;
-          bottom: 88px;
+          bottom: 20px;
           right: 16px;
           width: 52px;
           height: 52px;
           border-radius: 50%;
-          border: none;
-          background: var(--p-coral);
-          box-shadow: 0 4px 16px rgba(233, 105, 74, 0.35);
+          border: 1.5px solid #f2ab8d;
+          background: #fbe1d6;
+          box-shadow: 0 4px 12px rgba(233, 105, 74, 0.15);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 10;
           padding: 0;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          animation: float-btn 3.5s ease-in-out infinite;
+          transition: box-shadow 0.15s ease, transform 0.15s ease;
         }
-        .lcb-fab:hover  { transform: scale(1.06); box-shadow: 0 6px 22px rgba(233,105,74,0.42); }
-        .lcb-fab:active { transform: scale(0.95); }
+        .lcb-fab:hover {
+          box-shadow: 0 6px 18px rgba(233, 105, 74, 0.25);
+        }
+        .lcb-fab:active {
+          transform: scale(0.95);
+        }
         .lcb-fab img    { border-radius: 50%; object-fit: cover; }
 
         .lcb-backdrop {

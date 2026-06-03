@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "c0f01efa-f035-4d03-aa1c-ce7a932f90d3"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.vedants05.anticipate"
+    }
+  }
+}
