@@ -8,7 +8,8 @@ import { useProfile, type UserProfile } from "../context/ProfileContext";
 import { supabase } from "@backend/supabaseClient";
 import { fetchStoryFacts } from "@backend/profileService";
 import { createNudge, sendPushNudge } from "@backend/nudgeService";
-import { isTopicOffProfile, buildNudgeQuestion } from "../utils/offProfileDetector";
+import { isTopicOffProfile, buildNudgeQuestion } from "../utils/offProfileDetector"
+import { LessonChatBot } from "./LessonChatBot";
 
 function estimateNetPay(gross: number, profile: UserProfile | null | undefined): number {
   const personalAllowance = 12570;
@@ -336,7 +337,7 @@ export function PlayfulSubTopic() {
   };
 
   return (
-    <div className="anp-plan">
+    <div className="anp-plan" style={{ position: "relative" }}>
       {/* Top bar */}
       <div className="anp-plan__topbar">
         <button
@@ -375,6 +376,12 @@ export function PlayfulSubTopic() {
           <ChevronRight size={18} style={{ marginLeft: "auto" }} />
         </button>
       </div>
+
+      <LessonChatBot
+        lessonTitle={subTopic.title}
+        topicTitle={topic.title}
+        lessonContent={processedContent}
+      />
 
       <style>{`
         .anp-subtopic__header {
