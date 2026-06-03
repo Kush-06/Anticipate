@@ -86,22 +86,25 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   // Async: load profile from DB whenever a valid session user ID becomes known
   useEffect(() => {
     if (sessionUserId === undefined) return; // auth state not yet known
-    if (!sessionUserId) {
-      setIsLoading(false);
-      return;
-    }
-    const uid = sessionUserId;
-    localStorage.setItem(UID_KEY, uid);
-    setCurrentUserId(uid);
-    void fetchProfile(uid)
-      .then((dbProfile) => {
-        if (dbProfile) {
-          setProfile(dbProfile);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
-        }
+    const timer = setTimeout(() => {
+      if (!sessionUserId) {
         setIsLoading(false);
-      })
-      .catch(() => setIsLoading(false));
+        return;
+      }
+      const uid = sessionUserId;
+      localStorage.setItem(UID_KEY, uid);
+      setCurrentUserId(uid);
+      void fetchProfile(uid)
+        .then((dbProfile) => {
+          if (dbProfile) {
+            setProfile(dbProfile);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProfile));
+          }
+          setIsLoading(false);
+        })
+        .catch(() => setIsLoading(false));
+    }, 0);
+    return () => clearTimeout(timer);
   }, [sessionUserId]);
 
   const completeOnboarding = (p: UserProfile) => {

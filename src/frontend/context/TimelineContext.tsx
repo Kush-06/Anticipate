@@ -100,7 +100,10 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
   // Async: load timeline from DB when userId is set
   useEffect(() => {
     if (!userId) return;
-    void loadTimeline(userId, profile);
+    const timer = setTimeout(() => {
+      void loadTimeline(userId, profile);
+    }, 0);
+    return () => clearTimeout(timer);
   // profile excluded — loadTimeline captures it at call time
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, loadTimeline]);

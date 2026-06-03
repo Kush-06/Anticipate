@@ -38,13 +38,16 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   // Async: load progress from DB when userId is set
   useEffect(() => {
     if (!userId) return;
-    setIsLoading(true);
-    fetchProgress(userId)
-      .then((ids) => {
-        setCompletedSubTopicIds(ids);
-        setIsLoading(false);
-      })
-      .catch(() => setIsLoading(false));
+    const timer = setTimeout(() => {
+      setIsLoading(true);
+      fetchProgress(userId)
+        .then((ids) => {
+          setCompletedSubTopicIds(ids);
+          setIsLoading(false);
+        })
+        .catch(() => setIsLoading(false));
+    }, 0);
+    return () => clearTimeout(timer);
   }, [userId]);
 
   const completeSubTopic = (subTopicId: string) => {
