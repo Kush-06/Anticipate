@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { HashRouter, Routes, Route } from "react-router";
 import { Capacitor } from "@capacitor/core";
 import { PlayfulHome } from "./components/PlayfulHome";
 import { PlayfulLessonPlan } from "./components/PlayfulLessonPlan";
@@ -54,18 +54,18 @@ function MainApp() {
 
   if (isNative) {
     return (
-      <BrowserRouter>
+      <HashRouter>
         <div style={{ width: "100%", height: "100vh", background: "var(--p-bg)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
           {inner}
         </div>
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <PhoneFrame>{inner}</PhoneFrame>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

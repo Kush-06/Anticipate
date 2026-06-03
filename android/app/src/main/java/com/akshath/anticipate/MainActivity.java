@@ -1,4 +1,4 @@
-package com.example.app;
+package com.akshath.anticipate;
 
 import com.getcapacitor.BridgeActivity;
 
