@@ -73,9 +73,6 @@ export function ProfileScreen() {
       {/* Top bar */}
       <div className="anp-top">
         <div className="av-logo">anticipate.</div>
-        <button className="anp-icon-btn" onClick={() => navigate("/")} aria-label="Settings">
-          <AppIcon name="settings" size={19} />
-        </button>
       </div>
 
       <div className="av-greet" style={{ paddingBottom: "calc(12px * var(--d))" }}>

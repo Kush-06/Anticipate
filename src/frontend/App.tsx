@@ -9,6 +9,7 @@ import { LessonComplete } from "./components/LessonComplete";
 import { MainLayout } from "./components/MainLayout";
 import { HomeScreen } from "./components/HomeScreen";
 import { ProfileScreen } from "./components/ProfileScreen";
+import { NotificationsScreen } from "./components/NotificationsScreen";
 import { OnboardingFlow } from "./components/OnboardingFlow";
 import { ProgressProvider } from "./context/ProgressContext";
 import { ProfileProvider, useProfile } from "./context/ProfileContext";
@@ -41,6 +42,7 @@ function MainApp() {
               <Route path="/learn" element={<PlayfulHome />} />
               <Route path="/profile" element={<ProfileScreen />} />
             </Route>
+            <Route path="/notifications" element={<NotificationsScreen />} />
             <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
             <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
             <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
