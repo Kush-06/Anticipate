@@ -212,6 +212,9 @@ export function OnboardingFlow() {
 
   const advance = async () => {
     if (step === 8) {
+      if (salaryInput.trim().length === 0) {
+        setSalaryInput("28000"); // Use default if skipped
+      }
       setAnalyzingText("Looking at where you are right now...");
       setIsAnalyzing(true);
       setTimeout(() => {
@@ -291,7 +294,7 @@ export function OnboardingFlow() {
     moneyWorry.length > 0, // step 5
     true, // step 6
     studentLoan.length > 0, // step 7
-    salaryInput.trim().length > 0, // step 8
+    true, // step 8 (allow skip via main button)
     true // step 9
   ][step];
 
@@ -1099,27 +1102,6 @@ export function OnboardingFlow() {
                         onChange={(e) => setSalaryInput(e.target.value)}
                       />
                     </div>
-                    <button
-                      onClick={() => {
-                        setSalaryInput("");
-                        advance();
-                      }}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--p-coral)",
-                        fontFamily: "var(--p-sans)",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        padding: "8px 12px",
-                        marginTop: 12,
-                        alignSelf: "center",
-                        textDecoration: "underline"
-                      }}
-                    >
-                      Skip for now
-                    </button>
                   </div>
                 </div>
               )}
@@ -1205,7 +1187,17 @@ export function OnboardingFlow() {
               transition: "all 0.15s ease"
             }}
           >
-            {isSubmitting ? "Setting up your account..." : step === 0 ? "Continue" : step === 1 ? "Let's do it" : step === 9 ? "Let's go" : "Continue"}
+            {isSubmitting 
+              ? "Setting up your account..." 
+              : step === 0 
+                ? "Continue" 
+                : step === 1 
+                  ? "Let's do it" 
+                  : step === 8 && salaryInput.trim().length === 0
+                    ? "Skip"
+                    : step === 9 
+                      ? "Let's go" 
+                      : "Continue"}
             {!isSubmitting && <AppIcon name="arrowRight" size={16} stroke={2} />}
           </button>
           
