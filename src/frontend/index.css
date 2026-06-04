@@ -1506,7 +1506,7 @@ body {
 
 .anp-l-node {
   position: relative;
-  padding: calc(8px * var(--d)) calc(20px * var(--d));
+  padding: calc(10px * var(--d)) calc(20px * var(--d));
   display: grid;
   grid-template-columns: 72px 1fr;
   gap: calc(14px * var(--d));
@@ -1519,23 +1519,6 @@ body {
 .anp-l-node.side-l { padding-left: calc(20px * var(--d)); }
 .anp-l-node.side-c { padding-left: calc(48px * var(--d)); }
 .anp-l-node.side-r { padding-left: calc(76px * var(--d)); }
-
-/* Vertical connector line */
-.anp-l-node::before {
-  content: "";
-  position: absolute;
-  width: 3px;
-  background: var(--p-line);
-  border-radius: 2px;
-  z-index: 0;
-}
-.anp-l-node:first-child::before { display: none; }
-.anp-l-node.side-l::before { left: 56px;  top: -16px; height: 28px; }
-.anp-l-node.side-c::before { left: 84px;  top: -16px; height: 28px; }
-.anp-l-node.side-r::before { left: 112px; top: -16px; height: 28px; }
-.anp-l-node.done::before   { background: var(--p-mint); }
-.anp-l-node.active::before { background: var(--p-coral); }
-.anp-l-node.locked::before { background: var(--p-line); }
 
 /* Bubble */
 .anp-l-node .bubble {

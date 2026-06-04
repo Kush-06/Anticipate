@@ -1,3 +1,4 @@
+import React, { Fragment } from "react";
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
@@ -6,6 +7,38 @@ type NodeStatus = "done" | "active" | "locked";
 
 const SIDE_PATTERN = ["c", "r", "l", "c", "r", "l"] as const;
 const MINS_PER_MODULE = 3;
+
+function PathConnector({ from, to, status }: { from: "l" | "c" | "r"; to: "l" | "c" | "r"; status: NodeStatus }) {
+  const xMap = { l: 56, c: 84, r: 112 };
+  const x1 = xMap[from];
+  const x2 = xMap[to];
+  const height = 50; // Vertical span of the curve
+
+  return (
+    <svg
+      width="200"
+      height={height}
+      viewBox={`0 0 200 ${height}`}
+      style={{
+        position: "absolute",
+        left: 0,
+        top: -height / 2 - 4, // Aligned with the gap between bubbles
+        overflow: "visible",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    >
+      <path
+        d={`M ${x1} 0 C ${x1} ${height / 2}, ${x2} ${height / 2}, ${x2} ${height}`}
+        stroke={status === "done" || status === "active" ? "var(--p-mint)" : "var(--p-line)"}
+        strokeWidth="3.5"
+        fill="none"
+        strokeDasharray="6 8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function BackBtn({ onClick }: { onClick: () => void }) {
   return (
@@ -114,6 +147,7 @@ export function PlayfulLessonPlan() {
           {topic.subTopics.map((sub, i) => {
             const status = nodeStatuses[i];
             const side = SIDE_PATTERN[i % SIDE_PATTERN.length];
+            const prevSide = i > 0 ? SIDE_PATTERN[(i - 1) % SIDE_PATTERN.length] : null;
 
             return (
               <div
@@ -121,6 +155,7 @@ export function PlayfulLessonPlan() {
                 className={`anp-l-node side-${side} ${status}`}
                 onClick={() => status !== "locked" && navigate(`/topic/${topic.id}/subtopic/${sub.id}`)}
               >
+                {prevSide && <PathConnector from={prevSide} to={side} status={status} />}
                 {status === "active" && <div className="halo" />}
                 <div className="bubble">
                   {status === "active" && <div className="cta-pulse">Start ›</div>}
