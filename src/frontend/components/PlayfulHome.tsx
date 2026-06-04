@@ -215,7 +215,7 @@ export function PlayfulHome() {
       {/* Top bar — wordmark + bell (tab root, no back button) */}
       <div className="anp-top">
         <div className="anp-wordmark">anticipate.</div>
-        <button className="anp-icon-btn" aria-label="Notifications">
+        <button className="anp-icon-btn" onClick={() => navigate("/notifications")} aria-label="Notifications">
           <Bell size={18} strokeWidth={1.8} />
         </button>
       </div>
