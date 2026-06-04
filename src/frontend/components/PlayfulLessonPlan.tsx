@@ -1,4 +1,3 @@
-import React, { Fragment } from "react";
 import { useNavigate, useParams } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
