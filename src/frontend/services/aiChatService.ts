@@ -36,7 +36,6 @@ function keyForProvider(p: Provider): string {
 }
 
 export function getActiveProvider(): Provider | null {
-  console.log("Has Gemini Key:", !!import.meta.env.VITE_GEMINI_API_KEY);
   const raw = ((import.meta.env.VITE_AI_PROVIDER as string | undefined) ?? '').trim().toLowerCase()
   if (raw === 'gemini' || raw === 'openai' || raw === 'claude') {
     return keyForProvider(raw) ? raw : null
