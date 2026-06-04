@@ -106,7 +106,8 @@ export function PlayfulQuiz() {
 
     if (isLast) {
       const finalScore = score;
-      if (subTopicId) completeSubTopic(subTopicId);
+      const isPerfect = finalScore === totalQs;
+      if (subTopicId && isPerfect) completeSubTopic(subTopicId);
 
       navigate(
         subTopicId
