@@ -133,7 +133,7 @@ function customizeLessonText(content: string, subTopicId: string, salary: number
         `Imagine your annual salary increases from £${sBase.toLocaleString("en-GB")} to £${sRaise.toLocaleString("en-GB")}.`
       );
       text = text.replace(
-        /- You pay 0% on your first £12,570\.\n- You pay 20% on the next £37,700 \(the basic rate layer\)\.\n- You only pay the 40% rate on the £1,730 that crossed over the line\./g,
+        /- You pay 0% on your first £12,570\.\r?\n- You pay 20% on the next £37,700 \(the basic rate layer\)\.\r?\n- You only pay the 40% rate on the £1,730 that crossed over the line\./g,
         `- You pay 0% on your first £12,570.\n- You pay 20% on the portion above £12,570 up to your new salary.\n- You pay 0% higher rate tax because your earnings didn't cross the £50,270 boundary.`
       );
     } else {
@@ -307,7 +307,7 @@ export function PlayfulSubTopic() {
   const isSeparatorRow = (line: string) => /^\|[\s\-:|]+\|$/.test(line.trim());
 
   const renderTable = (block: string, key: number) => {
-    const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+    const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     const dataLines = lines.filter(l => !isSeparatorRow(l));
     if (dataLines.length < 1) return null;
 
@@ -346,7 +346,8 @@ export function PlayfulSubTopic() {
   };
 
   const renderContent = (content: string): ReactNode[] => {
-    const blocks = content.split(/\n\n+/).map(b => b.trim()).filter(Boolean);
+    // Split by two or more newlines, allowing for optional carriage returns and whitespace between them
+    const blocks = content.split(/\r?\n\s*\r?\n/).map(b => b.trim()).filter(Boolean);
     const elements: ReactNode[] = [];
 
     for (let i = 0; i < blocks.length; i++) {
@@ -462,7 +463,7 @@ export function PlayfulSubTopic() {
       }
 
       // List (- or *)
-      const lines = block.split("\n");
+      const lines = block.split(/\r?\n/);
       if (lines.every(l => l.match(/^[-*] /))) {
         elements.push(
           <ul key={i} style={{ padding: 0, margin: 0, listStyleType: "none", marginBottom: "24px" }}>

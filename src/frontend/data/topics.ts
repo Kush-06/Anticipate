@@ -30,8 +30,27 @@ const lessonModules = import.meta.glob<string>(
 )
 
 function getContent(topicId: string, subTopicId: string): string {
-  const key = `../content/lessons/${topicId}/${subTopicId}.md`
-  return lessonModules[key] ?? ''
+  // Normalize parameters to lowercase
+  const tid = topicId.toLowerCase();
+  const sid = subTopicId.toLowerCase();
+  
+  // Construct a normalized target path suffix to match against
+  // We use forward slashes and ensure it ends with the expected relative path
+  const targetSuffix = `${tid}/${sid}.md`.replace(/\\/g, '/');
+
+  // Find the key in lessonModules that matches our target
+  const foundKey = Object.keys(lessonModules).find(key => {
+    // Normalize key: convert backslashes to forward slashes, remove query string, to lowercase
+    const normalizedKey = key.replace(/\\/g, '/').split('?')[0].toLowerCase();
+    return normalizedKey.endsWith(targetSuffix);
+  });
+
+  if (foundKey) {
+    return lessonModules[foundKey] ?? '';
+  }
+
+  console.warn(`Lesson content not found for topic: ${topicId}, subtopic: ${subTopicId}`);
+  return '';
 }
 
 export const topics: Topic[] = [
