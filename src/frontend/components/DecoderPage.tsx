@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { FileText, BookOpen, Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
+import { Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
 import { PayslipDocument } from "./decoderDocs/PayslipDocument";
 import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
 import { MortgageESIS } from "./decoderDocs/MortgageESIS";
@@ -87,7 +87,16 @@ export function DecoderPage() {
         <div className="anp-logo">anticipate.</div>
       </div>
 
-      <div className="anp-scroll">
+      <div className="anp-scroll" style={{ 
+        scrollbarWidth: 'none', 
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch'
+      }}>
+        <style>{`
+          .anp-scroll::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         <div style={{ padding: "8px 20px 24px" }}>
           <h1 className="anp-wordmark" style={{ fontSize: "28px", marginBottom: "8px", letterSpacing: "-0.03em" }}>
             Decoder
@@ -123,17 +132,6 @@ export function DecoderPage() {
         </div>
 
         <div style={{ height: 60 }} />
-      </div>
-
-      <div className="anp-bottom-nav">
-        <button className="anp-bottom-nav__tab anp-bottom-nav__tab--active" onClick={() => navigate("/decoder")}>
-          <FileText size={22} />
-          <span className="anp-bottom-nav__label">Decoder</span>
-        </button>
-        <button className="anp-bottom-nav__tab" onClick={() => navigate("/")}>
-          <BookOpen size={22} />
-          <span className="anp-bottom-nav__label">Learn</span>
-        </button>
       </div>
     </div>
   );

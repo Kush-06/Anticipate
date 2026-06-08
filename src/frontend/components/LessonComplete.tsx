@@ -1,6 +1,8 @@
 import { useNavigate, useParams, useLocation } from "react-router";
 import { topics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
+import { RotateCcw, BookOpen } from "lucide-react";
+import { SageAvatar } from "./SageAvatar";
 
 interface CompleteState {
   timeTaken?: string;
@@ -26,18 +28,20 @@ export function LessonComplete() {
   const timeTaken = state.timeTaken ?? "—";
   const correct = state.correct ?? 0;
   const total = state.total ?? 0;
+  const isPerfect = total > 0 && correct === total;
   const currentSubTitle = topic?.subTopics[currentSubIdx]?.title ?? "";
 
   const handleKeepGoing = () => {
-    if (nextSub) {
+    if (isPerfect && nextSub) {
       navigate(`/topic/${topicId}/subtopic/${nextSub.id}`);
     } else {
-      navigate(`/`);
+      // If not perfect, or no next sub, go back to topic overview (or home)
+      navigate(`/topic/${topicId}`);
     }
   };
 
   return (
-    <div className="anp-app anp-complete-bg">
+    <div className={`anp-app ${isPerfect ? 'anp-complete-bg' : 'anp-quiz-fail-bg'}`}>
       <div className="anp-spacer" />
 
       <div
@@ -57,17 +61,25 @@ export function LessonComplete() {
 
       <div className="anp-scroll" style={{ display: "flex", flexDirection: "column" }}>
         <div className="anp-l-complete">
-          <div className="check-mark">
-            <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12.5l4.5 4.5L19 7" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className={`check-mark ${!isPerfect ? 'fail' : ''}`}>
+            {isPerfect ? (
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12.5l4.5 4.5L19 7" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <SageAvatar size={64} />
+            )}
           </div>
 
-          <div className="title">{nextSub ? "Lesson complete" : "Module complete"}</div>
+          <div className="title">
+            {isPerfect 
+              ? (nextSub ? "Lesson complete" : "Module complete")
+              : "Almost there!"}
+          </div>
           <div className="sub">
-            {currentSubTitle
-              ? `"${currentSubTitle}" — keep the momentum going.`
-              : "Well done — keep the momentum going."}
+            {isPerfect
+              ? (currentSubTitle ? `"${currentSubTitle}" — keep the momentum going.` : "Well done — keep the momentum going.")
+              : "You're making great progress! Review the lesson once more to master this topic."}
           </div>
 
           <div className="stats">
@@ -85,7 +97,7 @@ export function LessonComplete() {
             </div>
           </div>
 
-          {nextSub && (
+          {isPerfect && nextSub && (
             <div className="next-card">
               <div className="lbl">Next up · module {moduleNum + 1}</div>
               <div className="t">{nextSub.title}</div>
@@ -96,17 +108,37 @@ export function LessonComplete() {
           <div style={{ display: "flex", gap: "calc(10px * var(--d))", marginTop: "calc(20px * var(--d))" }}>
             <button
               className="anp-result__btn anp-result__btn--secondary"
-              style={{ flex: 1, padding: "calc(12px * var(--d))", fontSize: "calc(13px * var(--d))", fontWeight: 600 }}
+              style={{ 
+                flex: 1, 
+                padding: "calc(12px * var(--d))", 
+                fontSize: "calc(13px * var(--d))", 
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px"
+              }}
               onClick={() => navigate(`/topic/${topicId}/subtopic/${subTopicId}/quiz`)}
             >
-              🔄 Retake Quiz
+              <RotateCcw size={14} />
+              <span>Try Again</span>
             </button>
             <button
               className="anp-result__btn anp-result__btn--secondary"
-              style={{ flex: 1, padding: "calc(12px * var(--d))", fontSize: "calc(13px * var(--d))", fontWeight: 600 }}
+              style={{ 
+                flex: 1, 
+                padding: "calc(12px * var(--d))", 
+                fontSize: "calc(13px * var(--d))", 
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px"
+              }}
               onClick={() => navigate(`/topic/${topicId}/subtopic/${subTopicId}`)}
             >
-              📖 Review Lesson
+              <BookOpen size={14} />
+              <span>Review Lesson</span>
             </button>
           </div>
         </div>
@@ -116,7 +148,7 @@ export function LessonComplete() {
 
       <div className="anp-l-quiz-bottom">
         <button className="anp-l-quiz-cta" onClick={handleKeepGoing}>
-          {nextSub ? "Keep going" : "Back to home screen"}
+          {isPerfect && nextSub ? "Keep going" : "Back to lesson overview"}
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

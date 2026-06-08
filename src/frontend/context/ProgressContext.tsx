@@ -18,27 +18,37 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Synchronously track auth state — no async work inside this callback
   useEffect(() => {
-    async function initSession() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      let uid = sessionData.session?.user.id ?? null;
-
-      if (!uid) {
-        const { data: signInData } = await supabase.auth.signInAnonymously();
-        uid = signInData.user?.id ?? null;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+      } else if (event === "SIGNED_OUT") {
+        setUserId(null);
+        setCompletedSubTopicIds([]);
+        setIsLoading(false);
+      } else if (event === "INITIAL_SESSION") {
+        // No session on load
+        setIsLoading(false);
       }
-
-      if (uid) {
-        setUserId(uid);
-        const ids = await fetchProgress(uid);
-        setCompletedSubTopicIds(ids);
-      }
-
-      setIsLoading(false);
-    }
-
-    void initSession();
+    });
+    return () => subscription.unsubscribe();
   }, []);
+
+  // Async: load progress from DB when userId is set
+  useEffect(() => {
+    if (!userId) return;
+    const timer = setTimeout(() => {
+      setIsLoading(true);
+      fetchProgress(userId)
+        .then((ids) => {
+          setCompletedSubTopicIds(ids);
+          setIsLoading(false);
+        })
+        .catch(() => setIsLoading(false));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [userId]);
 
   const completeSubTopic = (subTopicId: string) => {
     setCompletedSubTopicIds((prev) => {
