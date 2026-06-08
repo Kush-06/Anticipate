@@ -6,6 +6,7 @@ import { useProgress } from "../context/ProgressContext";
 import { topics, getRecommendedTopics } from "../data/topics";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
+import { TopBar } from "./TopBar";
 
 function getGreeting(name: string) {
   const h = new Date().getHours();
@@ -105,15 +106,7 @@ export function HomeScreen() {
 
   return (
     <div className="anp-app" style={{ background: "var(--p-bg)" }}>
-      <div style={{ height: "max(calc(16px * var(--d)), env(safe-area-inset-top))", flexShrink: 0 }} />
-
-      {/* Top bar */}
-      <div className="anp-top">
-        <div className="av-logo">anticipate.</div>
-        <button className="anp-icon-btn" onClick={() => navigate("/notifications")} aria-label="Notifications">
-          <AppIcon name="bell" size={19} />
-        </button>
-      </div>
+      <TopBar />
 
       <div className="anp-scroll">
         {/* Greeting */}

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { useProfile } from "../context/ProfileContext";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
+import { TopBar } from "./TopBar";
 
 const MILESTONE_ICON: Record<string, React.ComponentProps<typeof AppIcon>["name"]> = {
   "New job starting":    "briefcase",
@@ -68,12 +69,7 @@ export function ProfileScreen() {
 
   return (
     <div className="anp-app" style={{ background: "var(--p-bg)" }}>
-      <div style={{ height: "max(calc(16px * var(--d)), env(safe-area-inset-top))", flexShrink: 0 }} />
-
-      {/* Top bar */}
-      <div className="anp-top">
-        <div className="av-logo">anticipate.</div>
-      </div>
+      <TopBar />
 
       <div className="av-greet" style={{ paddingBottom: "calc(12px * var(--d))" }}>
         <h1>Your profile</h1>

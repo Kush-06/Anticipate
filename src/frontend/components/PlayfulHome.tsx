@@ -54,6 +54,7 @@ const TOPIC_SUBTITLES: Record<string, string> = {
   "taxes-wealth":     "Tax brackets, CGT and the state pension",
 };
 import { TopicIcon } from "./TopicIcon";
+import { TopBar } from "./TopBar";
 
 type TrackStatus = "done" | "active" | "queued";
 
@@ -211,15 +212,7 @@ export function PlayfulHome() {
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <div className="anp-spacer" />
-
-      {/* Top bar — wordmark + bell (tab root, no back button) */}
-      <div className="anp-top">
-        <div className="anp-wordmark">anticipate.</div>
-        <button className="anp-icon-btn" onClick={() => navigate("/notifications")} aria-label="Notifications">
-          <Bell size={18} strokeWidth={1.8} />
-        </button>
-      </div>
+      <TopBar />
 
       <div className="anp-scroll">
 

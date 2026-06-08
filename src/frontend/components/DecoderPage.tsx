@@ -7,6 +7,7 @@ import { MortgageESIS } from "./decoderDocs/MortgageESIS";
 import { PensionWelcomeLetter } from "./decoderDocs/PensionWelcomeLetter";
 import { SA302TaxCalc } from "./decoderDocs/SA302TaxCalc";
 import { StudentLoanStatement } from "./decoderDocs/StudentLoanStatement";
+import { TopBar } from "./TopBar";
 
 type Document = {
   id: string;
@@ -81,11 +82,7 @@ export function DecoderPage() {
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <div className="anp-spacer" />
-
-      <div className="anp-top" style={{ paddingBottom: 0 }}>
-        <div className="anp-logo">anticipate.</div>
-      </div>
+      <TopBar />
 
       <div className="anp-scroll" style={{ 
         scrollbarWidth: 'none', 

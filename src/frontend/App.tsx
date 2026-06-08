@@ -9,7 +9,6 @@ import { PlayfulSubTopic } from "./components/PlayfulSubTopic";
 import { LessonComplete } from "./components/LessonComplete";
 import { MainLayout } from "./components/MainLayout";
 import { HomeScreen } from "./components/HomeScreen";
-import { TimelineScreen } from "./components/TimelineScreen";
 import { ProfileScreen } from "./components/ProfileScreen";
 import { NotificationsScreen } from "./components/NotificationsScreen";
 import { OnboardingFlow } from "./components/OnboardingFlow";
