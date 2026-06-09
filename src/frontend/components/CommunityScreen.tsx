@@ -41,6 +41,7 @@ export function CommunityScreen() {
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [replyInput, setReplyInput] = useState('')
   const [postingReply, setPostingReply] = useState(false)
+  const [jumpingSageMessageId, setJumpingSageMessageId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const replyInputRef = useRef<HTMLTextAreaElement>(null)
@@ -722,6 +723,7 @@ Keep it short (2-3 sentences max) and helpful.`
             const replyText = await sendChatMessage(systemPrompt, conversationHistory)
             const sageReply = await createMessage(activeThread.id, replyText, null, true)
             setMessages(prev => [...prev, sageReply])
+            setJumpingSageMessageId(sageReply.id)
             setReplyCounts(prev => ({
               ...prev,
               [activeThread.id]: (prev[activeThread.id] || 0) + 1
@@ -1519,7 +1521,7 @@ Keep it short (2-3 sentences max) and helpful.`
                          >
                            {m.is_sage_reply && (
                              <span style={{ marginBottom: 2, display: 'inline-flex', flexShrink: 0 }}>
-                               <SageAvatar size={28} />
+                               <SageAvatar size={28} leafJump={jumpingSageMessageId === m.id} />
                              </span>
                            )}
                            <div
