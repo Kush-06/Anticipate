@@ -3,14 +3,52 @@ import { User } from 'lucide-react'
 import { sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
 import { fetchSageMemories, type SageMemory } from '@backend/sageMemoryService'
-import { useProfile } from '../context/ProfileContext'
+import { useProfile, type UserProfile } from '../context/ProfileContext'
 
 export interface DocumentChatBotProps {
   documentTitle: string
   documentPath: string
 }
 
-function buildSystemPrompt(documentTitle: string, documentContent: string, memories: SageMemory[]): string {
+function buildProfileContext(profile: UserProfile | null): string {
+  if (!profile) return ''
+  const lines: string[] = [
+    `Name: ${profile.firstName} | Life stage: ${profile.lifeStage}`,
+  ]
+  if (profile.salary) lines.push(`Take-home salary: £${profile.salary}`)
+  if (profile.livingSituation) lines.push(`Living situation: ${profile.livingSituation}`)
+  if (profile.studentLoan) lines.push(`Student loan: ${profile.studentLoan}`)
+  if (profile.firstJobCompanyName) lines.push(`Employer: ${profile.firstJobCompanyName}`)
+  if (profile.firstJobStartDate) lines.push(`Job start date: ${profile.firstJobStartDate}`)
+  if (profile.firstJobPayDate) lines.push(`Pay date: ${profile.firstJobPayDate}`)
+  if (profile.firstJobSalary) lines.push(`Gross salary: ${profile.firstJobSalary}`)
+  if (profile.uniDegreeYears) lines.push(`Degree length: ${profile.uniDegreeYears}`)
+  if (profile.uniStudyYear) lines.push(`Study year: ${profile.uniStudyYear}`)
+  if (profile.freelanceIndustry) lines.push(`Freelance industry: ${profile.freelanceIndustry}`)
+  if (profile.workingYearsRole) lines.push(`Current role: ${profile.workingYearsRole}`)
+  if (profile.workingYearsPension) lines.push(`Has workplace pension: ${profile.workingYearsPension}`)
+  if (profile.notWorkingFundsSource) lines.push(`Funds source: ${profile.notWorkingFundsSource}`)
+  if (profile.rentAmount) lines.push(`Monthly rent: £${profile.rentAmount}`)
+  if (profile.tenancyLength) lines.push(`Tenancy length: ${profile.tenancyLength}`)
+  if (profile.familyRentBoard) lines.push(`Pays board to family: ${profile.familyRentBoard}`)
+  if (profile.mortgagePayment) lines.push(`Mortgage payment: ${profile.mortgagePayment}`)
+  if (profile.mortgageType) lines.push(`Mortgage type: ${profile.mortgageType}`)
+  if (profile.studentRentAmount) lines.push(`Student rent: £${profile.studentRentAmount}`)
+  if (profile.studentRentSource) lines.push(`Rent funded by: ${profile.studentRentSource}`)
+  if (profile.movingCity) lines.push(`Moving to: ${profile.movingCity}`)
+  if (profile.movingTimeframe) lines.push(`Moving timeframe: ${profile.movingTimeframe}`)
+  if (profile.buyingLisa) lines.push(`Has LISA: ${profile.buyingLisa}`)
+  if (profile.buyingBudget) lines.push(`Buying budget: ${profile.buyingBudget}`)
+  if (profile.babySavingsFund) lines.push(`Baby savings fund: ${profile.babySavingsFund}`)
+  if (profile.expectedNewSalary) lines.push(`Expected new salary: ${profile.expectedNewSalary}`)
+  if (profile.carTargetBudget) lines.push(`Car budget: ${profile.carTargetBudget}`)
+  if (profile.carPurchaseMethod) lines.push(`Car purchase method: ${profile.carPurchaseMethod}`)
+  if (profile.upcomingEvents.length > 0) lines.push(`Upcoming events: ${profile.upcomingEvents.join(', ')}`)
+  return lines.join('\n')
+}
+
+function buildSystemPrompt(documentTitle: string, documentContent: string, memories: SageMemory[], profile: UserProfile | null): string {
+  const profileSection = profile ? `\n## User context\n${buildProfileContext(profile)}\n` : ''
   const memoriesSection = memories.length > 0
     ? `\n## What Sage remembers about you\n${memories.map((m) => `- ${m.content}`).join('\n')}\n`
     : ''
@@ -20,7 +58,7 @@ function buildSystemPrompt(documentTitle: string, documentContent: string, memor
 CONTEXT
 Document: "${documentTitle}"
 ${documentContent}
-${memoriesSection}
+${profileSection}${memoriesSection}
 RULES
 - British English only
 - Never give regulated financial advice; nudge users to verify with a professional when needed
@@ -35,7 +73,7 @@ HOW TO RESPOND
 }
 
 export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBotProps) {
-  const { userId } = useProfile()
+  const { userId, profile } = useProfile()
   const [open, setOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -110,7 +148,7 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
     setLoading(true)
     setError(null)
     try {
-      const reply = await sendChatMessage(buildSystemPrompt(documentTitle, documentContent, memories), next)
+      const reply = await sendChatMessage(buildSystemPrompt(documentTitle, documentContent, memories, profile), next)
       setMessages([...next, { role: 'assistant' as ChatRole, content: reply }])
       setJumpingAssistantIndex(next.length)
     } catch (err) {
