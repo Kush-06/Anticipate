@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = { term: string; definition: string };
 type TooltipState = { keyword: Keyword; x: number; y: number } | null;
@@ -171,6 +172,10 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+      <DocumentChatBot
+        documentTitle="Student Loan Statement"
+        documentContent="Student Loan Statement. Plan 2. Balance: £49,378.40. Interest: RPI+3%."
+      />
+      </div>
+      );
+      }

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = {
   term: string;
@@ -425,6 +426,10 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
+      <DocumentChatBot 
+        documentTitle="Monthly Payslip"
+        documentContent="Monthly Payslip. Company: Meridian Group Ltd. Gross pay: £3,030.00. Net pay: £2,200.18."
+      />
     </div>
   );
 }
