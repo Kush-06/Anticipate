@@ -45,13 +45,13 @@ function MainApp() {
               <Route path="/learn" element={<PlayfulHome />} />
               <Route path="/community" element={<CommunityScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
+              <Route path="/notifications" element={<NotificationsScreen />} />
+              <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
+              <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
+              <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
+              <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
+              <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
             </Route>
-            <Route path="/notifications" element={<NotificationsScreen />} />
-            <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
-            <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
-            <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
-            <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
-            <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
           </Routes>
         )}
       </TimelineProvider>

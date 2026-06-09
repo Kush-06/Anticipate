@@ -568,8 +568,22 @@ export function CommunityScreen() {
     }, 240)
   }
 
+  const openThread = (thread: ForumThread) => {
+    setActiveThread(thread)
+    setSearchParams(prev => {
+      const p = new URLSearchParams(prev)
+      p.set('thread', thread.id)
+      return p
+    })
+  }
+
   const handleCloseThread = () => {
     setIsClosingThread(true)
+    setSearchParams(prev => {
+      const p = new URLSearchParams(prev)
+      p.delete('thread')
+      return p
+    })
     setTimeout(() => {
       setActiveThread(null)
       setIsClosingThread(false)
@@ -578,6 +592,15 @@ export function CommunityScreen() {
       setReplyToMessage(null)
     }, 300)
   }
+
+  // Restore thread from URL after tab switch (runs once when threads load)
+  useEffect(() => {
+    const threadId = searchParams.get('thread')
+    if (threadId && !activeThread && threads.length > 0) {
+      const found = threads.find(t => t.id === threadId)
+      if (found) setActiveThread(found)
+    }
+  }, [threads])
 
   // Sage AI Post Validation
   const handleValidatePost = async (e: React.FormEvent) => {
@@ -618,7 +641,7 @@ export function CommunityScreen() {
       setValidationResult(null)
       
       // Auto open the new thread
-      setActiveThread(thread)
+      openThread(thread)
       
       // Refresh thread list
       const fetched = await fetchThreads(selectedTopicId === 'all' ? undefined : selectedTopicId)
@@ -910,7 +933,7 @@ Keep it short (2-3 sentences max) and helpful.`
                       background: 'var(--p-card)',
                       borderColor: 'var(--p-line)'
                     }}
-                    onClick={() => setActiveThread(t)}
+                    onClick={() => openThread(t)}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                       <div style={{ 
