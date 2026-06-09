@@ -114,11 +114,11 @@ export function PlayfulLessonPlan() {
       <div className="anp-scroll">
         <div className="anp-l-plan-head">
           <div className="eyebrow">
-            {topic.title} · {completedCount} of {totalModules} modules done
+            {topic.title} · {completedCount} of {totalModules} lessons done
           </div>
           <h1>{topic.title}</h1>
           <div className="sub">
-            {totalModules} short modules.{" "}
+            {totalModules} short lessons.{" "}
             {completedCount > 0 ? `${completedCount} done. ` : ""}
             {minutesLeft > 0 ? `About ${minutesLeft} min left.` : "All complete!"}
           </div>
@@ -126,7 +126,7 @@ export function PlayfulLessonPlan() {
           <div className="anp-l-plan-meta">
             <div className="m">
               <div className="v">{completedCount}/{totalModules}</div>
-              <div className="l">Modules</div>
+              <div className="l">Lessons</div>
             </div>
             <div className="m">
               <div className="v">
@@ -184,7 +184,7 @@ export function PlayfulLessonPlan() {
             </div>
             <div className="text">
               <div className="ttl">{topic.title}, handled</div>
-              <div className="sub">Finish all {totalModules} modules to wrap up this lesson.</div>
+              <div className="sub">Finish all {totalModules} lessons to wrap this module.</div>
             </div>
           </div>
         </div>

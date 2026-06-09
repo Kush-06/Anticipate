@@ -150,7 +150,7 @@ export function PlayfulQuiz() {
     return (
       <div className="anp-app anp-quiz-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--p-ink-3)", textAlign: "center", padding: "24px" }}>
-          No questions found for this module.
+          No questions found for this lesson.
         </p>
       </div>
     );
@@ -186,7 +186,7 @@ export function PlayfulQuiz() {
           {/* Eyebrow */}
           <div className="anp-l-quiz-eyebrow">
             <span className="tag">
-              {subTopicId ? `Module ${subTopicIdx} of ${subTopicTotal}` : `Lesson ${topicIdx}`}
+              {subTopicId ? `Lesson ${subTopicIdx} of ${subTopicTotal}` : `Module ${topicIdx}`}
             </span>
             <span>· {subTopicTitle}</span>
           </div>

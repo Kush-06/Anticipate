@@ -93,13 +93,13 @@ export function LessonComplete() {
             </div>
             <div className="stat">
               <div className="v">{completedCount}/{totalModules}</div>
-              <div className="l">Modules</div>
+              <div className="l">Lessons</div>
             </div>
           </div>
 
           {isPerfect && nextSub && (
             <div className="next-card">
-              <div className="lbl">Next up · module {moduleNum + 1}</div>
+              <div className="lbl">Next up · lesson {moduleNum + 1}</div>
               <div className="t">{nextSub.title}</div>
               <div className="next-sub">{MINS_PER_SUBTOPIC} min · quiz</div>
             </div>
@@ -148,7 +148,7 @@ export function LessonComplete() {
 
       <div className="anp-l-quiz-bottom">
         <button className="anp-l-quiz-cta" onClick={handleKeepGoing}>
-          {isPerfect && nextSub ? "Keep going" : "Back to lesson overview"}
+          {isPerfect && nextSub ? "Keep going" : "Back to module overview"}
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

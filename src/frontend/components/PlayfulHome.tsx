@@ -127,7 +127,7 @@ function TrackTile({ topic, status, completedCount, minutes, pct, color, isRecom
           </div>
         </div>
         <div className="anp-l-track-meta">
-          <span>{status === "done" ? "Complete" : `${completedCount}/${total} modules`}</span>
+          <span>{status === "done" ? "Complete" : `${completedCount}/${total} lessons`}</span>
           <span>{minutes} min</span>
         </div>
       </div>
@@ -221,7 +221,7 @@ export function PlayfulHome() {
               <div className="eyebrow">Continue where you left off</div>
               <h2>{activeTopic.title}</h2>
               <div className="reason">
-                {activeCompletedCount} of {activeTotal} modules complete
+                {activeCompletedCount} of {activeTotal} lessons complete
               </div>
             </div>
             <div className="prog-ring">
@@ -246,7 +246,7 @@ export function PlayfulHome() {
 
           <div className="next-mod">
             <div>
-              <div className="lbl">Module {nextModuleIndex} of {activeTotal}</div>
+              <div className="lbl">Lesson {nextModuleIndex} of {activeTotal}</div>
               <div className="title">{nextModule.title}</div>
             </div>
             <button className="go" onClick={() => navigate(`/topic/${activeTopic.id}/subtopic/${nextModule.id}`)}>
