@@ -16,6 +16,7 @@ import { ProgressProvider } from "./context/ProgressContext";
 import { ProfileProvider, useProfile } from "./context/ProfileContext";
 import { TimelineProvider } from "./context/TimelineContext";
 import { LoadingScreen } from "./components/LoadingScreen";
+import { CommunityScreen } from "./components/CommunityScreen";
 
 function MainApp() {
   const { completedOnboarding } = useProfile();
@@ -42,6 +43,7 @@ function MainApp() {
               <Route path="/" element={<HomeScreen />} />
               <Route path="/decoder" element={<DecoderPage />} />
               <Route path="/learn" element={<PlayfulHome />} />
+              <Route path="/community" element={<CommunityScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
             </Route>
             <Route path="/notifications" element={<NotificationsScreen />} />
