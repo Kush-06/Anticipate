@@ -2,19 +2,25 @@ import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { User } from 'lucide-react'
 import { hasActiveProvider, sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
+import { fetchSageMemories, type SageMemory } from '@backend/sageMemoryService'
+import { useProfile } from '../context/ProfileContext'
 
 export interface DocumentChatBotProps {
   documentTitle: string
   documentContent: string
 }
 
-function buildSystemPrompt(documentTitle: string, documentContent: string): string {
+function buildSystemPrompt(documentTitle: string, documentContent: string, memories: SageMemory[]): string {
+  const memoriesSection = memories.length > 0
+    ? `\n## What Sage remembers about you\n${memories.map((m) => `- ${m.content}`).join('\n')}\n`
+    : ''
+
   return `You are a sharp, friendly personal finance tutor for young UK professionals on Anticipate.
 
 CONTEXT
 Document: "${documentTitle}"
 ${documentContent}
-
+${memoriesSection}
 RULES
 - British English only
 - Never give regulated financial advice; nudge users to verify with a professional when needed
@@ -37,16 +43,23 @@ function renderMessage(text: string): ReactNode[] {
 }
 
 export function DocumentChatBot({ documentTitle, documentContent }: DocumentChatBotProps) {
+  const { userId } = useProfile()
   const [open, setOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [memories, setMemories] = useState<SageMemory[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [jumpingAssistantIndex, setJumpingAssistantIndex] = useState<number | null>(null)
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const active = hasActiveProvider()
+
+  useEffect(() => {
+    if (userId) void fetchSageMemories(userId).then(setMemories).catch(() => {})
+  }, [userId])
 
   useEffect(() => {
     if (open) {
@@ -108,8 +121,9 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
     setLoading(true)
     setError(null)
     try {
-      const reply = await sendChatMessage(buildSystemPrompt(documentTitle, documentContent), next)
+      const reply = await sendChatMessage(buildSystemPrompt(documentTitle, documentContent, memories), next)
       setMessages([...next, { role: 'assistant' as ChatRole, content: reply }])
+      setJumpingAssistantIndex(next.length)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
@@ -166,7 +180,7 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
                   <div key={i} className={`dcb-row dcb-row--${m.role}`}>
                     {!isUser && (
                       <div className="dcb-msg-avatar">
-                        <SageAvatar size={28} />
+                        <SageAvatar size={28} leafJump={jumpingAssistantIndex === i} />
                       </div>
                     )}
                     <div className={`dcb-bubble dcb-bubble--${m.role}`}>
@@ -352,8 +366,8 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
         .dcb-input-row { padding: 14px 16px; display: flex; gap: 8px; background: #f4f0e6; border-top: 1.5px solid #e6dbc4; }
         .dcb-textarea { flex: 1; padding: 10px 16px; border-radius: 20px; border: none; outline: none; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); }
         .dcb-send { width: 40px; height: 40px; border-radius: 50%; border: none; background: #ff7350; color: #ffffff; }
-        .dcb-msg-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .dcb-msg-avatar--user { background: #95a4bb; }
+        .dcb-msg-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: visible; }
+        .dcb-msg-avatar--user { background: #95a4bb; overflow: hidden; }
         .dcb-empty { padding: 40px 24px; text-align: center; }
         .dcb-empty__avatar-wrapper { margin-bottom: 16px; }
         .dcb-empty__title { font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #1c1a24; margin: 0 0 8px; }
