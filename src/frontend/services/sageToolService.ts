@@ -1,6 +1,4 @@
-// Provider-agnostic tool-use service. Supports Claude (tool_use/tool_result) and
-// Gemini (functionCall/functionResponse). OpenAI falls through to the caller as a
-// plain-text fallback — tool use requires one of the two supported providers.
+// Provider-agnostic tool-use service. Supports Claude, Gemini, and OpenAI.
 import { CLAUDE_BASE, claudeKey, GEMINI_BASE, geminiKey, OPENAI_BASE, openaiKey, getActiveProvider } from './aiChatService'
 
 export interface SageTool {
@@ -16,6 +14,11 @@ export interface SageTool {
 export interface SageHistoryMessage {
   role: 'user' | 'assistant'
   text: string
+  // When toolCalls is present, preText is the model's initial response before
+  // executing tools (often empty). text is the final response after tool results.
+  // Storing them separately lets history converters emit proper alternating turns:
+  //   model: [preText?, functionCalls] → user: [toolResults] → model: [text]
+  preText?: string
   toolCalls?: Array<{ id: string; name: string; input: Record<string, unknown>; result: string }>
 }
 
@@ -40,11 +43,11 @@ export async function sendWithTools(
 
 // ─── Claude ──────────────────────────────────────────────────────────────────
 
-type ClaudeTextBlock   = { type: 'text'; text: string }
-type ClaudeToolUse     = { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
-type ClaudeToolResult  = { type: 'tool_result'; tool_use_id: string; content: string }
-type ClaudeBlock       = ClaudeTextBlock | ClaudeToolUse | ClaudeToolResult
-type ClaudeMsg         = { role: 'user' | 'assistant'; content: string | ClaudeBlock[] }
+type ClaudeTextBlock  = { type: 'text'; text: string }
+type ClaudeToolUse    = { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
+type ClaudeToolResult = { type: 'tool_result'; tool_use_id: string; content: string }
+type ClaudeBlock      = ClaudeTextBlock | ClaudeToolUse | ClaudeToolResult
+type ClaudeMsg        = { role: 'user' | 'assistant'; content: string | ClaudeBlock[] }
 
 function historyToClaudeMessages(history: SageHistoryMessage[]): ClaudeMsg[] {
   const out: ClaudeMsg[] = []
@@ -54,12 +57,14 @@ function historyToClaudeMessages(history: SageHistoryMessage[]): ClaudeMsg[] {
     } else if (!turn.toolCalls || turn.toolCalls.length === 0) {
       out.push({ role: 'assistant', content: turn.text })
     } else {
+      // assistant: [preText?, tool_use blocks]
       const assistantContent: ClaudeBlock[] = []
-      if (turn.text) assistantContent.push({ type: 'text', text: turn.text })
+      if (turn.preText) assistantContent.push({ type: 'text', text: turn.preText })
       for (const tc of turn.toolCalls) {
         assistantContent.push({ type: 'tool_use', id: tc.id, name: tc.name, input: tc.input })
       }
       out.push({ role: 'assistant', content: assistantContent })
+      // user: [tool_result blocks]
       out.push({
         role: 'user',
         content: turn.toolCalls.map((tc) => ({
@@ -68,6 +73,8 @@ function historyToClaudeMessages(history: SageHistoryMessage[]): ClaudeMsg[] {
           content: tc.result,
         })),
       })
+      // assistant: final text (separate turn — keeps alternation intact)
+      if (turn.text) out.push({ role: 'assistant', content: turn.text })
     }
   }
   return out
@@ -115,38 +122,38 @@ async function sendClaude(
   const toolUseBlocks = first.content.filter((b): b is ClaudeToolUse => b.type === 'tool_use')
 
   if (toolUseBlocks.length === 0) {
-    const text = (first.content.find((b): b is ClaudeTextBlock => b.type === 'text')?.text) ?? ''
+    const text = first.content.find((b): b is ClaudeTextBlock => b.type === 'text')?.text ?? ''
     return { text, toolCalls: [], newTurn: { role: 'assistant', text } }
   }
 
+  const preText = first.content.find((b): b is ClaudeTextBlock => b.type === 'text')?.text ?? ''
   const resolvedCalls: SageHistoryMessage['toolCalls'] = []
   for (const block of toolUseBlocks) {
     const result = await onToolCall(block.name, block.input)
     resolvedCalls!.push({ id: block.id, name: block.name, input: block.input, result })
   }
 
-  const preText = (first.content.find((b): b is ClaudeTextBlock => b.type === 'text')?.text) ?? ''
-  const partialTurn: SageHistoryMessage = { role: 'assistant', text: preText, toolCalls: resolvedCalls }
-
+  // text: '' so historyToClaudeMessages won't emit the final assistant turn yet
+  const partialTurn: SageHistoryMessage = { role: 'assistant', text: '', preText, toolCalls: resolvedCalls }
   const secondMessages = [...historyToClaudeMessages(history), ...historyToClaudeMessages([partialTurn])]
   const second = await call(secondMessages)
-  const finalText = (second.content.find((b): b is ClaudeTextBlock => b.type === 'text')?.text) ?? ''
+  const finalText = second.content.find((b): b is ClaudeTextBlock => b.type === 'text')?.text ?? ''
 
   return {
     text: finalText,
     toolCalls: resolvedCalls!.map(({ name, input }) => ({ name, input })),
-    newTurn: { role: 'assistant', text: finalText, toolCalls: resolvedCalls },
+    newTurn: { role: 'assistant', text: finalText, preText, toolCalls: resolvedCalls },
   }
 }
 
 // ─── Gemini ──────────────────────────────────────────────────────────────────
 
-type GeminiTextPart     = { text: string }
-type GeminiFnCallPart   = { functionCall: { name: string; args: Record<string, unknown> } }
-type GeminiFnRespPart   = { functionResponse: { name: string; response: Record<string, unknown> } }
-type GeminiPart         = GeminiTextPart | GeminiFnCallPart | GeminiFnRespPart
-type GeminiContent      = { role: 'user' | 'model'; parts: GeminiPart[] }
-type GeminiResponse     = { candidates: Array<{ content: GeminiContent }> }
+type GeminiTextPart   = { text: string }
+type GeminiFnCallPart = { functionCall: { name: string; args: Record<string, unknown> } }
+type GeminiFnRespPart = { functionResponse: { name: string; response: Record<string, unknown> } }
+type GeminiPart       = GeminiTextPart | GeminiFnCallPart | GeminiFnRespPart
+type GeminiContent    = { role: 'user' | 'model'; parts: GeminiPart[] }
+type GeminiResponse   = { candidates: Array<{ content: GeminiContent }> }
 
 function historyToGeminiContents(history: SageHistoryMessage[]): GeminiContent[] {
   const out: GeminiContent[] = []
@@ -156,18 +163,22 @@ function historyToGeminiContents(history: SageHistoryMessage[]): GeminiContent[]
     } else if (!turn.toolCalls || turn.toolCalls.length === 0) {
       out.push({ role: 'model', parts: [{ text: turn.text }] })
     } else {
+      // model: [preText?, functionCall parts]
       const modelParts: GeminiPart[] = []
-      if (turn.text) modelParts.push({ text: turn.text })
+      if (turn.preText) modelParts.push({ text: turn.preText })
       for (const tc of turn.toolCalls) {
         modelParts.push({ functionCall: { name: tc.name, args: tc.input } })
       }
       out.push({ role: 'model', parts: modelParts })
+      // user: [functionResponse parts]
       out.push({
         role: 'user',
         parts: turn.toolCalls.map((tc) => ({
           functionResponse: { name: tc.name, response: { result: tc.result } },
         })),
       })
+      // model: final text (separate turn — keeps alternation intact)
+      if (turn.text) out.push({ role: 'model', parts: [{ text: turn.text }] })
     }
   }
   return out
@@ -206,14 +217,14 @@ async function sendGemini(
   const contents = historyToGeminiContents(history)
   const first = await call(contents)
   const parts = first.candidates[0]?.content?.parts ?? []
-
   const fnCallParts = parts.filter((p): p is GeminiFnCallPart => 'functionCall' in p)
 
   if (fnCallParts.length === 0) {
-    const text = (parts.find((p): p is GeminiTextPart => 'text' in p)?.text) ?? ''
+    const text = parts.find((p): p is GeminiTextPart => 'text' in p)?.text ?? ''
     return { text, toolCalls: [], newTurn: { role: 'assistant', text } }
   }
 
+  const preText = parts.find((p): p is GeminiTextPart => 'text' in p)?.text ?? ''
   const resolvedCalls: SageHistoryMessage['toolCalls'] = []
   for (const part of fnCallParts) {
     const { name, args } = part.functionCall
@@ -221,18 +232,17 @@ async function sendGemini(
     resolvedCalls!.push({ id: name, name, input: args, result })
   }
 
-  const preText = (parts.find((p): p is GeminiTextPart => 'text' in p)?.text) ?? ''
-  const partialTurn: SageHistoryMessage = { role: 'assistant', text: preText, toolCalls: resolvedCalls }
-
+  // text: '' so historyToGeminiContents won't emit the final model turn yet
+  const partialTurn: SageHistoryMessage = { role: 'assistant', text: '', preText, toolCalls: resolvedCalls }
   const secondContents = [...historyToGeminiContents(history), ...historyToGeminiContents([partialTurn])]
   const second = await call(secondContents)
   const secondParts = second.candidates[0]?.content?.parts ?? []
-  const finalText = (secondParts.find((p): p is GeminiTextPart => 'text' in p)?.text) ?? ''
+  const finalText = secondParts.find((p): p is GeminiTextPart => 'text' in p)?.text ?? ''
 
   return {
     text: finalText,
     toolCalls: resolvedCalls!.map(({ name, input }) => ({ name, input })),
-    newTurn: { role: 'assistant', text: finalText, toolCalls: resolvedCalls },
+    newTurn: { role: 'assistant', text: finalText, preText, toolCalls: resolvedCalls },
   }
 }
 
@@ -251,18 +261,22 @@ function historyToOpenAIMessages(systemPrompt: string, history: SageHistoryMessa
     } else if (!turn.toolCalls || turn.toolCalls.length === 0) {
       out.push({ role: 'assistant', content: turn.text })
     } else {
+      // assistant: [preText?, tool_calls]
       out.push({
         role: 'assistant',
-        content: turn.text || null,
+        content: turn.preText || null,
         tool_calls: turn.toolCalls.map((tc) => ({
           id: tc.id,
           type: 'function' as const,
           function: { name: tc.name, arguments: JSON.stringify(tc.input) },
         })),
       })
+      // tool: one message per result
       for (const tc of turn.toolCalls) {
         out.push({ role: 'tool', tool_call_id: tc.id, content: tc.result })
       }
+      // assistant: final text (separate turn — keeps alternation intact)
+      if (turn.text) out.push({ role: 'assistant', content: turn.text })
     }
   }
   return out
@@ -307,6 +321,7 @@ async function sendOpenAI(
     return { text, toolCalls: [], newTurn: { role: 'assistant', text } }
   }
 
+  const preText = msg?.content ?? ''
   const resolvedCalls: SageHistoryMessage['toolCalls'] = []
   for (const tc of toolCalls) {
     const input = JSON.parse(tc.function.arguments) as Record<string, unknown>
@@ -314,8 +329,8 @@ async function sendOpenAI(
     resolvedCalls!.push({ id: tc.id, name: tc.function.name, input, result })
   }
 
-  const preText = msg?.content ?? ''
-  const partialTurn: SageHistoryMessage = { role: 'assistant', text: preText, toolCalls: resolvedCalls }
+  // text: '' so historyToOpenAIMessages won't emit the final assistant turn yet
+  const partialTurn: SageHistoryMessage = { role: 'assistant', text: '', preText, toolCalls: resolvedCalls }
   const secondMessages = historyToOpenAIMessages(systemPrompt, [...history, partialTurn])
   const second = await call(secondMessages)
   const finalText = second.choices[0]?.message?.content ?? ''
@@ -323,6 +338,6 @@ async function sendOpenAI(
   return {
     text: finalText,
     toolCalls: resolvedCalls!.map(({ name, input }) => ({ name, input })),
-    newTurn: { role: 'assistant', text: finalText, toolCalls: resolvedCalls },
+    newTurn: { role: 'assistant', text: finalText, preText, toolCalls: resolvedCalls },
   }
 }
