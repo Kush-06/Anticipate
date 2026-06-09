@@ -7,7 +7,6 @@ import {
   PiggyBank, 
   MoreHorizontal, 
   X,
-  Sparkles,
   Calendar
 } from 'lucide-react';
 import { useTimeline } from '../context/TimelineContext';
