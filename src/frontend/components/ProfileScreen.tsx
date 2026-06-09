@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router";
+import { useState, useEffect } from "react";
+import { Trash2 } from "lucide-react";
 import { useProfile } from "../context/ProfileContext";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
+import { fetchSageMemories, deleteSageMemory, type SageMemory } from "@backend/sageMemoryService";
 
 const MILESTONE_ICON: Record<string, React.ComponentProps<typeof AppIcon>["name"]> = {
   "New job starting":    "briefcase",
@@ -56,7 +59,18 @@ function SectionCard({ label, children }: { label: string; children: React.React
 
 export function ProfileScreen() {
   const navigate = useNavigate();
-  const { profile, logout } = useProfile();
+  const { profile, userId, logout } = useProfile();
+  const [memories, setMemories] = useState<SageMemory[]>([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    void fetchSageMemories(userId).then(setMemories).catch(() => {});
+  }, [userId]);
+
+  async function handleDeleteMemory(id: string) {
+    setMemories((prev) => prev.filter((m) => m.id !== id));
+    await deleteSageMemory(id).catch(() => {});
+  }
 
   const firstName    = profile?.firstName    ?? "you";
   const email        = profile?.email        ?? "—";
@@ -177,6 +191,42 @@ export function ProfileScreen() {
               </div>
             ))}
           </SectionCard>
+
+          {/* Sage's Memory */}
+          {userId && (
+            <SectionCard label="Sage's memory">
+              {memories.length === 0 ? (
+                <div style={{ padding: "calc(11px * var(--d)) 0", fontSize: "calc(12px * var(--d))", color: "var(--p-ink-3)", lineHeight: 1.5 }}>
+                  Sage will remember things you tell it in chat — they'll appear here.
+                </div>
+              ) : (
+                memories.map((mem, i) => (
+                  <div key={mem.id} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                    padding: "calc(11px * var(--d)) 0",
+                    borderTop: i === 0 ? "none" : "1px solid var(--p-line)",
+                  }}>
+                    <span style={{ fontSize: "calc(12.5px * var(--d))", color: "var(--p-ink)", lineHeight: 1.45, flex: 1 }}>
+                      {mem.content}
+                    </span>
+                    <button
+                      onClick={() => void handleDeleteMemory(mem.id)}
+                      aria-label="Delete memory"
+                      style={{
+                        border: "none", background: "transparent", color: "var(--p-ink-3)",
+                        cursor: "pointer", padding: "2px", display: "flex", alignItems: "center",
+                        flexShrink: 0, borderRadius: 4, transition: "color 0.12s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--p-coral)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--p-ink-3)")}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </SectionCard>
+          )}
         </div>
 
         {/* Log out */}

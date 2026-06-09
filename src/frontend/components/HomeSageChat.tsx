@@ -1,20 +1,27 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { Clock3, Plus, Send, User, X } from 'lucide-react'
+import { Brain, Clock3, Plus, Send, Trash2, User, X } from 'lucide-react'
 import { topics } from '../data/topics'
 import { SageAvatar } from './SageAvatar'
 import { getActiveProvider, sendChatMessage } from '../services/aiChatService'
 import { sendWithTools, type SageHistoryMessage, type SageTool } from '../services/sageToolService'
 import { useProfile, type UserProfile } from '../context/ProfileContext'
 import { useTimeline } from '../context/TimelineContext'
-import { addTimelineItem } from '@backend/timelineService'
+import { useProgress } from '../context/ProgressContext'
+import { addTimelineItem, markTimelineItemDone } from '@backend/timelineService'
 import {
   fetchSageConversations,
   getSageConversationTitle,
   upsertSageConversation,
   type SageConversation,
 } from '@backend/sageConversationService'
-import type { SpineGroup, SpineStatus } from '../../shared/types'
+import {
+  fetchSageMemories,
+  addSageMemory,
+  deleteSageMemory,
+  type SageMemory,
+} from '@backend/sageMemoryService'
+import type { SpineGroup, SpineItem, SpineStatus } from '../../shared/types'
 
 interface LessonCard {
   topicId: string
@@ -104,51 +111,146 @@ const ADD_TIMELINE_EVENT_TOOL: SageTool = {
   },
 }
 
+const SAVE_MEMORY_TOOL: SageTool = {
+  name: 'save_memory',
+  description: `Save a fact about the user worth remembering across future conversations.
+Use when the user reveals something personal: a preference, a goal, a life detail, a habit, or anything not already obvious from their profile.
+Do NOT save things already covered by their onboarding data (employment type, life stage, six-month goal, etc.).
+Write the fact in second person and keep it under 120 characters: "User prefers…", "User mentioned…", "User is saving for…".`,
+  parameters: {
+    type: 'object',
+    properties: {
+      content: { type: 'string', description: 'The fact to remember, written in second person (max 120 characters)' },
+    },
+    required: ['content'],
+  },
+}
+
+const COMPLETE_TIMELINE_EVENT_TOOL: SageTool = {
+  name: 'complete_timeline_event',
+  description: "Mark a timeline milestone as done when the user explicitly confirms they have completed it. Only call this when there is clear confirmation from the user, not just an intention.",
+  parameters: {
+    type: 'object',
+    properties: {
+      itemKey: { type: 'string', description: 'The itemKey slug of the timeline event to mark as done' },
+    },
+    required: ['itemKey'],
+  },
+}
+
+const UPDATE_CONFIDENCE_TOOL: SageTool = {
+  name: 'update_confidence',
+  description: `Update a confidence score when the user has clearly grown their understanding during this conversation.
+Only call if there is strong evidence of a genuine shift — not just because they asked a question.
+Use this sparingly: maximum once per conversation, and only when the improvement is unmistakable.`,
+  parameters: {
+    type: 'object',
+    properties: {
+      dimension: {
+        type: 'string',
+        enum: ['tax', 'pensions', 'budgeting', 'investing', 'contracts'],
+        description: 'Which confidence area improved',
+      },
+      newScore: {
+        type: 'number',
+        minimum: 1,
+        maximum: 5,
+        description: 'New confidence score from 1 to 5',
+      },
+    },
+    required: ['dimension', 'newScore'],
+  },
+}
+
 function buildTopicsListing(): string {
   return topics
     .map((t) => `${t.id}: ${t.subTopics.map((s) => `${s.id} "${s.title}"`).join(', ')}`)
     .join('\n')
 }
 
-function buildSystemPrompt(profile: UserProfile | null): string {
+function buildCompletedLessonsText(completedIds: string[]): string {
+  if (completedIds.length === 0) return 'None yet'
+  const lines: string[] = []
+  for (const topic of topics) {
+    for (const sub of topic.subTopics) {
+      if (completedIds.includes(sub.id)) lines.push(`- ${topic.title}: ${sub.title}`)
+    }
+  }
+  return lines.length > 0 ? lines.join('\n') : 'None yet'
+}
+
+function buildTimelineItemsText(items: SpineItem[]): string {
+  const active = items.filter((i) => i.status !== 'done')
+  if (active.length === 0) return 'None'
+  return active.map((i) => `- ${i.id}: "${i.title}" (${i.when})`).join('\n')
+}
+
+function buildSystemPrompt(
+  profile: UserProfile | null,
+  memories: SageMemory[],
+  completedIds: string[],
+  timelineItems: SpineItem[],
+): string {
   if (!profile) {
     return 'You are Sage, a friendly personal finance assistant on Anticipate. Help with personal finance questions. Be warm and concise. British English only. Never give regulated financial advice.'
   }
 
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
+  const memoriesSection = memories.length > 0
+    ? `\n## What Sage remembers about you\n${memories.map((m) => `- ${m.content}`).join('\n')}`
+    : ''
+
   return `Today's date is ${today}.
 
 You are Sage, a warm and sharp personal finance companion on Anticipate — an app for young UK professionals navigating money for the first time.
 
-USER CONTEXT
+## User context
 Name: ${profile.firstName} | Life stage: ${profile.lifeStage} | Employment: ${profile.employmentType}
 Six-month goal: ${profile.sixMonthGoal}
 Upcoming events: ${profile.upcomingEvents.length > 0 ? profile.upcomingEvents.join(', ') : 'none specified'}
 Confidence (1–5): tax ${profile.confidenceScores.tax}, pensions ${profile.confidenceScores.pensions}, budgeting ${profile.confidenceScores.budgeting}, investing ${profile.confidenceScores.investing}
+${memoriesSection}
 
-YOUR ROLE
+## Lessons completed
+${buildCompletedLessonsText(completedIds)}
+
+## Current timeline milestones
+${buildTimelineItemsText(timelineItems)}
+
+## Your role
 Help with any personal finance question. Suggest relevant app lessons using the suggest_lesson tool — never just name a lesson in plain text. Keep responses warm and concise: 2–4 sentences, British English. Never give regulated financial advice; nudge users to verify important decisions with a professional.
 
-LESSON SUGGESTION RULES
+## Lesson suggestion rules
 - Suggest at most 2 lessons per turn
 - Only suggest when clearly relevant to what the user asked
+- Do NOT suggest lessons the user has already completed (listed above)
 - Populate "reason" with one sentence explaining why it's relevant right now
 
-AVAILABLE TOPICS
+## Available topics
 ${buildTopicsListing()}
 
-TIMELINE CREATION
+## Memory rules
+- Call save_memory when the user reveals something personal worth remembering: a preference, a side goal, a life detail, a habit, a fear, or anything not already captured in their profile
+- Do NOT save things already obvious from their onboarding data (employment, life stage, six-month goal, etc.)
+- Do NOT save the same type of fact twice; if a similar memory already exists, skip it
+- Keep saved facts concise and written in second person: "User prefers…", "User mentioned…"
+
+## Timeline creation
 You can add events to the user's personal timeline when they mention a concrete upcoming life event (new job, moving, baby, pay rise, buying a car, etc.).
 
-TIMELINE RULES
+## Timeline rules
 - When the user mentions a concrete upcoming life event, call add_timeline_event immediately — do not ask for confirmation first
 - Every timeline event must have dueYear and dueMonth. Only include dueDay when an exact day is known.
 - Use whatever date or timeframe the user provided; if they said "next month", estimate dueYear and dueMonth from today's date and omit dueDay
 - Only ask a follow-up question if NO date or timeframe whatsoever can be inferred from what they said
 - When creating an event, also add 1–2 natural follow-up events via relatedEvents (e.g. for a new job: first payslip check, pension auto-enrolment)
 - Do NOT create events for vague future intentions ("I might invest someday")
-- After creating events, confirm warmly what was added in 1–2 sentences`
+- After creating events, confirm warmly what was added in 1–2 sentences
+- Call complete_timeline_event only when the user explicitly confirms they have finished a milestone. Match against the itemKey list above.
+
+## Confidence update rules
+- Call update_confidence at most once per conversation, only when the user has clearly shifted their understanding through this conversation — not just by asking a question`
 }
 
 function renderMessage(text: string): ReactNode[] {
@@ -177,8 +279,9 @@ function LessonSuggestionCard({ card, onNavigate }: { card: LessonCard; onNaviga
 
 export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const navigate = useNavigate()
-  const { profile, userId } = useProfile()
-  const { refreshTimeline } = useTimeline()
+  const { profile, userId, updateProfile } = useProfile()
+  const { groups, refreshTimeline } = useTimeline()
+  const { completedSubTopicIds } = useProgress()
   const [isClosing, setIsClosing] = useState(false)
   const [renderedMessages, setRenderedMessages] = useState<HomeChatMessage[]>([])
   const [history, setHistory] = useState<SageHistoryMessage[]>([])
@@ -186,9 +289,12 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [memories, setMemories] = useState<SageMemory[]>([])
+  const [memoryOpen, setMemoryOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [jumpingAssistantIndex, setJumpingAssistantIndex] = useState<number | null>(null)
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -196,6 +302,8 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const pendingActivityRef = useRef<string[]>([])
   const activeConversationIdRef = useRef<string | null>(null)
   const renderedMessagesLengthRef = useRef(0)
+
+  const timelineItems: SpineItem[] = groups.flatMap((g) => g.items)
 
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId
@@ -234,6 +342,11 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   }, [open, userId])
 
   useEffect(() => {
+    if (!open || !userId) return
+    void fetchSageMemories(userId).then(setMemories).catch(() => {})
+  }, [open, userId])
+
+  useEffect(() => {
     if (!(open || isClosing)) return
     const container = messagesContainerRef.current
     if (container) {
@@ -264,19 +377,28 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   function startNewConversation() {
     setRenderedMessages([])
     setHistory([])
+    setJumpingAssistantIndex(null)
     setActiveConversationId(null)
     setInput('')
     setError(null)
     setHistoryOpen(false)
+    setMemoryOpen(false)
   }
 
   function openConversation(conversation: SageConversation) {
     setActiveConversationId(conversation.id)
     setRenderedMessages(conversation.messages as HomeChatMessage[])
     setHistory(conversation.history)
+    setJumpingAssistantIndex(null)
     setInput('')
     setError(null)
     setHistoryOpen(false)
+    setMemoryOpen(false)
+  }
+
+  async function handleDeleteMemory(id: string) {
+    setMemories((prev) => prev.filter((m) => m.id !== id))
+    await deleteSageMemory(id).catch(() => {})
   }
 
   async function saveConversation(nextMessages: HomeChatMessage[], nextHistory: SageHistoryMessage[]) {
@@ -308,7 +430,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     setError(null)
     const userTurnSaved = saveConversation(nextRenderedMessages, nextHistory).catch(() => null)
 
-    const systemPrompt = buildSystemPrompt(profile)
+    const systemPrompt = buildSystemPrompt(profile, memories, completedSubTopicIds, timelineItems)
     const provider = getActiveProvider()
 
     try {
@@ -316,7 +438,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         const result = await sendWithTools(
           systemPrompt,
           nextHistory,
-          [SUGGEST_LESSON_TOOL, ADD_TIMELINE_EVENT_TOOL],
+          [SUGGEST_LESSON_TOOL, ADD_TIMELINE_EVENT_TOOL, SAVE_MEMORY_TOOL, COMPLETE_TIMELINE_EVENT_TOOL, UPDATE_CONFIDENCE_TOOL],
           async (name, toolInput) => {
             if (name === 'suggest_lesson') {
               pendingCardsRef.current = [...pendingCardsRef.current, toolInput as unknown as LessonCard]
@@ -341,6 +463,25 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               pendingActivityRef.current = [...pendingActivityRef.current, label]
               return `${successCount} timeline event(s) added successfully.`
             }
+            if (name === 'save_memory' && userId) {
+              const content = (toolInput.content as string).slice(0, 120)
+              const saved = await addSageMemory(userId, content).catch(() => null)
+              if (saved) setMemories((prev) => [saved, ...prev])
+              return 'Memory saved.'
+            }
+            if (name === 'complete_timeline_event' && userId) {
+              const itemKey = toolInput.itemKey as string
+              await markTimelineItemDone(userId, itemKey).catch(() => {})
+              await refreshTimeline()
+              pendingActivityRef.current = [...pendingActivityRef.current, `Marked "${itemKey}" as done`]
+              return `Timeline event "${itemKey}" marked as done.`
+            }
+            if (name === 'update_confidence' && profile) {
+              const dimension = toolInput.dimension as keyof typeof profile.confidenceScores
+              const newScore = Math.min(5, Math.max(1, Math.round(toolInput.newScore as number)))
+              await updateProfile({ confidenceScores: { ...profile.confidenceScores, [dimension]: newScore } })
+              return `Confidence in ${dimension} updated to ${newScore}/5.`
+            }
             return 'Unknown tool.'
           },
         )
@@ -355,6 +496,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         const savedMessages = [...nextRenderedMessages, assistantRendered]
         const savedHistory = [...nextHistory, result.newTurn]
         setRenderedMessages(savedMessages)
+        setJumpingAssistantIndex(nextRenderedMessages.length)
         setHistory(savedHistory)
         await userTurnSaved
         await saveConversation(savedMessages, savedHistory)
@@ -366,6 +508,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         const savedMessages: HomeChatMessage[] = [...nextRenderedMessages, { role: 'assistant', content: reply }]
         const savedHistory: SageHistoryMessage[] = [...nextHistory, { role: 'assistant', text: reply }]
         setRenderedMessages(savedMessages)
+        setJumpingAssistantIndex(nextRenderedMessages.length)
         setHistory(savedHistory)
         await userTurnSaved
         await saveConversation(savedMessages, savedHistory)
@@ -408,11 +551,21 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               <div className="scc-header__left">
                 <SageAvatar size={28} />
                 <span className="scc-header__title">Ask Sage</span>
+                {userId && memories.length > 0 && (
+                  <button
+                    className={`scc-memory-chip ${memoryOpen ? 'scc-memory-chip--active' : ''}`}
+                    onClick={() => { setMemoryOpen((v) => !v); setHistoryOpen(false) }}
+                    aria-label={`Sage remembers ${memories.length} thing${memories.length !== 1 ? 's' : ''}`}
+                  >
+                    <Brain size={11} />
+                    {memories.length}
+                  </button>
+                )}
               </div>
               <div className="scc-header__actions">
                 <button
                   className={`scc-header__icon ${historyOpen ? 'scc-header__icon--active' : ''}`}
-                  onClick={() => setHistoryOpen((value) => !value)}
+                  onClick={() => { setHistoryOpen((v) => !v); setMemoryOpen(false) }}
                   aria-label="Saved Sage chats"
                 >
                   <Clock3 size={16} />
@@ -449,6 +602,30 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               </div>
             )}
 
+            {memoryOpen && (
+              <div className="scc-history">
+                <div className="scc-history__top">
+                  <span>Sage's memory</span>
+                  <span style={{ fontSize: 11, color: '#7c715e', fontWeight: 400 }}>{memories.length} saved</span>
+                </div>
+                {memories.length === 0 && (
+                  <p className="scc-history__empty">Sage will remember things you tell it here.</p>
+                )}
+                {memories.map((mem) => (
+                  <div key={mem.id} className="scc-memory__item">
+                    <span>{mem.content}</span>
+                    <button
+                      className="scc-memory__delete"
+                      onClick={() => void handleDeleteMemory(mem.id)}
+                      aria-label="Delete memory"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="scc-messages" ref={messagesContainerRef}>
               {renderedMessages.length === 0 && !loading && (
                 <div className="scc-empty">
@@ -465,7 +642,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
                   <div key={i} className={`scc-row scc-row--${m.role}`}>
                     {!isUser && (
                       <div className="scc-msg-avatar">
-                        <SageAvatar size={28} />
+                        <SageAvatar size={28} leafJump={jumpingAssistantIndex === i} />
                       </div>
                     )}
                     <div className="scc-msg-content">
@@ -691,10 +868,10 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          overflow: hidden;
+          overflow: visible;
           margin-top: 2px;
         }
-        .scc-msg-avatar--user { background: #95a4bb; }
+        .scc-msg-avatar--user { background: #95a4bb; overflow: hidden; }
 
         .scc-empty {
           display: flex;
@@ -876,6 +1053,59 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         .scc-send:hover { background: #e9694a; }
         .scc-send:disabled { opacity: 0.35; cursor: not-allowed; background: #e6dbc4; box-shadow: none; color: #95a4bb; }
         .scc-send:not(:disabled):active { transform: scale(0.92); }
+
+        .scc-memory-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 8px;
+          border-radius: 20px;
+          border: 1.5px solid #e6dbc4;
+          background: #ffffff;
+          color: #7c715e;
+          font-family: system-ui, -apple-system, sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+          line-height: 1;
+        }
+        .scc-memory-chip:hover, .scc-memory-chip--active {
+          background: #ebe7dd;
+          border-color: #d4c9b0;
+          color: #1c2a47;
+        }
+
+        .scc-memory__item {
+          border: 1px solid #eadfca;
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 9px 10px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          font-size: 13px;
+          color: #1c1a24;
+          line-height: 1.4;
+        }
+        .scc-memory__item span {
+          flex: 1;
+          font-weight: 500;
+        }
+        .scc-memory__delete {
+          border: none;
+          background: transparent;
+          color: #c0b49a;
+          cursor: pointer;
+          padding: 2px;
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+          border-radius: 4px;
+          transition: color 0.12s ease;
+        }
+        .scc-memory__delete:hover { color: #c93b2b; }
       `}</style>
     </>
   )
