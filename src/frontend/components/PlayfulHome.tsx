@@ -20,6 +20,7 @@ import {
 import { topics, getRecommendedTopics, getRecommendedSummary } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
 import { useProfile } from "../context/ProfileContext";
+import { TopBar } from "./TopBar";
 
 const TOPIC_ICONS: Record<string, LucideIcon> = {
   "starting-work":    Briefcase,
@@ -52,7 +53,6 @@ const TOPIC_SUBTITLES: Record<string, string> = {
   "investing-101":    "Funds, ISAs and building long-term wealth",
   "taxes-wealth":     "Tax brackets, CGT and the state pension",
 };
-import { TopBar } from "./TopBar";
 
 type TrackStatus = "done" | "active" | "queued";
 
@@ -210,12 +210,12 @@ export function PlayfulHome() {
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <TopBar />
+      <TopBar showNotifications={false} />
 
       <div className="anp-scroll">
 
-        {/* Continue card */}
-        <div className="anp-l-current" style={{ margin: "0 calc(16px * var(--d)) calc(20px * var(--d))" }}>
+        {/* Continue card — only when user has actual progress */}
+        {activeIdx >= 0 && <div className="anp-l-current" style={{ margin: "0 calc(16px * var(--d)) calc(20px * var(--d))" }}>
           <div className="hd">
             <div>
               <div className="eyebrow">Continue where you left off</div>
@@ -256,7 +256,7 @@ export function PlayfulHome() {
               </svg>
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* ── Suggested for you ── */}
         {suggestedTopics.length > 0 && (

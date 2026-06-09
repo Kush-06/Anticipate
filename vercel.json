@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/gemini/:path*",
+      "destination": "https://generativelanguage.googleapis.com/:path*"
+    },
+    {
+      "source": "/api/openai/:path*",
+      "destination": "https://api.openai.com/:path*"
+    },
+    {
+      "source": "/api/claude/:path*",
+      "destination": "https://api.anthropic.com/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
 import { PayslipDocument } from "./decoderDocs/PayslipDocument";
 import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
@@ -71,16 +71,20 @@ const DOCUMENT_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => vo
 };
 
 export function DecoderPage() {
-  const [openDoc, setOpenDoc] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openDoc = searchParams.get("doc");
+
+  const openDocument = (id: string) => setSearchParams({ doc: id });
+  const closeDocument = () => setSearchParams({});
 
   if (openDoc && DOCUMENT_COMPONENTS[openDoc]) {
     const SelectedDoc = DOCUMENT_COMPONENTS[openDoc];
-    return <SelectedDoc onBack={() => setOpenDoc(null)} />;
+    return <SelectedDoc onBack={closeDocument} />;
   }
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <TopBar />
+      <TopBar showNotifications={false} />
 
       <div className="anp-scroll" style={{ 
         scrollbarWidth: 'none', 
@@ -93,9 +97,6 @@ export function DecoderPage() {
           }
         `}</style>
         <div style={{ padding: "8px 20px 24px" }}>
-          <h1 className="anp-wordmark" style={{ fontSize: "28px", marginBottom: "8px", letterSpacing: "-0.03em" }}>
-            Decoder
-          </h1>
           <p style={{ color: "var(--p-ink-2)", fontSize: "14px", lineHeight: "1.5", opacity: 0.8 }}>
             Practice reading realistic financial documents ahead of time.
             Tap any highlighted word to get a plain-English definition.
@@ -107,7 +108,7 @@ export function DecoderPage() {
             <div
               key={doc.id}
               className="anp-l-track active"
-              onClick={() => setOpenDoc(doc.id)}
+              onClick={() => openDocument(doc.id)}
             >
               <div className="anp-l-track-num">
                 {doc.icon}
