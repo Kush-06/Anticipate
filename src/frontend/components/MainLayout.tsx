@@ -2,9 +2,10 @@ import { Outlet, useNavigate, useLocation } from "react-router";
 import { AppIcon } from "./AppIcon";
 
 const TABS = [
-  { name: "home",    path: "/",        icon: "home"    as const, label: "Home"    },
-  { name: "learn",   path: "/learn",   icon: "learn"   as const, label: "Learn"   },
-  { name: "profile", path: "/profile", icon: "profile" as const, label: "Profile" },
+  { name: "home",      path: "/",          icon: "home"      as const, label: "Home"      },
+  { name: "learn",     path: "/learn",     icon: "learn"     as const, label: "Learn"     },
+  { name: "community", path: "/community", icon: "community" as const, label: "Community" },
+  { name: "profile",   path: "/profile",   icon: "profile"   as const, label: "Profile"   },
 ];
 
 export function MainLayout() {
@@ -13,6 +14,7 @@ export function MainLayout() {
 
   let currentTab = "home";
   if (pathname === "/learn" || pathname.startsWith("/learn/")) currentTab = "learn";
+  else if (pathname === "/community" || pathname.startsWith("/community/")) currentTab = "community";
   else if (pathname.startsWith("/profile")) currentTab = "profile";
 
   return (
