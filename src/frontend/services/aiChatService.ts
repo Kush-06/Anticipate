@@ -1,12 +1,15 @@
+import { Capacitor } from "@capacitor/core"
+
 // TODO: proxy via Supabase Edge Function before production — VITE_* vars are bundled into JS and visible to end users
 
+const isNative = Capacitor.isNativePlatform()
+
 // In dev, requests go through the Vite proxy (same-origin, no CORS check).
+// In production (Vercel web), we use the Vercel proxy (configured in vercel.json) to bypass CORS.
 // In production (Capacitor native WebView), direct URLs work fine.
-const OPENAI_BASE = import.meta.env.DEV ? '/api/openai' : 'https://api.openai.com'
-const GEMINI_BASE = import.meta.env.DEV
-  ? '/api/gemini'
-  : 'https://generativelanguage.googleapis.com'
-const CLAUDE_BASE = import.meta.env.DEV ? '/api/claude' : 'https://api.anthropic.com'
+const OPENAI_BASE = isNative ? 'https://api.openai.com' : '/api/openai'
+const GEMINI_BASE = isNative ? 'https://generativelanguage.googleapis.com' : '/api/gemini'
+const CLAUDE_BASE = isNative ? 'https://api.anthropic.com' : '/api/claude'
 
 export type ChatRole = 'user' | 'assistant'
 
