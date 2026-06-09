@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient'
 import type { SageHistoryMessage } from '../frontend/services/sageToolService'
 
-export type SageConversationContext = 'home' | 'lesson'
+export type SageConversationContext = 'home' | 'lesson' | 'decoder'
 
 export interface SageDisplayMessage {
   role: 'user' | 'assistant'

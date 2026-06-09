@@ -108,7 +108,6 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [jumpingAssistantIndex, setJumpingAssistantIndex] = useState<number | null>(null)
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const activeConversationIdRef = useRef<string | null>(null)
@@ -177,14 +176,80 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
     if (!vv) return
 
     const handleResize = () => {
-      setViewportHeight(vv.height)
+      document.documentElement.style.setProperty('--lcb-vv-height', `${vv.height}px`)
+      document.documentElement.style.setProperty('--lcb-vv-offset-top', `${vv.offsetTop}px`)
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0)
+      }
+      document.body.scrollTop = 0
     }
 
     vv.addEventListener('resize', handleResize)
+    vv.addEventListener('scroll', handleResize)
     handleResize()
 
     return () => {
       vv.removeEventListener('resize', handleResize)
+      vv.removeEventListener('scroll', handleResize)
+    }
+  }, [open])
+
+  // Prevent layout viewport scroll when open
+  useEffect(() => {
+    if (!open) return
+
+    const preventScroll = () => {
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0)
+      }
+      document.body.scrollTop = 0
+    }
+
+    window.scrollTo(0, 0)
+    document.body.scrollTop = 0
+
+    window.addEventListener('scroll', preventScroll)
+    return () => {
+      window.removeEventListener('scroll', preventScroll)
+    }
+  }, [open])
+
+  // Prevent touchmove scrolling background on iOS when open
+  useEffect(() => {
+    if (!open) return
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const target = e.target as HTMLElement
+      const isScrollable =
+        target.closest('.lcb-messages') ||
+        target.closest('.lcb-history') ||
+        target.closest('textarea') ||
+        target.closest('input')
+
+      if (!isScrollable) {
+        if (e.cancelable) {
+          e.preventDefault()
+        }
+      }
+    }
+
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
     }
   }, [open])
 
@@ -290,14 +355,13 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
             onClick={closePanel} 
             aria-hidden="true" 
           />
-          <div 
-            className={`lcb-panel ${isClosing ? 'lcb-panel--closing' : ''}`} 
-            role="dialog" 
-            aria-label="Sage AI tutor"
-            style={{
-              height: `${viewportHeight * 0.85}px`
-            }}
-          >
+          <div className="lcb-viewport">
+            <div 
+              className={`lcb-panel ${isClosing ? 'lcb-panel--closing' : ''}`} 
+              role="dialog" 
+              aria-label="Sage AI tutor"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="lcb-header">
               <div className="lcb-header__left">
                 <SageAvatar size={28} />
@@ -414,6 +478,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
               </button>
             </div>
           </div>
+        </div>
         </>
       )}
 
@@ -475,12 +540,23 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           to   { opacity: 0; }
         }
 
-        .lcb-panel {
+        .lcb-viewport {
           position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          top: var(--lcb-vv-offset-top, 0px);
+          left: 0; right: 0;
+          height: var(--lcb-vv-height, 100vh);
           z-index: 20;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          pointer-events: none;
+        }
+
+        .lcb-panel {
+          position: relative;
+          width: 100%;
+          height: 85%;
+          pointer-events: auto;
           border-radius: 28px 28px 0 0;
           background: #f4f0e6;
           display: flex;

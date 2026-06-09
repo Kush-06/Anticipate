@@ -333,7 +333,6 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [jumpingAssistantIndex, setJumpingAssistantIndex] = useState<number | null>(null)
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const pendingCardsRef = useRef<LessonCard[]>([])
@@ -399,10 +398,80 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     if (!open) return
     const vv = window.visualViewport
     if (!vv) return
-    const handleResize = () => setViewportHeight(vv.height)
+    const handleResize = () => {
+      document.documentElement.style.setProperty('--scc-vv-height', `${vv.height}px`)
+      document.documentElement.style.setProperty('--scc-vv-offset-top', `${vv.offsetTop}px`)
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0)
+      }
+      document.body.scrollTop = 0
+    }
     vv.addEventListener('resize', handleResize)
+    vv.addEventListener('scroll', handleResize)
     handleResize()
-    return () => vv.removeEventListener('resize', handleResize)
+    return () => {
+      vv.removeEventListener('resize', handleResize)
+      vv.removeEventListener('scroll', handleResize)
+    }
+  }, [open])
+
+  // Prevent layout viewport scroll when open
+  useEffect(() => {
+    if (!open) return
+
+    const preventScroll = () => {
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0)
+      }
+      document.body.scrollTop = 0
+    }
+
+    window.scrollTo(0, 0)
+    document.body.scrollTop = 0
+
+    window.addEventListener('scroll', preventScroll)
+    return () => {
+      window.removeEventListener('scroll', preventScroll)
+    }
+  }, [open])
+
+  // Prevent touchmove scrolling background on iOS when open
+  useEffect(() => {
+    if (!open) return
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const target = e.target as HTMLElement
+      const isScrollable =
+        target.closest('.scc-messages') ||
+        target.closest('.scc-history') ||
+        target.closest('textarea') ||
+        target.closest('input')
+
+      if (!isScrollable) {
+        if (e.cancelable) {
+          e.preventDefault()
+        }
+      }
+    }
+
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
   }, [open])
 
   function closePanel() {
@@ -583,12 +652,13 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
             onClick={closePanel}
             aria-hidden="true"
           />
-          <div
-            className={`scc-panel ${isClosing ? 'scc-panel--closing' : ''}`}
-            role="dialog"
-            aria-label="Chat with Sage"
-            style={{ height: `${viewportHeight * 0.85}px` }}
-          >
+          <div className="scc-viewport">
+            <div
+              className={`scc-panel ${isClosing ? 'scc-panel--closing' : ''}`}
+              role="dialog"
+              aria-label="Chat with Sage"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="scc-header">
               <div className="scc-header__left">
                 <SageAvatar size={28} />
@@ -757,6 +827,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               </button>
             </div>
           </div>
+        </div>
         </>
       )}
 
@@ -774,10 +845,23 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         @keyframes scc-fade-in { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scc-fade-out { from { opacity: 1; } to { opacity: 0; } }
 
-        .scc-panel {
+        .scc-viewport {
           position: fixed;
-          left: 0; right: 0; bottom: 0;
+          top: var(--scc-vv-offset-top, 0px);
+          left: 0; right: 0;
+          height: var(--scc-vv-height, 100vh);
           z-index: 20;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          pointer-events: none;
+        }
+
+        .scc-panel {
+          position: relative;
+          width: 100%;
+          height: 85%;
+          pointer-events: auto;
           border-radius: 28px 28px 0 0;
           background: #f4f0e6;
           display: flex;
