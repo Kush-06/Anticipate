@@ -1,7 +1,15 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
-import { User } from 'lucide-react'
+import { Clock3, Plus, Send, User, X } from 'lucide-react'
 import { hasActiveProvider, sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
+import {
+  fetchSageConversations,
+  getSageConversationTitle,
+  upsertSageConversation,
+  type SageConversation,
+  type SageDisplayMessage,
+} from '@backend/sageConversationService'
+import { useProfile } from '../context/ProfileContext'
 
 export interface LessonChatBotProps {
   lessonTitle: string
@@ -37,17 +45,60 @@ function renderMessage(text: string): ReactNode[] {
 }
 
 export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: LessonChatBotProps) {
+  const { userId } = useProfile()
   const [open, setOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [conversations, setConversations] = useState<SageConversation[]>([])
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const activeConversationIdRef = useRef<string | null>(null)
+  const messagesLengthRef = useRef(0)
 
   const active = hasActiveProvider()
+  const contextId = `${topicTitle}:${lessonTitle}`
+
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId
+  }, [activeConversationId])
+
+  useEffect(() => {
+    messagesLengthRef.current = messages.length
+  }, [messages.length])
+
+  useEffect(() => {
+    if (!active || !open) return
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setHistoryLoading(true)
+      void fetchSageConversations(userId, 'lesson', contextId)
+        .then((saved) => {
+          if (cancelled) return
+          setConversations(saved)
+          if (activeConversationIdRef.current || messagesLengthRef.current > 0 || saved.length === 0) return
+          const latest = saved[0]
+          setActiveConversationId(latest.id)
+          setMessages(latest.messages.map((message) => ({ role: message.role, content: message.content })))
+        })
+        .catch((err) => {
+          if (!cancelled) setError(err instanceof Error ? err.message : 'Could not load saved chats.')
+        })
+        .finally(() => {
+          if (!cancelled) setHistoryLoading(false)
+        })
+    }, 0)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [active, open, userId, contextId])
 
   useEffect(() => {
     if (!active || !open) return
@@ -96,6 +147,39 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
     }, 280)
   }
 
+  function startNewConversation() {
+    setMessages([])
+    setActiveConversationId(null)
+    setInput('')
+    setError(null)
+    setHistoryOpen(false)
+  }
+
+  function openConversation(conversation: SageConversation) {
+    setActiveConversationId(conversation.id)
+    setMessages(conversation.messages.map((message) => ({ role: message.role, content: message.content })))
+    setInput('')
+    setError(null)
+    setHistoryOpen(false)
+  }
+
+  async function saveConversation(nextMessages: ChatMessage[]) {
+    const displayMessages: SageDisplayMessage[] = nextMessages.map((message) => ({
+      role: message.role,
+      content: message.content,
+    }))
+    const saved = await upsertSageConversation(userId, {
+      id: activeConversationIdRef.current,
+      context: 'lesson',
+      contextId,
+      title: getSageConversationTitle(displayMessages),
+      messages: displayMessages,
+      history: displayMessages.map((message) => ({ role: message.role, text: message.content })),
+    })
+    setActiveConversationId(saved.id)
+    setConversations((prev) => [saved, ...prev.filter((item) => item.id !== saved.id)])
+  }
+
   async function handleSend() {
     const trimmed = input.trim()
     if (!trimmed || loading) return
@@ -105,9 +189,13 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
     setInput('')
     setLoading(true)
     setError(null)
+    const userTurnSaved = saveConversation(next).catch(() => null)
     try {
       const reply = await sendChatMessage(buildSystemPrompt(lessonTitle, topicTitle, lessonContent), next)
-      setMessages([...next, { role: 'assistant' as ChatRole, content: reply }])
+      const savedMessages = [...next, { role: 'assistant' as ChatRole, content: reply }]
+      setMessages(savedMessages)
+      await userTurnSaved
+      await saveConversation(savedMessages)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -154,8 +242,45 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
                 <SageAvatar size={28} />
                 <span className="lcb-header__title">Ask Sage</span>
               </div>
-              <button className="lcb-header__close" onClick={closePanel} aria-label="Close chat">✕</button>
+              <div className="lcb-header__actions">
+                <button
+                  className={`lcb-header__icon ${historyOpen ? 'lcb-header__icon--active' : ''}`}
+                  onClick={() => setHistoryOpen((value) => !value)}
+                  aria-label="Saved Sage chats"
+                >
+                  <Clock3 size={16} />
+                </button>
+                <button className="lcb-header__icon" onClick={startNewConversation} aria-label="Start new Sage chat">
+                  <Plus size={17} />
+                </button>
+                <button className="lcb-header__icon" onClick={closePanel} aria-label="Close chat">
+                  <X size={17} />
+                </button>
+              </div>
             </div>
+
+            {historyOpen && (
+              <div className="lcb-history">
+                <div className="lcb-history__top">
+                  <span>Saved chats</span>
+                  <button onClick={startNewConversation}>New chat</button>
+                </div>
+                {historyLoading && <p className="lcb-history__empty">Loading chats...</p>}
+                {!historyLoading && conversations.length === 0 && (
+                  <p className="lcb-history__empty">Your Sage conversations for this lesson will appear here.</p>
+                )}
+                {!historyLoading && conversations.map((conversation) => (
+                  <button
+                    key={conversation.id}
+                    className={`lcb-history__item ${conversation.id === activeConversationId ? 'lcb-history__item--active' : ''}`}
+                    onClick={() => openConversation(conversation)}
+                  >
+                    <span>{conversation.title}</span>
+                    <time>{new Date(conversation.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</time>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="lcb-messages" ref={messagesContainerRef}>
               {messages.length === 0 && !loading && (
@@ -217,7 +342,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
                 disabled={loading || !input.trim()}
                 aria-label="Send message"
               >
-                ➤
+                <Send size={17} />
               </button>
             </div>
           </div>
@@ -329,7 +454,12 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           font-weight: bold;
           color: #1c1a24;
         }
-        .lcb-header__close {
+        .lcb-header__actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .lcb-header__icon {
           width: 32px;
           height: 32px;
           border-radius: 50%;
@@ -339,14 +469,80 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 14px;
           color: #5f5848;
           transition: background-color 0.15s ease, transform 0.15s ease;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
           flex-shrink: 0;
         }
-        .lcb-header__close:hover { background: #ebe7dd; }
-        .lcb-header__close:active { transform: scale(0.95); }
+        .lcb-header__icon:hover,
+        .lcb-header__icon--active {
+          background: #ebe7dd;
+          color: #1c2a47;
+        }
+        .lcb-header__icon:active { transform: scale(0.95); }
+
+        .lcb-history {
+          flex-shrink: 0;
+          background: #fffaf0;
+          border-bottom: 1.5px solid #e6dbc4;
+          padding: 10px 12px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          max-height: 220px;
+          overflow-y: auto;
+        }
+        .lcb-history__top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 12px;
+          font-weight: 700;
+          color: #1c1a24;
+        }
+        .lcb-history__top button {
+          border: none;
+          background: transparent;
+          color: #e9694a;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          padding: 2px 0;
+        }
+        .lcb-history__empty {
+          margin: 2px 0 0;
+          color: #7c715e;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        .lcb-history__item {
+          border: 1px solid #eadfca;
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 9px 10px;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 10px;
+          align-items: center;
+          cursor: pointer;
+          text-align: left;
+          color: #1c1a24;
+        }
+        .lcb-history__item--active {
+          border-color: #ff9b7d;
+          background: #fff3ec;
+        }
+        .lcb-history__item span {
+          font-size: 13px;
+          font-weight: 600;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .lcb-history__item time {
+          color: #7c715e;
+          font-size: 11px;
+        }
 
         .lcb-messages {
           flex: 1;

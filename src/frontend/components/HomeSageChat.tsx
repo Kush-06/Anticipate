@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { User } from 'lucide-react'
+import { Clock3, Plus, Send, User, X } from 'lucide-react'
 import { topics } from '../data/topics'
 import { SageAvatar } from './SageAvatar'
 import { getActiveProvider, sendChatMessage } from '../services/aiChatService'
@@ -8,6 +8,12 @@ import { sendWithTools, type SageHistoryMessage, type SageTool } from '../servic
 import { useProfile, type UserProfile } from '../context/ProfileContext'
 import { useTimeline } from '../context/TimelineContext'
 import { addTimelineItem } from '@backend/timelineService'
+import {
+  fetchSageConversations,
+  getSageConversationTitle,
+  upsertSageConversation,
+  type SageConversation,
+} from '@backend/sageConversationService'
 import type { SpineGroup, SpineStatus } from '../../shared/types'
 
 interface LessonCard {
@@ -168,6 +174,10 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const [isClosing, setIsClosing] = useState(false)
   const [renderedMessages, setRenderedMessages] = useState<HomeChatMessage[]>([])
   const [history, setHistory] = useState<SageHistoryMessage[]>([])
+  const [conversations, setConversations] = useState<SageConversation[]>([])
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -176,6 +186,44 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const pendingCardsRef = useRef<LessonCard[]>([])
   const pendingActivityRef = useRef<string[]>([])
+  const activeConversationIdRef = useRef<string | null>(null)
+  const renderedMessagesLengthRef = useRef(0)
+
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId
+  }, [activeConversationId])
+
+  useEffect(() => {
+    renderedMessagesLengthRef.current = renderedMessages.length
+  }, [renderedMessages.length])
+
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
+    const timer = setTimeout(() => {
+      setHistoryLoading(true)
+      void fetchSageConversations(userId, 'home')
+        .then((saved) => {
+          if (cancelled) return
+          setConversations(saved)
+          if (activeConversationIdRef.current || renderedMessagesLengthRef.current > 0 || saved.length === 0) return
+          const latest = saved[0]
+          setActiveConversationId(latest.id)
+          setRenderedMessages(latest.messages as HomeChatMessage[])
+          setHistory(latest.history)
+        })
+        .catch((err) => {
+          if (!cancelled) setError(err instanceof Error ? err.message : 'Could not load saved chats.')
+        })
+        .finally(() => {
+          if (!cancelled) setHistoryLoading(false)
+        })
+    }, 0)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [open, userId])
 
   useEffect(() => {
     if (!(open || isClosing)) return
@@ -205,6 +253,36 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     }, 280)
   }
 
+  function startNewConversation() {
+    setRenderedMessages([])
+    setHistory([])
+    setActiveConversationId(null)
+    setInput('')
+    setError(null)
+    setHistoryOpen(false)
+  }
+
+  function openConversation(conversation: SageConversation) {
+    setActiveConversationId(conversation.id)
+    setRenderedMessages(conversation.messages as HomeChatMessage[])
+    setHistory(conversation.history)
+    setInput('')
+    setError(null)
+    setHistoryOpen(false)
+  }
+
+  async function saveConversation(nextMessages: HomeChatMessage[], nextHistory: SageHistoryMessage[]) {
+    const saved = await upsertSageConversation(userId, {
+      id: activeConversationIdRef.current,
+      context: 'home',
+      title: getSageConversationTitle(nextMessages),
+      messages: nextMessages,
+      history: nextHistory,
+    })
+    setActiveConversationId(saved.id)
+    setConversations((prev) => [saved, ...prev.filter((item) => item.id !== saved.id)])
+  }
+
   async function handleSend() {
     const trimmed = input.trim()
     if (!trimmed || loading) return
@@ -214,11 +292,13 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
 
     const userRendered: HomeChatMessage = { role: 'user', content: trimmed }
     const nextHistory: SageHistoryMessage[] = [...history, { role: 'user', text: trimmed }]
+    const nextRenderedMessages = [...renderedMessages, userRendered]
 
-    setRenderedMessages((prev) => [...prev, userRendered])
+    setRenderedMessages(nextRenderedMessages)
     setInput('')
     setLoading(true)
     setError(null)
+    const userTurnSaved = saveConversation(nextRenderedMessages, nextHistory).catch(() => null)
 
     const systemPrompt = buildSystemPrompt(profile)
     const provider = getActiveProvider()
@@ -231,12 +311,12 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           [SUGGEST_LESSON_TOOL, ADD_TIMELINE_EVENT_TOOL],
           async (name, toolInput) => {
             if (name === 'suggest_lesson') {
-              pendingCardsRef.current = [...pendingCardsRef.current, toolInput as LessonCard]
+              pendingCardsRef.current = [...pendingCardsRef.current, toolInput as unknown as LessonCard]
               return 'Lesson card shown to user.'
             }
             if (name === 'add_timeline_event' && userId) {
               const allItems: TimelineEventInput[] = [
-                toolInput as TimelineEventInput,
+                toolInput as unknown as TimelineEventInput,
                 ...((toolInput.relatedEvents as TimelineEventInput[] | undefined) ?? []),
               ]
               const results = await Promise.allSettled(
@@ -258,23 +338,29 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         )
         const cards = pendingCardsRef.current
         const activity = pendingActivityRef.current
-        setRenderedMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: result.text,
-            lessonCards: cards.length > 0 ? cards : undefined,
-            toolActivity: activity.length > 0 ? activity : undefined,
-          },
-        ])
-        setHistory([...nextHistory, result.newTurn])
+        const assistantRendered: HomeChatMessage = {
+          role: 'assistant',
+          content: result.text,
+          lessonCards: cards.length > 0 ? cards : undefined,
+          toolActivity: activity.length > 0 ? activity : undefined,
+        }
+        const savedMessages = [...nextRenderedMessages, assistantRendered]
+        const savedHistory = [...nextHistory, result.newTurn]
+        setRenderedMessages(savedMessages)
+        setHistory(savedHistory)
+        await userTurnSaved
+        await saveConversation(savedMessages, savedHistory)
       } else {
         const reply = await sendChatMessage(
           systemPrompt,
           nextHistory.map((m) => ({ role: m.role, content: m.text })),
         )
-        setRenderedMessages((prev) => [...prev, { role: 'assistant', content: reply }])
-        setHistory([...nextHistory, { role: 'assistant', text: reply }])
+        const savedMessages: HomeChatMessage[] = [...nextRenderedMessages, { role: 'assistant', content: reply }]
+        const savedHistory: SageHistoryMessage[] = [...nextHistory, { role: 'assistant', text: reply }]
+        setRenderedMessages(savedMessages)
+        setHistory(savedHistory)
+        await userTurnSaved
+        await saveConversation(savedMessages, savedHistory)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -315,8 +401,45 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
                 <SageAvatar size={28} />
                 <span className="scc-header__title">Ask Sage</span>
               </div>
-              <button className="scc-header__close" onClick={closePanel} aria-label="Close chat">✕</button>
+              <div className="scc-header__actions">
+                <button
+                  className={`scc-header__icon ${historyOpen ? 'scc-header__icon--active' : ''}`}
+                  onClick={() => setHistoryOpen((value) => !value)}
+                  aria-label="Saved Sage chats"
+                >
+                  <Clock3 size={16} />
+                </button>
+                <button className="scc-header__icon" onClick={startNewConversation} aria-label="Start new Sage chat">
+                  <Plus size={17} />
+                </button>
+                <button className="scc-header__icon" onClick={closePanel} aria-label="Close chat">
+                  <X size={17} />
+                </button>
+              </div>
             </div>
+
+            {historyOpen && (
+              <div className="scc-history">
+                <div className="scc-history__top">
+                  <span>Saved chats</span>
+                  <button onClick={startNewConversation}>New chat</button>
+                </div>
+                {historyLoading && <p className="scc-history__empty">Loading chats...</p>}
+                {!historyLoading && conversations.length === 0 && (
+                  <p className="scc-history__empty">Your Sage conversations will appear here.</p>
+                )}
+                {!historyLoading && conversations.map((conversation) => (
+                  <button
+                    key={conversation.id}
+                    className={`scc-history__item ${conversation.id === activeConversationId ? 'scc-history__item--active' : ''}`}
+                    onClick={() => openConversation(conversation)}
+                  >
+                    <span>{conversation.title}</span>
+                    <time>{new Date(conversation.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</time>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="scc-messages" ref={messagesContainerRef}>
               {renderedMessages.length === 0 && !loading && (
@@ -394,7 +517,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
                 disabled={loading || !input.trim()}
                 aria-label="Send message"
               >
-                ➤
+                <Send size={17} />
               </button>
             </div>
           </div>
@@ -448,21 +571,84 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           font-weight: bold;
           color: #1c1a24;
         }
-        .scc-header__close {
+        .scc-header__actions { display: flex; align-items: center; gap: 8px; }
+        .scc-header__icon {
           width: 32px; height: 32px;
           border-radius: 50%;
           border: none;
           background: #ffffff;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          font-size: 14px;
           color: #5f5848;
           transition: background-color 0.15s ease, transform 0.15s ease;
           box-shadow: 0 2px 6px rgba(0,0,0,0.04);
           flex-shrink: 0;
         }
-        .scc-header__close:hover { background: #ebe7dd; }
-        .scc-header__close:active { transform: scale(0.95); }
+        .scc-header__icon:hover, .scc-header__icon--active { background: #ebe7dd; color: #1c2a47; }
+        .scc-header__icon:active { transform: scale(0.95); }
+
+        .scc-history {
+          flex-shrink: 0;
+          background: #fffaf0;
+          border-bottom: 1.5px solid #e6dbc4;
+          padding: 10px 12px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          max-height: 220px;
+          overflow-y: auto;
+        }
+        .scc-history__top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 12px;
+          font-weight: 700;
+          color: #1c1a24;
+        }
+        .scc-history__top button {
+          border: none;
+          background: transparent;
+          color: #e9694a;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          padding: 2px 0;
+        }
+        .scc-history__empty {
+          margin: 2px 0 0;
+          color: #7c715e;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        .scc-history__item {
+          border: 1px solid #eadfca;
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 9px 10px;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 10px;
+          align-items: center;
+          cursor: pointer;
+          text-align: left;
+          color: #1c1a24;
+        }
+        .scc-history__item--active {
+          border-color: #ff9b7d;
+          background: #fff3ec;
+        }
+        .scc-history__item span {
+          font-size: 13px;
+          font-weight: 600;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .scc-history__item time {
+          color: #7c715e;
+          font-size: 11px;
+        }
 
         .scc-messages {
           flex: 1;
