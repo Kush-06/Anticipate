@@ -473,7 +473,9 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               const itemKey = toolInput.itemKey as string
               await markTimelineItemDone(userId, itemKey).catch(() => {})
               await refreshTimeline()
-              pendingActivityRef.current = [...pendingActivityRef.current, `Marked "${itemKey}" as done`]
+              const item = timelineItems.find((i) => i.id === itemKey)
+              const label = item ? item.title : itemKey
+              pendingActivityRef.current = [...pendingActivityRef.current, `Marked "${label}" as done`]
               return `Timeline event "${itemKey}" marked as done.`
             }
             if (name === 'update_confidence' && profile) {
