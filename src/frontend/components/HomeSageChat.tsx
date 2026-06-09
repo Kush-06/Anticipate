@@ -63,7 +63,7 @@ interface TimelineEventInput {
 
 const ADD_TIMELINE_EVENT_TOOL: SageTool = {
   name: 'add_timeline_event',
-  description: "Add a financial milestone to the user's personal timeline. Only call this when the user has clearly mentioned a concrete upcoming life event AND you have enough information. If the event date is unknown, ask the user for it BEFORE calling this tool.",
+  description: "Add a financial milestone to the user's personal timeline when they mention a concrete upcoming life event. Call this immediately when you have a title and a rough date or timeframe. Only ask a follow-up question if the date is completely absent and cannot be inferred.",
   parameters: {
     type: 'object',
     properties: {
@@ -136,8 +136,9 @@ TIMELINE CREATION
 You can add events to the user's personal timeline when they mention a concrete upcoming life event (new job, moving, baby, pay rise, buying a car, etc.).
 
 TIMELINE RULES
-- ONLY create a timeline event when the user explicitly mentions a real upcoming event
-- If the event date is unclear or missing, ask the user for it BEFORE calling add_timeline_event. Example: if they say "I got a new job" without a start date, ask "Congratulations! When do you start?" then create the event after they answer
+- When the user mentions a concrete upcoming life event, call add_timeline_event immediately — do not ask for confirmation first
+- Use whatever date or timeframe the user provided; if they said "next month" use that as whenLabel and estimate the dueDate
+- Only ask a follow-up question if NO date or timeframe whatsoever can be inferred from what they said
 - When creating an event, also add 1–2 natural follow-up events via relatedEvents (e.g. for a new job: first payslip check, pension auto-enrolment)
 - Do NOT create events for vague future intentions ("I might invest someday")
 - After creating events, confirm warmly what was added in 1–2 sentences`
