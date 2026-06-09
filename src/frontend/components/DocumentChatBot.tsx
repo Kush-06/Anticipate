@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { User } from 'lucide-react'
 import { hasActiveProvider, sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
 
 export interface DocumentChatBotProps {
   documentTitle: string
-  documentContent: string
+  documentPath: string
 }
 
 function buildSystemPrompt(documentTitle: string, documentContent: string): string {
@@ -28,15 +28,7 @@ HOW TO RESPOND
 - If they seem confused, ask one clarifying question before launching into a long explanation`
 }
 
-function renderMessage(text: string): ReactNode[] {
-  return text.split(/(\*\*.*?\*\*)/g).map((part, i) =>
-    part.startsWith('**') && part.endsWith('**')
-      ? <strong key={i}>{part.slice(2, -2)}</strong>
-      : part as ReactNode
-  )
-}
-
-export function DocumentChatBot({ documentTitle, documentContent }: DocumentChatBotProps) {
+export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBotProps) {
   const [open, setOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -44,6 +36,7 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
+  const [documentContent, setDocumentContent] = useState<string>('')
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const active = hasActiveProvider()
@@ -60,35 +53,27 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
   }, [open]);
 
   useEffect(() => {
-    if (!active || !open) return
-    const container = messagesContainerRef.current
-    if (container) {
-      setTimeout(() => {
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'smooth'
-        })
-      }, 60)
+    async function loadContent() {
+      try {
+        const modules = import.meta.glob('../content/documents/*.md', { query: '?raw', import: 'default' })
+        const pathKey = `../content/documents/${documentPath}`
+        const loader = modules[pathKey]
+        
+        if (!loader) {
+          throw new Error(`Document not found: ${pathKey}`)
+        }
+        
+        const content = await loader() as string
+        setDocumentContent(content)
+      } catch (err) {
+        console.error(`Failed to load document at ${documentPath}`, err)
+        setError('Could not load document content.')
+      }
     }
-  }, [messages, loading, active, open])
+    loadContent()
+  }, [documentPath])
 
-  useEffect(() => {
-    if (!open) return
-    const vv = window.visualViewport
-    if (!vv) return
-    const handleResize = () => setViewportHeight(vv.height)
-    vv.addEventListener('resize', handleResize)
-    handleResize()
-    return () => vv.removeEventListener('resize', handleResize)
-  }, [open])
-
-  if (!active) return null
-
-  function openPanel() {
-    setOpen(true)
-    setIsClosing(false)
-  }
-
+  function openPanel() { setOpen(true) }
   function closePanel() {
     setIsClosing(true)
     setTimeout(() => {
@@ -96,6 +81,10 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
       setIsClosing(false)
       setError(null)
     }, 280)
+  }
+
+  function renderMessage(content: string) {
+    return content.split('\n').map((line, i) => <p key={i} style={{ margin: '4px 0' }}>{line}</p>)
   }
 
   async function handleSend() {

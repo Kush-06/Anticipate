@@ -596,7 +596,7 @@ export function CommunityScreen() {
   // Restore thread from URL after tab switch (runs once when threads load)
   useEffect(() => {
     const threadId = searchParams.get('thread')
-    if (threadId && !activeThread && threads.length > 0) {
+    if (threadId && threads.length > 0) {
       const found = threads.find(t => t.id === threadId)
       if (found) {
         // Use a small delay to avoid cascading renders warning

@@ -51,17 +51,6 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   const active = hasActiveProvider()
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  useEffect(() => {
     if (!active || !open) return
     const container = messagesContainerRef.current
     if (container) {
