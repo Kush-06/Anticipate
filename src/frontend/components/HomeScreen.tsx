@@ -136,6 +136,29 @@ export function HomeScreen() {
           </div>
         </div>
 
+        {/* Sage community nudge */}
+        {recTopic && (
+          <div className="av-sage" style={{ marginTop: "calc(12px * var(--d))", background: "var(--p-card-2)", borderColor: "var(--p-line)" }}>
+            <div className="av-sage__row">
+              <SageAvatar size={46} />
+              <div>
+                <div className="av-sage__eyebrow" style={{ color: "var(--p-coral)" }}>Community connection</div>
+                <div className="av-sage__text">
+                  Talk to others like you who are going through the same journey as you for <b>{recTopic.title}</b>. Ask questions or share experiences anonymously.
+                </div>
+                <button 
+                  className="av-sage__cta" 
+                  style={{ background: "var(--p-coral)", color: "#ffffff", border: "none", marginTop: 8 }}
+                  onClick={() => navigate(`/community?topic=${recTopic.id}`)}
+                >
+                  Ask the community <AppIcon name="arrowRight" size={13} stroke={2} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
         {/* Continue card */}
         {activeEntry && (
           <div
