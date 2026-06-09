@@ -327,7 +327,7 @@ export function CommunityScreen() {
     }, 100)
   }
 
-  // Load threads and subscribe to real-time additions (Supabase + LocalStorage sync)
+  // Load threads and subscribe to real-time additions
   useEffect(() => {
     let active = true
     async function loadThreads() {
@@ -415,33 +415,10 @@ export function CommunityScreen() {
         console.log(`Supabase Realtime msg count subscription status: ${status}`, err || '')
       })
 
-    // Cross-tab synchronization for LocalStorage fallback mode
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'anticipate_local_forum_threads') {
-        try {
-          const allThreads = JSON.parse(e.newValue || '[]') as ForumThread[]
-          const filtered = allThreads.filter(t => selectedTopicId === 'all' || t.topic_id === selectedTopicId)
-          if (active) setThreads(filtered)
-        } catch { /* ignore parsing errors */ }
-      }
-      if (e.key === 'anticipate_local_forum_messages') {
-        try {
-          const allMsgs = JSON.parse(e.newValue || '{}')
-          const counts: Record<string, number> = {}
-          for (const [tid, list] of Object.entries(allMsgs)) {
-            counts[tid] = (list as ForumMessage[]).length
-          }
-          if (active) setReplyCounts(counts)
-        } catch { /* ignore parsing errors */ }
-      }
-    }
-    window.addEventListener('storage', handleStorageChange)
-
     return () => {
       active = false
       void supabase.removeChannel(channel)
       void supabase.removeChannel(msgCountChannel)
-      window.removeEventListener('storage', handleStorageChange)
     }
   }, [selectedTopicId])
 
@@ -491,22 +468,9 @@ export function CommunityScreen() {
         console.log(`Supabase Realtime thread messages subscription status: ${status}`, err || '')
       })
 
-    // Cross-tab synchronization for LocalStorage fallback mode
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'anticipate_local_forum_messages') {
-        try {
-          const allMsgs = JSON.parse(e.newValue || '{}')
-          const threadMsgs = allMsgs[activeThread.id] || []
-          if (active) setMessages(threadMsgs)
-        } catch { /* ignore parsing errors */ }
-      }
-    }
-    window.addEventListener('storage', handleStorageChange)
-
     return () => {
       active = false
       void supabase.removeChannel(channel)
-      window.removeEventListener('storage', handleStorageChange)
     }
   }, [activeThread])
 
@@ -1796,7 +1760,7 @@ Keep it short (2-3 sentences max) and helpful.`
         }
 
         .anp-modal-backdrop {
-          position: fixed;
+          position: absolute;
           top: 0;
           left: 0;
           right: 0;
@@ -1834,7 +1798,7 @@ Keep it short (2-3 sentences max) and helpful.`
         }
 
         .anp-thread-drawer-overlay {
-          position: fixed;
+          position: absolute;
           top: 0;
           left: 0;
           right: 0;
@@ -1847,7 +1811,7 @@ Keep it short (2-3 sentences max) and helpful.`
           will-change: transform;
         }
         .anp-thread-drawer-overlay--closing {
-          position: fixed;
+          position: absolute;
           top: 0;
           left: 0;
           right: 0;
