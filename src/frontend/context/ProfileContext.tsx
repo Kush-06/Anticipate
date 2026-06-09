@@ -56,6 +56,7 @@ interface ProfileContextType {
   userId: string | null;
   isLoading: boolean;
   completeOnboarding: (p: UserProfile) => void;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   resetProfile: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -139,6 +140,15 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    const next = { ...profile!, ...updates };
+    setProfile(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    if (currentUserId) {
+      await upsertProfile(currentUserId, next).catch(() => {});
+    }
+  };
+
   const resetProfile = async () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(UID_KEY);
@@ -153,7 +163,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider
-      value={{ completedOnboarding: !!profile, profile, userId: currentUserId, isLoading, completeOnboarding, resetProfile, logout }}
+      value={{ completedOnboarding: !!profile, profile, userId: currentUserId, isLoading, completeOnboarding, updateProfile, resetProfile, logout }}
     >
       {children}
     </ProfileContext.Provider>
