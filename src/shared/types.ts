@@ -37,6 +37,9 @@ export interface SpineItem {
   tag: string
   lessonPath?: string
   group: SpineGroup
+  dueYear?: number
+  dueMonth?: number
+  dueDay?: number
 }
 
 export interface TimelineItem {
@@ -48,7 +51,9 @@ export interface TimelineItem {
   title: string
   tag: string
   whenLabel: string
-  dueDate?: string
+  dueYear: number
+  dueMonth: number
+  dueDay?: number
   lessonPath?: string
   source: 'onboarding_seed' | 'ai_generated' | 'ai_modified' | 'user_added'
   sortOrder: number

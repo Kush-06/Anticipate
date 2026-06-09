@@ -117,7 +117,9 @@ create table public.user_timeline_items (
   title        text        not null,
   tag          text        not null,
   when_label   text        not null,
-  due_date     date,
+  due_year     integer     not null check (due_year between 2000 and 2100),
+  due_month    smallint    not null check (due_month between 1 and 12),
+  due_day      smallint    check (due_day between 1 and 31),
   lesson_path  text,
   source       text        not null default 'onboarding_seed'
                check (source in ('onboarding_seed', 'ai_generated', 'ai_modified', 'user_added')),
@@ -127,7 +129,7 @@ create table public.user_timeline_items (
   updated_at   timestamptz not null default now()
 );
 
-create index idx_timeline_user_group on public.user_timeline_items(user_id, spine_group, sort_order);
+create index idx_timeline_user_group on public.user_timeline_items(user_id, spine_group, due_year, due_month, due_day);
 
 alter table public.user_timeline_items enable row level security;
 

@@ -5,6 +5,13 @@ import { fetchTimeline, seedTimeline } from "@backend/timelineService";
 import { useProfile } from "./ProfileContext";
 import { generateTimeline } from "../utils/timelineGenerator";
 import type { SpineGroup, SpineItem } from "../utils/timelineGenerator";
+import {
+  deriveSpineGroup,
+  duePartsFromWhenLabel,
+  duePartsSortValue,
+  formatTimelineWhen,
+  type TimelineDueParts,
+} from "@shared/timelineDates";
 
 export type { SpineStatus, SpineGroup, SpineItem } from "../utils/timelineGenerator";
 export { generateTimeline } from "../utils/timelineGenerator";
@@ -29,11 +36,30 @@ const GROUP_LABELS: Record<SpineGroup, string> = {
 
 const TimelineContext = createContext<TimelineContextType | undefined>(undefined);
 
+type DatedSpineItem = SpineItem & TimelineDueParts;
+
+function normalizeSpineItem(item: SpineItem): DatedSpineItem {
+  const dueParts = item.dueYear && item.dueMonth
+    ? { dueYear: item.dueYear, dueMonth: item.dueMonth, dueDay: item.dueDay }
+    : duePartsFromWhenLabel(item.when);
+
+  return {
+    ...item,
+    when: formatTimelineWhen(dueParts),
+    group: deriveSpineGroup(dueParts),
+    ...dueParts,
+  };
+}
+
 function itemsToGroups(items: SpineItem[]): TimelineGroup[] {
+  const normalizedItems = items
+    .map(normalizeSpineItem)
+    .sort((a, b) => duePartsSortValue(a) - duePartsSortValue(b));
+
   return (["this-week", "coming-up", "later"] as SpineGroup[]).map((key) => ({
     key,
     label: GROUP_LABELS[key],
-    items: items.filter((item) => item.group === key),
+    items: normalizedItems.filter((item) => item.group === key),
   }));
 }
 
@@ -58,6 +84,9 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
           tag: item.tag,
           lessonPath: item.lessonPath,
           group: item.spineGroup,
+          dueYear: item.dueYear,
+          dueMonth: item.dueMonth,
+          dueDay: item.dueDay,
         }));
         setGroups(itemsToGroups(spineItems));
       } else {
@@ -67,7 +96,7 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
         if (allItems.length > 0) {
           seedTimeline(uid, allItems).catch(() => {});
         }
-        setGroups(generated);
+        setGroups(itemsToGroups(allItems));
       }
     } catch {
       setGroups([]);
@@ -87,7 +116,7 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
       } else if (event === "INITIAL_SESSION") {
         // No session on load — show generated timeline
-        setGroups(generateTimeline(profile));
+        setGroups(itemsToGroups(generateTimeline(profile).flatMap((g) => g.items)));
         setIsLoading(false);
       }
     });

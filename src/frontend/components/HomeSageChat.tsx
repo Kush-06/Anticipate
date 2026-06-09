@@ -57,7 +57,9 @@ interface TimelineEventInput {
   spineGroup: SpineGroup
   status: SpineStatus
   whenLabel: string
-  dueDate?: string
+  dueYear: number
+  dueMonth: number
+  dueDay?: number
   lessonPath?: string
 }
 
@@ -69,12 +71,14 @@ const ADD_TIMELINE_EVENT_TOOL: SageTool = {
     properties: {
       title:       { type: 'string', description: 'Short, actionable title for the timeline item' },
       tag:         { type: 'string', description: "Category label, e.g. 'career', 'housing', 'tax'" },
-      spineGroup:  { type: 'string', enum: ['this-week', 'coming-up', 'later'], description: "Use 'this-week' for imminent items, 'coming-up' for weeks away, 'later' for months away" },
+      spineGroup:  { type: 'string', enum: ['this-week', 'coming-up', 'later'], description: "Best estimate; the app will derive final grouping from the due month/year" },
       status:      { type: 'string', enum: ['active', 'pending'], description: "Use 'active' for this-week items, 'pending' for future ones" },
-      whenLabel:   { type: 'string', description: "Human-readable timing, e.g. '15 Jul', 'In 3 weeks', 'End of month'" },
-      dueDate:     { type: 'string', description: "ISO 8601 date if known, e.g. '2025-07-15'" },
+      whenLabel:   { type: 'string', description: "Human-readable timing including year, e.g. '15 Jul 2026' or 'Jul 2026'" },
+      dueYear:     { type: 'number', description: "Four-digit year the event belongs to, e.g. 2026" },
+      dueMonth:    { type: 'number', description: "Month number from 1 to 12" },
+      dueDay:      { type: 'number', description: "Optional day of month from 1 to 31 if an exact date is known" },
       lessonPath:  { type: 'string', description: "Optional relevant lesson, e.g. '/topic/starting-work/subtopic/lesson-01'" },
-      itemKey:     { type: 'string', description: "Short unique slug derived from title + date, e.g. 'new-job-jul-2025'" },
+      itemKey:     { type: 'string', description: "Short unique slug derived from title + month/year, e.g. 'new-job-jul-2026'" },
       relatedEvents: {
         type: 'array',
         description: 'Optional: 1–2 natural follow-up events to create at the same time (e.g. first payslip, pension enrolment)',
@@ -86,15 +90,17 @@ const ADD_TIMELINE_EVENT_TOOL: SageTool = {
             spineGroup: { type: 'string', enum: ['this-week', 'coming-up', 'later'] },
             status:     { type: 'string', enum: ['active', 'pending'] },
             whenLabel:  { type: 'string' },
-            dueDate:    { type: 'string' },
+            dueYear:    { type: 'number' },
+            dueMonth:   { type: 'number' },
+            dueDay:     { type: 'number' },
             lessonPath: { type: 'string' },
             itemKey:    { type: 'string' },
           },
-          required: ['title', 'tag', 'spineGroup', 'status', 'whenLabel', 'itemKey'],
+          required: ['title', 'tag', 'spineGroup', 'status', 'whenLabel', 'dueYear', 'dueMonth', 'itemKey'],
         },
       },
     },
-    required: ['title', 'tag', 'spineGroup', 'status', 'whenLabel', 'itemKey'],
+    required: ['title', 'tag', 'spineGroup', 'status', 'whenLabel', 'dueYear', 'dueMonth', 'itemKey'],
   },
 }
 
@@ -137,7 +143,8 @@ You can add events to the user's personal timeline when they mention a concrete 
 
 TIMELINE RULES
 - When the user mentions a concrete upcoming life event, call add_timeline_event immediately — do not ask for confirmation first
-- Use whatever date or timeframe the user provided; if they said "next month" use that as whenLabel and estimate the dueDate
+- Every timeline event must have dueYear and dueMonth. Only include dueDay when an exact day is known.
+- Use whatever date or timeframe the user provided; if they said "next month", estimate dueYear and dueMonth from today's date and omit dueDay
 - Only ask a follow-up question if NO date or timeframe whatsoever can be inferred from what they said
 - When creating an event, also add 1–2 natural follow-up events via relatedEvents (e.g. for a new job: first payslip check, pension auto-enrolment)
 - Do NOT create events for vague future intentions ("I might invest someday")

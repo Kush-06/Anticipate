@@ -1,5 +1,13 @@
 import { supabase } from './supabaseClient'
 import type { TimelineItem, SpineGroup, SpineStatus } from '../shared/types'
+import {
+  deriveSpineGroup,
+  duePartsFromIsoDate,
+  duePartsFromWhenLabel,
+  duePartsSortValue,
+  formatTimelineWhen,
+  type TimelineDueParts,
+} from '../shared/timelineDates'
 
 type SpineItemLike = {
   id: string
@@ -9,24 +17,70 @@ type SpineItemLike = {
   tag: string
   lessonPath?: string
   group: SpineGroup
+  dueYear?: number
+  dueMonth?: number
+  dueDay?: number
+}
+
+function duePartsFromItem(item: {
+  whenLabel: string
+  dueYear?: number
+  dueMonth?: number
+  dueDay?: number
+  dueDate?: string
+}): TimelineDueParts {
+  if (item.dueYear && item.dueMonth) {
+    return { dueYear: item.dueYear, dueMonth: item.dueMonth, ...(item.dueDay ? { dueDay: item.dueDay } : {}) }
+  }
+
+  if (item.dueDate) {
+    const dueParts = duePartsFromIsoDate(item.dueDate)
+    if (dueParts) return dueParts
+  }
+
+  return duePartsFromWhenLabel(item.whenLabel)
+}
+
+export function sortTimelineItems(items: TimelineItem[]): TimelineItem[] {
+  return [...items].sort((a, b) => {
+    const duePartsDiff = duePartsSortValue(a) - duePartsSortValue(b)
+    if (duePartsDiff !== 0) return duePartsDiff
+
+    const sortOrderDiff = a.sortOrder - b.sortOrder
+    if (sortOrderDiff !== 0) return sortOrderDiff
+
+    return Date.parse(a.createdAt) - Date.parse(b.createdAt)
+  })
 }
 
 // Converts SpineItem[] (from generateTimeline) into DB rows and inserts them.
 // Called once from ProfileContext.completeOnboarding.
 export async function seedTimeline(userId: string, items: SpineItemLike[]): Promise<void> {
-  const rows = items.map((item, index) => ({
-    user_id: userId,
-    item_key: item.id,
-    status: item.status,
-    spine_group: item.group,
-    title: item.title,
-    tag: item.tag,
-    when_label: item.when,
-    lesson_path: item.lessonPath ?? null,
-    source: 'onboarding_seed',
-    sort_order: index,
-    is_dismissed: false,
-  }))
+  const rows = items.map((item, index) => {
+    const dueParts = duePartsFromItem({
+      whenLabel: item.when,
+      dueYear: item.dueYear,
+      dueMonth: item.dueMonth,
+      dueDay: item.dueDay,
+    })
+
+    return {
+      user_id: userId,
+      item_key: item.id,
+      status: item.status,
+      spine_group: deriveSpineGroup(dueParts),
+      title: item.title,
+      tag: item.tag,
+      when_label: formatTimelineWhen(dueParts),
+      due_year: dueParts.dueYear,
+      due_month: dueParts.dueMonth,
+      due_day: dueParts.dueDay ?? null,
+      lesson_path: item.lessonPath ?? null,
+      source: 'onboarding_seed',
+      sort_order: index,
+      is_dismissed: false,
+    }
+  })
 
   const { error } = await supabase
     .from('user_timeline_items')
@@ -35,19 +89,31 @@ export async function seedTimeline(userId: string, items: SpineItemLike[]): Prom
 }
 
 export async function addTimelineItems(userId: string, items: SpineItemLike[]): Promise<void> {
-  const rows = items.map((item, index) => ({
-    user_id: userId,
-    item_key: item.id,
-    status: item.status,
-    spine_group: item.group,
-    title: item.title,
-    tag: item.tag,
-    when_label: item.when,
-    lesson_path: item.lessonPath ?? null,
-    source: 'user_added',
-    sort_order: 100 + index, // Add at the end
-    is_dismissed: false,
-  }))
+  const rows = items.map((item, index) => {
+    const dueParts = duePartsFromItem({
+      whenLabel: item.when,
+      dueYear: item.dueYear,
+      dueMonth: item.dueMonth,
+      dueDay: item.dueDay,
+    })
+
+    return {
+      user_id: userId,
+      item_key: item.id,
+      status: item.status,
+      spine_group: deriveSpineGroup(dueParts),
+      title: item.title,
+      tag: item.tag,
+      when_label: formatTimelineWhen(dueParts),
+      due_year: dueParts.dueYear,
+      due_month: dueParts.dueMonth,
+      due_day: dueParts.dueDay ?? null,
+      lesson_path: item.lessonPath ?? null,
+      source: 'user_added',
+      sort_order: 100 + index,
+      is_dismissed: false,
+    }
+  })
 
   const { error } = await supabase
     .from('user_timeline_items')
@@ -65,23 +131,35 @@ export async function fetchTimeline(userId: string): Promise<TimelineItem[]> {
 
   if (error || !data) return []
 
-  return (data as Record<string, unknown>[]).map((row) => ({
-    id: row.id as string,
-    userId: row.user_id as string,
-    itemKey: row.item_key as string,
-    status: row.status as SpineStatus,
-    spineGroup: row.spine_group as SpineGroup,
-    title: row.title as string,
-    tag: row.tag as string,
-    whenLabel: row.when_label as string,
-    dueDate: row.due_date as string | undefined,
-    lessonPath: row.lesson_path as string | undefined,
-    source: row.source as TimelineItem['source'],
-    sortOrder: row.sort_order as number,
-    isDismissed: row.is_dismissed as boolean,
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
-  }))
+  const items = (data as Record<string, unknown>[]).map((row) => {
+    const dueParts = duePartsFromItem({
+      whenLabel: row.when_label as string,
+      dueDate: (row.due_date as string | null) ?? undefined,
+      dueYear: row.due_year as number | undefined,
+      dueMonth: row.due_month as number | undefined,
+      dueDay: row.due_day as number | undefined,
+    })
+
+    return {
+      id: row.id as string,
+      userId: row.user_id as string,
+      itemKey: row.item_key as string,
+      status: row.status as SpineStatus,
+      spineGroup: deriveSpineGroup(dueParts),
+      title: row.title as string,
+      tag: row.tag as string,
+      whenLabel: formatTimelineWhen(dueParts),
+      ...dueParts,
+      lessonPath: (row.lesson_path as string | null) ?? undefined,
+      source: row.source as TimelineItem['source'],
+      sortOrder: row.sort_order as number,
+      isDismissed: row.is_dismissed as boolean,
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
+    }
+  })
+
+  return sortTimelineItems(items)
 }
 
 export async function updateTimelineItem(
@@ -106,6 +184,9 @@ export async function addTimelineItem(
     spineGroup: SpineGroup
     status: SpineStatus
     whenLabel: string
+    dueYear?: number
+    dueMonth?: number
+    dueDay?: number
     dueDate?: string
     lessonPath?: string
   },
@@ -118,17 +199,20 @@ export async function addTimelineItem(
     .limit(1)
 
   const sortOrder = ((maxRows?.[0] as { sort_order: number } | undefined)?.sort_order ?? -1) + 1
+  const dueParts = duePartsFromItem(item)
 
   const now = new Date().toISOString()
   const row = {
     user_id: userId,
     item_key: item.itemKey,
     status: item.status,
-    spine_group: item.spineGroup,
+    spine_group: deriveSpineGroup(dueParts),
     title: item.title,
     tag: item.tag,
-    when_label: item.whenLabel,
-    due_date: item.dueDate ?? null,
+    when_label: formatTimelineWhen(dueParts),
+    due_year: dueParts.dueYear,
+    due_month: dueParts.dueMonth,
+    due_day: dueParts.dueDay ?? null,
     lesson_path: item.lessonPath ?? null,
     source: 'ai_generated',
     sort_order: sortOrder,
@@ -146,11 +230,11 @@ export async function addTimelineItem(
     userId,
     itemKey: item.itemKey,
     status: item.status,
-    spineGroup: item.spineGroup,
+    spineGroup: deriveSpineGroup(dueParts),
     title: item.title,
     tag: item.tag,
-    whenLabel: item.whenLabel,
-    dueDate: item.dueDate,
+    whenLabel: formatTimelineWhen(dueParts),
+    ...dueParts,
     lessonPath: item.lessonPath,
     source: 'ai_generated',
     sortOrder,
