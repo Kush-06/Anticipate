@@ -169,9 +169,9 @@ export function PensionWelcomeLetter({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-      <DocumentChatBot
-        documentTitle="Pension Welcome Letter"
-        documentContent="Pension: Nest Pensions. Contribution: 5% (employee), 3% (employer)."
+      <DocumentChatBot 
+        documentTitle="Pension Welcome"
+        documentPath="pension.md"
       />
       </div>
       );

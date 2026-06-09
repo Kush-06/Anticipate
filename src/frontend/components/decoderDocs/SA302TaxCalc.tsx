@@ -197,9 +197,9 @@ export function SA302TaxCalc({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-      <DocumentChatBot
-        documentTitle="SA302 Tax Calculation"
-        documentContent="SA302 Tax Calculation. Income: £64,000. Tax Due: £15,075.00."
+      <DocumentChatBot 
+        documentTitle="SA302 Tax Calc"
+        documentPath="tax.md"
       />
       </div>
       );

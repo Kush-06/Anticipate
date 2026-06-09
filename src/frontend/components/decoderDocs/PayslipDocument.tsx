@@ -428,7 +428,7 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
       </div>
       <DocumentChatBot 
         documentTitle="Monthly Payslip"
-        documentContent="Monthly Payslip. Company: Meridian Group Ltd. Gross pay: £3,030.00. Net pay: £2,200.18."
+        documentPath="payslip.md"
       />
     </div>
   );

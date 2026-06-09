@@ -172,9 +172,9 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-      <DocumentChatBot
+      <DocumentChatBot 
         documentTitle="Student Loan Statement"
-        documentContent="Student Loan Statement. Plan 2. Balance: £49,378.40. Interest: RPI+3%."
+        documentPath="student-loan.md"
       />
       </div>
       );

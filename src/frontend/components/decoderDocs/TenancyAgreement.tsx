@@ -179,9 +179,9 @@ export function TenancyAgreement({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-      <DocumentChatBot
-        documentTitle="Tenancy Agreement (AST)"
-        documentContent="Tenancy Agreement. Rent: £1,650.00/month. Deposit: £1,903.84. Term: 12 months."
+      <DocumentChatBot 
+        documentTitle="Tenancy Agreement"
+        documentPath="tenancy.md"
       />
     </div>
   );

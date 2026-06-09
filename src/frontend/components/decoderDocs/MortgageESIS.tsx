@@ -194,7 +194,7 @@ export function MortgageESIS({ onBack }: { onBack: () => void }) {
       </div>
       <DocumentChatBot
         documentTitle="Mortgage ESIS"
-        documentContent="Mortgage ESIS. Property value: £225,000. Loan: £180,000. Interest: 4.39% Fixed."
+        documentPath="mortgage.md"
       />
       </div>
       );
