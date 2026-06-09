@@ -210,7 +210,7 @@ export function PlayfulHome() {
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <TopBar showNotifications={false} />
+      <TopBar showNotifications={false} subtitle="Bite-sized finance lessons" />
 
       <div className="anp-scroll">
 

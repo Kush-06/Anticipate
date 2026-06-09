@@ -598,9 +598,15 @@ export function CommunityScreen() {
     const threadId = searchParams.get('thread')
     if (threadId && !activeThread && threads.length > 0) {
       const found = threads.find(t => t.id === threadId)
-      if (found) setActiveThread(found)
+      if (found) {
+        // Use a small delay to avoid cascading renders warning
+        const timer = setTimeout(() => {
+          setActiveThread(found)
+        }, 0)
+        return () => clearTimeout(timer)
+      }
     }
-  }, [threads])
+  }, [threads, activeThread, searchParams])
 
   // Sage AI Post Validation
   const handleValidatePost = async (e: React.FormEvent) => {

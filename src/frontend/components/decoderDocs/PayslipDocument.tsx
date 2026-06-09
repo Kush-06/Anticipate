@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = {
   term: string;
@@ -102,14 +103,14 @@ function Kw({
         if (ref.current) onTap(id, ref.current);
       }}
       style={{
-        background: isActive ? "#fbbf24" : "#fef3c7",
-        color: isActive ? "#78350f" : "#92400e",
-        borderBottom: "1.5px dashed #d97706",
-        borderRadius: 3,
-        padding: "0 2px",
+        background: isActive ? "var(--p-coral)" : "var(--p-coral-tint)",
+        color: isActive ? "#ffffff" : "var(--p-coral)",
+        borderBottom: "1.5px dashed var(--p-coral)",
+        borderRadius: 4,
+        padding: "1px 4px",
         cursor: "pointer",
         fontSize: "inherit",
-        fontWeight: "inherit",
+        fontWeight: 500,
         display: "inline",
       }}
     >
@@ -255,23 +256,24 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
             style={{
               position: "absolute",
               top: tooltip.y,
-              left: Math.max(8, Math.min(tooltip.x, 200)),
+              left: Math.max(8, Math.min(tooltip.x, 180)),
               zIndex: 50,
-              background: "#1a2e4a",
-              color: "#f0f4f8",
-              borderRadius: 10,
-              padding: "10px 12px",
+              background: "var(--p-ink)",
+              color: "#fbf5e9",
+              borderRadius: 12,
+              padding: "12px 14px",
               fontSize: 12,
-              lineHeight: 1.6,
-              maxWidth: 220,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+              lineHeight: 1.5,
+              maxWidth: 230,
+              boxShadow: "var(--shadow-raised)",
               pointerEvents: "none",
+              border: "1px solid var(--p-line-2)",
             }}
           >
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--p-coral)", marginBottom: 4, fontFamily: "var(--p-display)" }}>
               {tooltip.keyword.term}
             </div>
-            <div>{tooltip.keyword.definition}</div>
+            <div style={{ opacity: 0.9 }}>{tooltip.keyword.definition}</div>
           </div>
         )}
 
@@ -287,16 +289,17 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
           {/* Company header */}
           <div
             style={{
-              background: "#1a2e4a",
-              color: "#fff",
-              padding: "14px 16px",
+              background: "var(--p-coral-tint)",
+              color: "var(--p-ink)",
+              padding: "16px 18px",
+              borderBottom: "1px solid var(--p-line)",
             }}
           >
             <div style={{ fontSize: 15, fontWeight: 700 }}>Meridian Group Ltd</div>
-            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>
+            <div style={{ fontSize: 11, opacity: 0.8, marginTop: 2 }}>
               14 Ashford Business Park, London, EC2A 4BQ
             </div>
-            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 1 }}>
+            <div style={{ fontSize: 11, opacity: 0.8, marginTop: 1 }}>
               Company Reg: 08234761 ·{" "}
               <Kw id="paye_ref" onTap={handleTap} activeId={activeId}>
                 PAYE Ref
@@ -311,12 +314,12 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
                 alignItems: "center",
               }}
             >
-              <div style={{ fontSize: 11, opacity: 0.55, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ fontSize: 11, opacity: 0.65, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Payslip
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>April 2025</div>
-                <div style={{ fontSize: 11, opacity: 0.65 }}>Pay date: 30 Apr 2025</div>
+                <div style={{ fontSize: 11, opacity: 0.7 }}>Pay date: 30 Apr 2025</div>
               </div>
             </div>
           </div>
@@ -375,19 +378,20 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
             {/* Net pay highlight */}
             <div
               style={{
-                background: "#d1fae5",
-                borderRadius: 10,
+                background: "var(--p-mint-tint)",
+                borderRadius: 12,
                 padding: "12px 14px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 14,
+                border: "0.5px solid rgba(95, 171, 132, 0.4)",
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#065f46" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#2d523f" }}>
                 <Kw id="net_pay" onTap={handleTap} activeId={activeId}>Net pay</Kw>
               </span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: "#065f46" }}>£2,200.18</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "#2d523f" }}>£2,200.18</span>
             </div>
 
             {section(
@@ -425,6 +429,10 @@ export function PayslipDocument({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
+      <DocumentChatBot 
+        documentTitle="Monthly Payslip"
+        documentContent="Monthly Payslip. Company: Meridian Group Ltd. Gross pay: £3,030.00. Net pay: £2,200.18."
+      />
     </div>
   );
 }

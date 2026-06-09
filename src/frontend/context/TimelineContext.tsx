@@ -49,10 +49,9 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
       const dbItems = await fetchTimeline(uid);
 
       if (dbItems.length > 0) {
-        // Dedup by itemKey — guards against duplicate DB rows from concurrent seeds
-        const unique = Array.from(new Map(dbItems.map((i) => [i.itemKey, i])).values());
-        const spineItems: SpineItem[] = unique.map((item) => ({
-          id: item.itemKey,
+        // Use the DB's unique 'id' for SpineItem, allowing items with same itemKey to coexist
+        const spineItems: SpineItem[] = dbItems.map((item) => ({
+          id: item.id, // Use actual DB row ID
           status: item.status,
           when: item.whenLabel,
           title: item.title,

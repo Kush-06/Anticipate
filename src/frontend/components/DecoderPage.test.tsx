@@ -22,10 +22,10 @@ describe('DecoderPage', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText(/Practice reading realistic financial documents ahead of time/)).toBeInTheDocument();
-    expect(screen.getByText('Monthly payslip')).toBeInTheDocument();
-    expect(screen.getByText('Student loan')).toBeInTheDocument();
-    expect(screen.getByText('Tenancy agreement')).toBeInTheDocument();
+    expect(screen.getByText("Practice reading documents")).toBeInTheDocument();
+    expect(screen.getAllByText('Monthly payslip')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Student loan')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Tenancy agreement')[0]).toBeInTheDocument();
   });
 
   it('opens the Student Loan Statement when clicked', () => {
@@ -35,7 +35,7 @@ describe('DecoderPage', () => {
       </MemoryRouter>
     );
 
-    const studentLoanTrack = screen.getByText('Student loan').closest('.anp-l-track');
+    const studentLoanTrack = screen.getAllByText('Student loan')[0].closest('.anp-l-track');
     if (!studentLoanTrack) throw new Error('Student loan track not found');
     
     fireEvent.click(studentLoanTrack);
@@ -53,18 +53,18 @@ describe('DecoderPage', () => {
     );
 
     // Open Student Loan
-    const studentLoanTrack = screen.getByText('Student loan').closest('.anp-l-track');
+    const studentLoanTrack = screen.getAllByText('Student loan')[0].closest('.anp-l-track');
     if (!studentLoanTrack) throw new Error('Student loan track not found');
     fireEvent.click(studentLoanTrack);
 
     // Verify it's open
-    expect(screen.queryByText('Monthly payslip')).not.toBeInTheDocument();
+    expect(screen.queryAllByText('Monthly payslip')[0]).toBeUndefined();
 
     // Click back button (ArrowLeft)
-    const backButton = screen.getByRole('button'); // The only button in StudentLoanStatement header
+    const backButton = screen.getAllByRole('button')[0];
     fireEvent.click(backButton);
 
     // Should be back on the list
-    expect(screen.getByText('Monthly payslip')).toBeInTheDocument();
+    expect(screen.getAllByText('Monthly payslip')[0]).toBeInTheDocument();
   });
 });

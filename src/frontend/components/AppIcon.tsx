@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 type IconName =
   | "home" | "learn" | "community" | "profile" | "bell" | "arrowRight" | "chevronRight"
-  | "chevronDown" | "chevronLeft" | "check" | "play" | "clock" | "settings"
+  | "chevronDown" | "chevronLeft" | "check" | "play" | "clock" | "settings" | "plus"
   | "briefcase" | "house" | "calendar" | "receipt" | "bank" | "document"
   | "piggy" | "chart" | "shield" | "flag" | "sparkle" | "handshake" | "lock";
 
@@ -32,6 +32,7 @@ const PATHS: Record<IconName, React.ReactNode> = {
   sparkle: <><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></>,
   handshake: <><path d="M4 8.5h3l3 2.8c.7.6.7 1.7 0 2.3-.6.6-1.5.6-2.1 0L6 12" /><path d="M20 8.5h-3l-4 3.5" /><path d="M13 12l2.2 2.1c.6.6.6 1.5 0 2.1-.5.6-1.5.6-2 0l-.4-.4-.5.5c-.6.6-1.5.6-2.1 0" /><path d="M4 8.5V15M20 8.5V15" /></>,
   lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>,
+  plus: <><path d="M12 5v14M5 12h14" /></>,
 };
 
 export function AppIcon({

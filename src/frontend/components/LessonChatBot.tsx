@@ -30,9 +30,10 @@ RULES
 - Only answer questions about personal finance and this lesson; gently redirect anything off-topic
 
 HOW TO RESPOND
-- Be concise: 2-4 sentences for simple questions, short bullet points only when listing steps or comparisons
-- Think like a teacher: if someone didn't understand the lesson, explain it a different way — use analogies, real-life examples, or a simpler breakdown. Never just repeat the lesson text back at them
-- Match their level: plain English, no jargon unless you define it immediately
+- Be extremely concise: 1-2 sentences maximum for simple questions.
+- Use short, punchy bullet points for lists.
+- Do not repeat the lesson text.
+- Match their level: plain English, no jargon.
 - If they seem confused, ask one clarifying question before launching into a long explanation`
 }
 
@@ -99,6 +100,17 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
       clearTimeout(timer)
     }
   }, [active, open, userId, contextId])
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!active || !open) return

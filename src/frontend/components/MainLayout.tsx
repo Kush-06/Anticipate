@@ -4,8 +4,8 @@ import { AppIcon } from "./AppIcon";
 
 const TABS = [
   { name: "home",      path: "/",          icon: "home"      as const, label: "Home"      },
-  { name: "decoder",   path: "/decoder",   icon: "document"  as const, label: "Decoder"   },
   { name: "learn",     path: "/learn",     icon: "learn"     as const, label: "Learn"     },
+  { name: "decoder",   path: "/decoder",   icon: "document"  as const, label: "Decoder"   },
   { name: "community", path: "/community", icon: "community" as const, label: "Community" },
   { name: "profile",   path: "/profile",   icon: "profile"   as const, label: "Profile"   },
 ];

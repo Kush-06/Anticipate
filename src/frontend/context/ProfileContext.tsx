@@ -32,6 +32,22 @@ export interface UserProfile {
   interestedTopics?: string[];
   motivation?: string;
   usageFrequency?: string;
+  // Dynamic onboarding answers
+  firstJobCompanyName?: string;
+  firstJobStartDate?: string;
+  firstJobPayDate?: string;
+  firstJobSalary?: string;
+  uniDegreeYears?: string;
+  uniStudyYear?: string;
+  freelanceIndustry?: string;
+  rentAmount?: string;
+  tenancyLength?: string;
+  familyRentBoard?: string;
+  homeMortgage?: string;
+  movingCity?: string;
+  movingTimeframe?: string;
+  buyingLisa?: string;
+  buyingBudget?: string;
 }
 
 interface ProfileContextType {
@@ -44,7 +60,7 @@ interface ProfileContextType {
   logout: () => Promise<void>;
 }
 
-const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+export const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 const STORAGE_KEY = "anticipate_profile_v2";
 export const UID_KEY = "anticipate_uid";

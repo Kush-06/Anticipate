@@ -30,8 +30,29 @@ export async function seedTimeline(userId: string, items: SpineItemLike[]): Prom
 
   const { error } = await supabase
     .from('user_timeline_items')
-    .upsert(rows, { onConflict: 'user_id,item_key' })
+    .insert(rows)
   if (error) throw new Error(`seedTimeline failed: ${error.message}`)
+}
+
+export async function addTimelineItems(userId: string, items: SpineItemLike[]): Promise<void> {
+  const rows = items.map((item, index) => ({
+    user_id: userId,
+    item_key: item.id,
+    status: item.status,
+    spine_group: item.group,
+    title: item.title,
+    tag: item.tag,
+    when_label: item.when,
+    lesson_path: item.lessonPath ?? null,
+    source: 'user_added',
+    sort_order: 100 + index, // Add at the end
+    is_dismissed: false,
+  }))
+
+  const { error } = await supabase
+    .from('user_timeline_items')
+    .insert(rows)
+  if (error) throw new Error(`addTimelineItems failed: ${error.message}`)
 }
 
 export async function fetchTimeline(userId: string): Promise<TimelineItem[]> {

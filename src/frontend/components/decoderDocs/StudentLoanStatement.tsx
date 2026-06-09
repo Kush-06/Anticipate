@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = { term: string; definition: string };
 type TooltipState = { keyword: Keyword; x: number; y: number } | null;
@@ -52,7 +53,17 @@ function Kw({ id, children, onTap, activeId }: { id: string; children: React.Rea
   const isActive = activeId === id;
   return (
     <span ref={ref} onClick={(e) => { e.stopPropagation(); if (ref.current) onTap(id, ref.current); }}
-      style={{ background: isActive ? "#fbbf24" : "#fef3c7", color: isActive ? "#78350f" : "#92400e", borderBottom: "1.5px dashed #d97706", borderRadius: 3, padding: "0 2px", cursor: "pointer", fontSize: "inherit", fontWeight: "inherit", display: "inline" }}>
+      style={{
+        background: isActive ? "var(--p-coral)" : "var(--p-coral-tint)",
+        color: isActive ? "#ffffff" : "var(--p-coral)",
+        borderBottom: "1.5px dashed var(--p-coral)",
+        borderRadius: 4,
+        padding: "1px 4px",
+        cursor: "pointer",
+        fontSize: "inherit",
+        fontWeight: 500,
+        display: "inline",
+      }}>
       {children}
     </span>
   );
@@ -103,17 +114,32 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 14px 24px", position: "relative" }} onClick={() => { setTooltip(null); setActiveId(null); }}>
         {tooltip && (
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: tooltip.y, left: Math.max(8, Math.min(tooltip.x, 180)), zIndex: 50, background: "#1a2e4a", color: "#f0f4f8", borderRadius: 10, padding: "10px 12px", fontSize: 12, lineHeight: 1.6, maxWidth: 230, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", pointerEvents: "none" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>{tooltip.keyword.term}</div>
-            <div>{tooltip.keyword.definition}</div>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            position: "absolute",
+            top: tooltip.y,
+            left: Math.max(8, Math.min(tooltip.x, 180)),
+            zIndex: 50,
+            background: "var(--p-ink)",
+            color: "#fbf5e9",
+            borderRadius: 12,
+            padding: "12px 14px",
+            fontSize: 12,
+            lineHeight: 1.5,
+            maxWidth: 230,
+            boxShadow: "var(--shadow-raised)",
+            pointerEvents: "none",
+            border: "1px solid var(--p-line-2)",
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--p-coral)", marginBottom: 4, fontFamily: "var(--p-display)" }}>{tooltip.keyword.term}</div>
+            <div style={{ opacity: 0.9 }}>{tooltip.keyword.definition}</div>
           </div>
         )}
 
         <div style={{ background: "var(--p-card, #fff)", borderRadius: 16, overflow: "hidden", border: "0.5px solid rgba(0,0,0,0.08)" }}>
-          <div style={{ background: "#1c3f6e", color: "#fff", padding: "16px 16px 14px" }}>
-            <div style={{ fontSize: 11, opacity: 0.6, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>{kw("slc", "Student Loans Company")}</div>
+          <div style={{ background: "var(--p-coral-tint)", color: "var(--p-ink)", padding: "16px 18px", borderBottom: "1px solid var(--p-line)" }}>
+            <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>{kw("slc", "Student Loans Company")}</div>
             <div style={{ fontSize: 17, fontWeight: 700 }}>Annual Statement 2024–25</div>
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>Account ref: SLC-EN-20192847631 · Statement date: 6 April 2025</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Account ref: SLC-EN-20192847631 · Statement date: 6 April 2025</div>
           </div>
 
           <div style={{ padding: "16px", fontSize: 13, lineHeight: 1.7, color: "var(--p-text-1)", display: "flex", flexDirection: "column", gap: 14 }}>
@@ -126,8 +152,8 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Balance summary */}
-            <div style={{ background: "#f0f4ff", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #c5d0f0" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#1c3f6e", marginBottom: 10 }}>Balance summary</div>
+            <div style={{ background: "var(--p-card-2)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid var(--p-line)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink-2)", marginBottom: 10 }}>Balance summary</div>
               {row("Opening balance (6 Apr 2024)", "£47,320.00")}
               {row("Interest added (RPI + 3%)", <span style={{ color: "#c0392b" }}>+ £2,850.40</span>)}
               {row("Repayments via PAYE", <span style={{ color: "#27ae60" }}>− £792.00</span>)}
@@ -144,7 +170,7 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* This year breakdown */}
-            <div style={{ background: "#f8f8f8", borderRadius: 10, padding: "12px 14px", border: "0.5px solid rgba(0,0,0,0.07)" }}>
+            <div style={{ background: "var(--p-bg-2)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid var(--p-line)" }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-text-3)", marginBottom: 8 }}>2024–25 repayments</div>
               {["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"].map((m, i) => (
                 <div key={m} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: i < 11 ? "0.5px solid rgba(0,0,0,0.05)" : "none" }}>
@@ -158,9 +184,9 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            <div style={{ background: "#fff8e1", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #ffe082" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#7c5e00", marginBottom: 4 }}>About {kw("voluntary_repayment", "voluntary repayments")}</div>
-              <p style={{ margin: 0, fontSize: 12, color: "#7c5e00", lineHeight: 1.6 }}>
+            <div style={{ background: "var(--p-gold-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(239, 177, 60, 0.4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#78350f", marginBottom: 4 }}>About {kw("voluntary_repayment", "voluntary repayments")}</div>
+              <p style={{ margin: 0, fontSize: 12, color: "#78350f", lineHeight: 1.6 }}>
                 You can make additional payments directly to SLC at any time. However, for most Plan 2 borrowers, voluntary overpayments are not financially beneficial — if your loan is likely to be written off before full repayment, extra payments are lost. Seek independent financial advice before overpaying.
               </p>
             </div>
@@ -171,6 +197,10 @@ export function StudentLoanStatement({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+      <DocumentChatBot
+        documentTitle="Student Loan Statement"
+        documentContent="Student Loan Statement. Plan 2. Balance: £49,378.40. Interest: RPI+3%."
+      />
+      </div>
+      );
+      }

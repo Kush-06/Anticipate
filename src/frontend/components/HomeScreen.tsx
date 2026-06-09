@@ -9,6 +9,7 @@ import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
 import { HomeSageChat } from "./HomeSageChat";
+import { TimelineUpdatePopup } from "./TimelineUpdatePopup";
 
 function getGreeting(name: string) {
   const h = new Date().getHours();
@@ -56,6 +57,7 @@ export function HomeScreen() {
   const [sageChatOpen, setSageChatOpen] = useState(false);
   const { groups, isLoading: timelineLoading } = useTimeline();
   const { completedSubTopicIds } = useProgress();
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
 
   const firstName = profile?.firstName ?? "there";
   const company = profile?.companyName ?? "your employer";
@@ -196,8 +198,18 @@ export function HomeScreen() {
 
         {/* Timeline spine */}
         <div className="av-sect" style={{ marginTop: "calc(20px * var(--d))" }}>
-          <h3>What's ahead</h3>
-          <span className="meta">{totalItems > 0 ? "Your timeline" : ""}</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <div>
+              <h3>What's ahead</h3>
+              <span className="meta">{totalItems > 0 ? "Your timeline" : ""}</span>
+            </div>
+            <button 
+              className="ut-btn"
+              onClick={() => setShowUpdatePopup(true)}
+            >
+              <AppIcon name="plus" size={14} stroke={2.5} /> Update
+            </button>
+          </div>
         </div>
 
         <div className="av-spine">
@@ -246,6 +258,32 @@ export function HomeScreen() {
       </div>
 
       <HomeSageChat open={sageChatOpen} onClose={() => setSageChatOpen(false)} />
+
+      <TimelineUpdatePopup 
+        isOpen={showUpdatePopup} 
+        onClose={() => setShowUpdatePopup(false)} 
+      />
+
+      <style>{`
+        .ut-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: #e6dbc4;
+          border: none;
+          border-radius: 100px;
+          color: #5f5848;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.1s ease, background 0.15s ease;
+        }
+        .ut-btn:active {
+          transform: scale(0.96);
+          background: #d9cdb0;
+        }
+      `}</style>
     </div>
   );
 }
