@@ -132,7 +132,7 @@ const COMPLETE_TIMELINE_EVENT_TOOL: SageTool = {
   parameters: {
     type: 'object',
     properties: {
-      itemKey: { type: 'string', description: 'The itemKey slug of the timeline event to mark as done' },
+      itemKey: { type: 'string', description: 'The id of the timeline event from the "Current timeline milestones" list' },
     },
     required: ['itemKey'],
   },

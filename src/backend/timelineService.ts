@@ -244,10 +244,10 @@ export async function addTimelineItem(
   }
 }
 
-export async function markTimelineItemDone(userId: string, itemKey: string): Promise<void> {
+export async function markTimelineItemDone(userId: string, itemId: string): Promise<void> {
   await supabase
     .from('user_timeline_items')
     .update({ status: 'done', updated_at: new Date().toISOString() })
     .eq('user_id', userId)
-    .eq('item_key', itemKey)
+    .eq('id', itemId)
 }
