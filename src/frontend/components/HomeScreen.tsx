@@ -115,45 +115,8 @@ export function HomeScreen() {
           <div className="sub">Here's what's coming — and what to get ahead of.</div>
         </div>
 
-        {/* Sage nudge */}
-        <div className="av-sage">
-          <div className="av-sage__row">
-            <SageAvatar size={46} />
-            <div>
-              <div className="av-sage__eyebrow">Sage recommendation</div>
-              <div className="av-sage__text" dangerouslySetInnerHTML={{ __html: sageNudgeText }} />
-              <button className="av-sage__cta" onClick={() => navigate(recTopic ? `/topic/${recTopic.id}` : "/learn")}>
-                Start the lesson <AppIcon name="arrowRight" size={13} stroke={2} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sage community nudge */}
-        {recTopic && (
-          <div className="av-sage" style={{ marginTop: "calc(12px * var(--d))", background: "var(--p-card-2)", borderColor: "var(--p-line)" }}>
-            <div className="av-sage__row">
-              <SageAvatar size={46} />
-              <div>
-                <div className="av-sage__eyebrow" style={{ color: "var(--p-coral)" }}>Community connection</div>
-                <div className="av-sage__text">
-                  Talk to others like you who are going through the same journey as you for <b>{recTopic.title}</b>. Ask questions or share experiences anonymously.
-                </div>
-                <button 
-                  className="av-sage__cta" 
-                  style={{ background: "var(--p-coral)", color: "#ffffff", border: "none", marginTop: 8 }}
-                  onClick={() => navigate(`/community?topic=${recTopic.id}`)}
-                >
-                  Ask the community <AppIcon name="arrowRight" size={13} stroke={2} />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-
-        {/* Continue card */}
-        {activeEntry && (
+        {/* Continue card — only when user has real progress */}
+        {activeEntry && activeEntry.pct > 0 && (
           <div
             className="anp-l-current"
             style={{ cursor: "pointer" }}
@@ -164,9 +127,7 @@ export function HomeScreen() {
                 <div className="eyebrow">Continue where you left off</div>
                 <h2>{activeEntry.topic.title}</h2>
                 <div className="reason">
-                  {activeEntry.done > 0
-                    ? `${activeEntry.done} of ${activeEntry.total} lessons complete`
-                    : `${activeEntry.total} lessons · start now`}
+                  {activeEntry.done} of {activeEntry.total} lessons complete
                 </div>
               </div>
               <div className="prog-ring">
@@ -210,6 +171,27 @@ export function HomeScreen() {
             )}
           </div>
         )}
+
+        {/* Sage nudge — recommendation + community actions merged into one card */}
+        <div className="av-sage">
+          <div className="av-sage__row">
+            <SageAvatar size={46} />
+            <div>
+              <div className="av-sage__eyebrow">Sage recommendation</div>
+              <div className="av-sage__text" dangerouslySetInnerHTML={{ __html: sageNudgeText }} />
+            </div>
+          </div>
+          <div className="av-sage__actions">
+            <button className="av-sage__action-row" onClick={() => navigate(recTopic ? `/topic/${recTopic.id}` : "/learn")}>
+              Start the lesson <AppIcon name="arrowRight" size={13} stroke={2} />
+            </button>
+            {recTopic && (
+              <button className="av-sage__action-row" onClick={() => navigate(`/community?topic=${recTopic.id}`)}>
+                Ask the community <AppIcon name="arrowRight" size={13} stroke={2} />
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* Timeline spine */}
         <div className="av-sect" style={{ marginTop: "calc(20px * var(--d))" }}>

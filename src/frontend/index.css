@@ -2068,6 +2068,19 @@ body {
   font-family: var(--p-sans); font-weight: 600; font-size: calc(12px * var(--d));
   padding: calc(8px * var(--d)) calc(13px * var(--d)); border-radius: 999px;
 }
+.av-sage__actions {
+  border-top: 1px solid var(--p-line);
+  margin-top: calc(12px * var(--d));
+  position: relative;
+}
+.av-sage__action-row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: calc(10px * var(--d)) 0;
+  background: none; border: none; border-bottom: 1px solid var(--p-line);
+  font-family: var(--p-sans); font-size: calc(13.5px * var(--d)); font-weight: 600;
+  color: var(--p-ink); cursor: pointer; text-align: left;
+}
+.av-sage__action-row:last-child { border-bottom: none; }
 
 /* Section header */
 .av-sect {
