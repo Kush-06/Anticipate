@@ -187,11 +187,14 @@ export function HomeScreen() {
             </div>
           </div>
           <div className="av-sage__actions">
+            <button className="av-sage__action-row" onClick={() => setSageChatOpen(true)}>
+              Chat with Sage <AppIcon name="arrowRight" size={13} stroke={2} />
+            </button>
             <button className="av-sage__action-row" onClick={() => navigate(recTopic ? `/topic/${recTopic.id}` : "/learn")}>
               Start lesson <AppIcon name="arrowRight" size={13} stroke={2} />
             </button>
-            <button className="av-sage__action-row" onClick={() => setSageChatOpen(true)}>
-              Ask Sage <AppIcon name="arrowRight" size={13} stroke={2} />
+            <button className="av-sage__action-row" onClick={() => navigate("/communities")}>
+              Ask community <AppIcon name="arrowRight" size={13} stroke={2} />
             </button>
           </div>
         </div>
