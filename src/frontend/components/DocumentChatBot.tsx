@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { User } from 'lucide-react'
-import { hasActiveProvider, sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
+import { sendChatMessage, type ChatMessage, type ChatRole } from '../services/aiChatService'
 import { SageAvatar } from './SageAvatar'
 
 export interface DocumentChatBotProps {
@@ -35,11 +35,11 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
+  const [viewportHeight,] = useState(window.innerHeight)
   const [documentContent, setDocumentContent] = useState<string>('')
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
-  const active = hasActiveProvider()
+  // const active = hasActiveProvider()
 
   useEffect(() => {
     if (open) {
