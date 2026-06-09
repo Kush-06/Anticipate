@@ -79,8 +79,8 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
         const content = await loader() as string
         setDocumentContent(content)
       } catch (err) {
-        console.error(`Failed to load document at ${documentPath}`, err)
-        setError('Could not load document content.')
+        console.error('[Sage] failed to load document:', err)
+        setError("I didn't quite get that, please try again.")
       }
     }
     loadContent()
@@ -114,7 +114,8 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
       setMessages([...next, { role: 'assistant' as ChatRole, content: reply }])
       setJumpingAssistantIndex(next.length)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      console.error('[Sage] chat error:', err)
+      setError("I didn't quite get that, please try again.")
     } finally {
       setLoading(false)
     }
@@ -193,7 +194,14 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
                   </div>
                 </div>
               )}
-              {error && <p className="dcb-error">{error}</p>}
+              {error && (
+                <div className="dcb-row dcb-row--assistant">
+                  <div className="dcb-msg-avatar">
+                    <SageAvatar size={28} leafJump={false} />
+                  </div>
+                  <div className="dcb-bubble dcb-bubble--error">{error}</div>
+                </div>
+              )}
             </div>
 
             <div className="dcb-input-row">
@@ -361,7 +369,7 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
         .dcb-empty__avatar-wrapper { margin-bottom: 16px; }
         .dcb-empty__title { font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #1c1a24; margin: 0 0 8px; }
         .dcb-empty__desc { font-size: 13px; color: #5f5848; }
-        .dcb-error { font-size: 12px; color: #c93b2b; background: #fde8e4; border-radius: 12px; padding: 10px 14px; }
+        .dcb-bubble--error { background: #fde8e4; color: #c93b2b; border: 1px solid #f9c0b5; border-radius: 18px 18px 18px 4px; box-shadow: 0 2px 6px rgba(201,59,43,0.06); }
         .dcb-dots { display: flex; gap: 5px; }
         .dcb-dots span { width: 7px; height: 7px; border-radius: 50%; background: #95a4bb; }
       `}</style>

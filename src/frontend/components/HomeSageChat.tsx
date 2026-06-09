@@ -329,7 +329,8 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           setHistory(latest.history)
         })
         .catch((err) => {
-          if (!cancelled) setError(err instanceof Error ? err.message : 'Could not load saved chats.')
+          if (!cancelled) setError("I didn't quite get that, please try again.")
+          console.error('[Sage] failed to load conversations:', err)
         })
         .finally(() => {
           if (!cancelled) setHistoryLoading(false)
@@ -516,7 +517,8 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         await saveConversation(savedMessages, savedHistory)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      console.error('[Sage] chat error:', err)
+      setError("I didn't quite get that, please try again.")
     } finally {
       setLoading(false)
     }
@@ -684,7 +686,16 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
                   </div>
                 </div>
               )}
-              {error && <p className="scc-error">{error}</p>}
+              {error && (
+                <div className="scc-row scc-row--assistant">
+                  <div className="scc-msg-avatar">
+                    <SageAvatar size={28} />
+                  </div>
+                  <div className="scc-msg-content">
+                    <div className="scc-bubble scc-bubble--error">{error}</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="scc-input-row">
@@ -913,14 +924,12 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           margin: 0;
         }
 
-        .scc-error {
-          font-size: 12px;
-          color: #c93b2b;
+        .scc-bubble--error {
           background: #fde8e4;
-          border-radius: 12px;
-          padding: 10px 14px;
-          text-align: center;
+          color: #c93b2b;
           border: 1px solid #f9c0b5;
+          border-radius: 18px 18px 18px 4px;
+          box-shadow: 0 2px 6px rgba(201,59,43,0.06);
         }
 
         .scc-bubble {

@@ -105,7 +105,8 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           setMessages(latest.messages.map((message) => ({ role: message.role, content: message.content })))
         })
         .catch((err) => {
-          if (!cancelled) setError(err instanceof Error ? err.message : 'Could not load saved chats.')
+          if (!cancelled) setError("I didn't quite get that, please try again.")
+          console.error('[Sage] failed to load conversations:', err)
         })
         .finally(() => {
           if (!cancelled) setHistoryLoading(false)
@@ -217,7 +218,8 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
       await userTurnSaved
       await saveConversation(savedMessages)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      console.error('[Sage] chat error:', err)
+      setError("I didn't quite get that, please try again.")
     } finally {
       setLoading(false)
     }
@@ -342,7 +344,14 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
                   </div>
                 </div>
               )}
-              {error && <p className="lcb-error">{error}</p>}
+              {error && (
+                <div className="lcb-row lcb-row--assistant">
+                  <div className="lcb-msg-avatar">
+                    <SageAvatar size={28} />
+                  </div>
+                  <div className="lcb-bubble lcb-bubble--error">{error}</div>
+                </div>
+              )}
             </div>
 
             <div className="lcb-input-row">
@@ -647,14 +656,12 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           margin: 0;
         }
 
-        .lcb-error {
-          font-size: 12px;
-          color: #c93b2b;
+        .lcb-bubble--error {
           background: #fde8e4;
-          border-radius: 12px;
-          padding: 10px 14px;
-          text-align: center;
+          color: #c93b2b;
           border: 1px solid #f9c0b5;
+          border-radius: 18px 18px 18px 4px;
+          box-shadow: 0 2px 6px rgba(201,59,43,0.06);
         }
 
         .lcb-bubble {
