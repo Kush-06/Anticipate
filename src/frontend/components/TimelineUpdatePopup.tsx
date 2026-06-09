@@ -10,188 +10,45 @@ import {
   Calendar
 } from 'lucide-react';
 import { useTimeline } from '../context/TimelineContext';
-import { seedTimeline } from '@backend/timelineService';
+import { addTimelineItems } from '@backend/timelineService';
 import { UID_KEY } from '../context/ProfileContext';
-import type { SpineItem } from '../utils/timelineGenerator';
+import { calculateTimelineItems } from '../utils/timelineUpdateLogic';
 
 interface TimelineUpdatePopupProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface LifeEvent {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  trackName: string;
-  items: SpineItem[];
-}
-
-const LIFE_EVENTS: LifeEvent[] = [
+const LIFE_EVENTS = [
   {
     id: 'new-job',
     label: 'New job / promotion',
     icon: <Briefcase size={20} />,
-    trackName: 'Starting Work',
-    items: [
-      {
-        id: "new-job-pension-upd",
-        status: "pending",
-        when: "In 3 months",
-        title: "Pension auto-enrolment kicks in",
-        tag: "New job · pension",
-        lessonPath: "/topic/starting-work/subtopic/lesson-02",
-        group: "this-week",
-      },
-      {
-        id: "new-job-budget-upd",
-        status: "pending",
-        when: "Before first payday",
-        title: "Set up your 50/30/20 budget",
-        tag: "New job · budgeting",
-        lessonPath: "/topic/starting-work/subtopic/lesson-03",
-        group: "coming-up",
-      },
-      {
-        id: "career-negotiation-upd",
-        status: "pending",
-        when: "Next review",
-        title: "Master your next salary negotiation",
-        tag: "Career · growth",
-        lessonPath: "/topic/career/subtopic/lesson-18",
-        group: "later",
-      }
-    ]
   },
   {
     id: 'moving-out',
     label: 'Moving out',
     icon: <Home size={20} />,
-    trackName: 'Renting',
-    items: [
-      {
-        id: "move-deposit-upd",
-        status: "pending",
-        when: "Before move-in",
-        title: "Check tenancy deposit protection",
-        tag: "Moving out · deposit",
-        lessonPath: "/topic/renting/subtopic/lesson-05",
-        group: "this-week",
-      },
-      {
-        id: "move-insurance-upd",
-        status: "pending",
-        when: "In 2 weeks",
-        title: "Arrange renters' insurance",
-        tag: "Moving out · insurance",
-        lessonPath: "/topic/renting/subtopic/lesson-07",
-        group: "coming-up",
-      },
-      {
-        id: "move-bills-upd",
-        status: "pending",
-        when: "Before you move",
-        title: "Build your first bills budget",
-        tag: "Moving out · bills",
-        lessonPath: "/topic/renting/subtopic/lesson-06",
-        group: "this-week",
-      }
-    ]
   },
   {
     id: 'freelance',
     label: 'Going freelance',
     icon: <FileText size={20} />,
-    trackName: 'Taxes & Wealth',
-    items: [
-      {
-        id: "freelance-tax-upd",
-        status: "pending",
-        when: "This week",
-        title: "Register for Self Assessment",
-        tag: "Freelance · tax",
-        lessonPath: "/topic/taxes-wealth/subtopic/lesson-26",
-        group: "this-week",
-      },
-      {
-        id: "freelance-pension-upd",
-        status: "pending",
-        when: "Next month",
-        title: "Set up a private pension (SIPP)",
-        tag: "Freelance · pension",
-        lessonPath: "/topic/starting-work/subtopic/lesson-02",
-        group: "coming-up",
-      }
-    ]
   },
   {
     id: 'life-change',
     label: 'Big life change',
     icon: <Heart size={20} />,
-    trackName: 'Foundations',
-    items: [
-      {
-        id: "foundations-emergency-upd",
-        status: "pending",
-        when: "This month",
-        title: "Review your emergency fund",
-        tag: "Foundations · safety",
-        lessonPath: "/topic/foundations/subtopic/lesson-12",
-        group: "this-week",
-      },
-      {
-        id: "foundations-budget-upd",
-        status: "pending",
-        when: "Coming up",
-        title: "Re-calculate your monthly budget",
-        tag: "Foundations · spend",
-        lessonPath: "/topic/foundations/subtopic/lesson-13",
-        group: "coming-up",
-      }
-    ]
   },
   {
     id: 'saving',
     label: 'Saving for something',
     icon: <PiggyBank size={20} />,
-    trackName: 'Investing 101',
-    items: [
-      {
-        id: "save-isa-upd",
-        status: "pending",
-        when: "This week",
-        title: "Open a Stocks & Shares ISA",
-        tag: "Investing · ISA",
-        lessonPath: "/topic/investing-101/subtopic/lesson-21",
-        group: "this-week",
-      },
-      {
-        id: "save-compounding-upd",
-        status: "pending",
-        when: "Coming up",
-        title: "Understand the power of compounding",
-        tag: "Investing · growth",
-        lessonPath: "/topic/investing-101/subtopic/lesson-22",
-        group: "coming-up",
-      }
-    ]
   },
   {
     id: 'other',
     label: 'Something else',
     icon: <MoreHorizontal size={20} />,
-    trackName: 'Foundations',
-    items: [
-      {
-        id: "other-review-upd",
-        status: "pending",
-        when: "Today",
-        title: "Review your financial foundations",
-        tag: "Personal finance",
-        lessonPath: "/topic/foundations",
-        group: "this-week",
-      }
-    ]
   }
 ];
 
@@ -204,8 +61,6 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
   const { refreshTimeline } = useTimeline();
 
   if (!isOpen && !isClosing) return null;
-
-  const selectedEvent = LIFE_EVENTS.find(e => e.id === selectedEventId);
 
   const startClose = () => {
     setIsClosing(true);
@@ -220,17 +75,19 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
   };
 
   const handleActivate = async () => {
-    if (!selectedEventId || !selectedEvent) return;
+    if (!selectedEventId) return;
     
     setIsSubmitting(true);
-    // Start closing immediately for better perceived performance
-    startClose();
 
     try {
       const userId = localStorage.getItem(UID_KEY);
-      if (userId) {
-        await seedTimeline(userId, selectedEvent.items);
+      if (userId && date) {
+        const items = calculateTimelineItems(selectedEventId, date, details);
+        await addTimelineItems(userId, items);
         await refreshTimeline();
+        startClose();
+      } else if (!date) {
+        alert("Please select a target date");
       }
     } catch (err) {
       console.error('Failed to update timeline:', err);
