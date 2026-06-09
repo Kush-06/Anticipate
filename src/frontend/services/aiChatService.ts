@@ -21,15 +21,27 @@ export interface ChatMessage {
 type Provider = 'gemini' | 'openai' | 'claude'
 
 function geminiKey(): string {
-  return ((import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? '').trim()
+  const key = ((import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? '').trim()
+  if (import.meta.env.PROD && !key) {
+    console.warn('AI Chat: VITE_GEMINI_API_KEY is missing or empty')
+  }
+  return key
 }
 
 function openaiKey(): string {
-  return ((import.meta.env.VITE_OPENAI_API_KEY as string | undefined) ?? '').trim()
+  const key = ((import.meta.env.VITE_OPENAI_API_KEY as string | undefined) ?? '').trim()
+  if (import.meta.env.PROD && !key) {
+    console.warn('AI Chat: VITE_OPENAI_API_KEY is missing or empty')
+  }
+  return key
 }
 
 function claudeKey(): string {
-  return ((import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined) ?? '').trim()
+  const key = ((import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined) ?? '').trim()
+  if (import.meta.env.PROD && !key) {
+    console.warn('AI Chat: VITE_ANTHROPIC_API_KEY is missing or empty')
+  }
+  return key
 }
 
 function keyForProvider(p: Provider): string {
@@ -39,9 +51,19 @@ function keyForProvider(p: Provider): string {
 }
 
 export function getActiveProvider(): Provider | null {
-  const raw = ((import.meta.env.VITE_AI_PROVIDER as string | undefined) ?? '').trim().toLowerCase()
-  if (raw === 'gemini' || raw === 'openai' || raw === 'claude') {
-    return keyForProvider(raw) ? raw : null
+  const provider = ((import.meta.env.VITE_AI_PROVIDER as string | undefined) ?? '').trim().toLowerCase()
+  
+  if (import.meta.env.PROD) {
+    console.log('AI Chat Debug:', {
+      hasGemini: !!geminiKey(),
+      hasOpenAI: !!openaiKey(),
+      hasClaude: !!claudeKey(),
+      configuredProvider: provider || 'none'
+    })
+  }
+
+  if (provider === 'gemini' || provider === 'openai' || provider === 'claude') {
+    return keyForProvider(provider) ? provider : null
   }
   // No provider set — fall back to first key found
   for (const p of ['gemini', 'openai', 'claude'] as Provider[]) {
