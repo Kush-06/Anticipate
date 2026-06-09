@@ -21,6 +21,7 @@ interface HomeChatMessage {
   role: 'user' | 'assistant'
   content: string
   lessonCards?: LessonCard[]
+  toolActivity?: string[]
 }
 
 interface HomeSageChatProps {
@@ -102,7 +103,11 @@ function buildSystemPrompt(profile: UserProfile | null): string {
     return 'You are Sage, a friendly personal finance assistant on Anticipate. Help with personal finance questions. Be warm and concise. British English only. Never give regulated financial advice.'
   }
 
-  return `You are Sage, a warm and sharp personal finance companion on Anticipate — an app for young UK professionals navigating money for the first time.
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
+  return `Today's date is ${today}.
+
+You are Sage, a warm and sharp personal finance companion on Anticipate — an app for young UK professionals navigating money for the first time.
 
 USER CONTEXT
 Name: ${profile.firstName} | Life stage: ${profile.lifeStage} | Employment: ${profile.employmentType}
@@ -170,6 +175,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const pendingCardsRef = useRef<LessonCard[]>([])
+  const pendingActivityRef = useRef<string[]>([])
 
   useEffect(() => {
     if (!(open || isClosing)) return
@@ -204,6 +210,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     if (!trimmed || loading) return
 
     pendingCardsRef.current = []
+    pendingActivityRef.current = []
 
     const userRendered: HomeChatMessage = { role: 'user', content: trimmed }
     const nextHistory: SageHistoryMessage[] = [...history, { role: 'user', text: trimmed }]
@@ -217,7 +224,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     const provider = getActiveProvider()
 
     try {
-      if (provider === 'claude' || provider === 'gemini') {
+      if (provider === 'claude' || provider === 'gemini' || provider === 'openai') {
         const result = await sendWithTools(
           systemPrompt,
           nextHistory,
@@ -237,18 +244,27 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               )
               await refreshTimeline()
               const successCount = results.filter((r) => r.status === 'fulfilled').length
+              const firstError = results
+                .find((r): r is PromiseRejectedResult => r.status === 'rejected')
+                ?.reason as Error | undefined
+              const label = successCount > 0
+                ? `Added ${successCount} event${successCount !== 1 ? 's' : ''} to your timeline`
+                : `Timeline error: ${firstError?.message ?? 'unknown'}`
+              pendingActivityRef.current = [...pendingActivityRef.current, label]
               return `${successCount} timeline event(s) added successfully.`
             }
             return 'Unknown tool.'
           },
         )
         const cards = pendingCardsRef.current
+        const activity = pendingActivityRef.current
         setRenderedMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
             content: result.text,
             lessonCards: cards.length > 0 ? cards : undefined,
+            toolActivity: activity.length > 0 ? activity : undefined,
           },
         ])
         setHistory([...nextHistory, result.newTurn])
@@ -329,6 +345,13 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
                         <div className="scc-cards">
                           {m.lessonCards.map((card, ci) => (
                             <LessonSuggestionCard key={ci} card={card} onNavigate={handleNavigate} />
+                          ))}
+                        </div>
+                      )}
+                      {!isUser && m.toolActivity && m.toolActivity.length > 0 && (
+                        <div className="scc-tool-activity">
+                          {m.toolActivity.map((label, ai) => (
+                            <span key={ai} className="scc-tool-activity__item">✦ {label}</span>
                           ))}
                         </div>
                       )}
@@ -599,6 +622,20 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           font-size: 12px;
           font-weight: 600;
           color: #e9694a;
+        }
+
+        .scc-tool-activity {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          padding-left: 2px;
+        }
+        .scc-tool-activity__item {
+          font-size: 11px;
+          color: #a0916e;
+          font-style: italic;
+          letter-spacing: 0.01em;
+          animation: scc-bubble-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
         .scc-input-row {

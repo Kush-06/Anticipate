@@ -89,16 +89,16 @@ export async function addTimelineItem(
     lessonPath?: string
   },
 ): Promise<TimelineItem> {
-  const { data: maxRow } = await supabase
+  const { data: maxRows } = await supabase
     .from('user_timeline_items')
     .select('sort_order')
     .eq('user_id', userId)
     .order('sort_order', { ascending: false })
     .limit(1)
-    .single()
 
-  const sortOrder = ((maxRow as { sort_order: number } | null)?.sort_order ?? -1) + 1
+  const sortOrder = ((maxRows?.[0] as { sort_order: number } | undefined)?.sort_order ?? -1) + 1
 
+  const now = new Date().toISOString()
   const row = {
     user_id: userId,
     item_key: item.itemKey,
@@ -114,31 +114,28 @@ export async function addTimelineItem(
     is_dismissed: false,
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('user_timeline_items')
-    .upsert(row, { onConflict: 'user_id,item_key' })
-    .select()
-    .single()
+    .insert(row)
 
-  if (error || !data) throw new Error(`addTimelineItem failed: ${error?.message ?? 'no data'}`)
+  if (error) throw new Error(`addTimelineItem failed: ${error.message}`)
 
-  const r = data as Record<string, unknown>
   return {
-    id: r.id as string,
-    userId: r.user_id as string,
-    itemKey: r.item_key as string,
-    status: r.status as SpineStatus,
-    spineGroup: r.spine_group as SpineGroup,
-    title: r.title as string,
-    tag: r.tag as string,
-    whenLabel: r.when_label as string,
-    dueDate: r.due_date as string | undefined,
-    lessonPath: r.lesson_path as string | undefined,
-    source: r.source as TimelineItem['source'],
-    sortOrder: r.sort_order as number,
-    isDismissed: r.is_dismissed as boolean,
-    createdAt: r.created_at as string,
-    updatedAt: r.updated_at as string,
+    id: item.itemKey,
+    userId,
+    itemKey: item.itemKey,
+    status: item.status,
+    spineGroup: item.spineGroup,
+    title: item.title,
+    tag: item.tag,
+    whenLabel: item.whenLabel,
+    dueDate: item.dueDate,
+    lessonPath: item.lessonPath,
+    source: 'ai_generated',
+    sortOrder,
+    isDismissed: false,
+    createdAt: now,
+    updatedAt: now,
   }
 }
 
