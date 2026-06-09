@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Baby,
-  Bell,
   Briefcase,
   Car,
   ChevronDown,
@@ -53,7 +52,6 @@ const TOPIC_SUBTITLES: Record<string, string> = {
   "investing-101":    "Funds, ISAs and building long-term wealth",
   "taxes-wealth":     "Tax brackets, CGT and the state pension",
 };
-import { TopicIcon } from "./TopicIcon";
 import { TopBar } from "./TopBar";
 
 type TrackStatus = "done" | "active" | "queued";

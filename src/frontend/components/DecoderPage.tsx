@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
 import { PayslipDocument } from "./decoderDocs/PayslipDocument";
 import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
@@ -72,7 +71,6 @@ const DOCUMENT_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => vo
 };
 
 export function DecoderPage() {
-  const navigate = useNavigate();
   const [openDoc, setOpenDoc] = useState<string | null>(null);
 
   if (openDoc && DOCUMENT_COMPONENTS[openDoc]) {
