@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = { term: string; definition: string };
 type TooltipState = { keyword: Keyword; x: number; y: number } | null;
@@ -191,6 +192,10 @@ export function MortgageESIS({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+      <DocumentChatBot
+        documentTitle="Mortgage ESIS"
+        documentContent="Mortgage ESIS. Property value: £225,000. Loan: £180,000. Interest: 4.39% Fixed."
+      />
+      </div>
+      );
+      }

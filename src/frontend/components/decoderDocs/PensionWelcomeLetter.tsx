@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = { term: string; definition: string };
 type TooltipState = { keyword: Keyword; x: number; y: number } | null;
@@ -168,6 +169,10 @@ export function PensionWelcomeLetter({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+      <DocumentChatBot
+        documentTitle="Pension Welcome Letter"
+        documentContent="Pension: Nest Pensions. Contribution: 5% (employee), 3% (employer)."
+      />
+      </div>
+      );
+      }

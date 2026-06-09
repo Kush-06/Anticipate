@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = { term: string; definition: string };
 type TooltipState = { keyword: Keyword; x: number; y: number } | null;
@@ -196,6 +197,10 @@ export function SA302TaxCalc({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+      <DocumentChatBot
+        documentTitle="SA302 Tax Calculation"
+        documentContent="SA302 Tax Calculation. Income: £64,000. Tax Due: £15,075.00."
+      />
+      </div>
+      );
+      }

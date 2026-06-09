@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { DocumentChatBot } from "../DocumentChatBot";
 
 type Keyword = { term: string; definition: string };
 type TooltipState = { keyword: Keyword; x: number; y: number } | null;
@@ -178,6 +179,10 @@ export function TenancyAgreement({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
+      <DocumentChatBot
+        documentTitle="Tenancy Agreement (AST)"
+        documentContent="Tenancy Agreement. Rent: £1,650.00/month. Deposit: £1,903.84. Term: 12 months."
+      />
     </div>
   );
 }
