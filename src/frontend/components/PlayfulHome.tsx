@@ -214,8 +214,8 @@ export function PlayfulHome() {
 
       <div className="anp-scroll">
 
-        {/* Continue card */}
-        <div className="anp-l-current" style={{ margin: "0 calc(16px * var(--d)) calc(20px * var(--d))" }}>
+        {/* Continue card — only when user has actual progress */}
+        {activeIdx >= 0 && <div className="anp-l-current" style={{ margin: "0 calc(16px * var(--d)) calc(20px * var(--d))" }}>
           <div className="hd">
             <div>
               <div className="eyebrow">Continue where you left off</div>
@@ -256,7 +256,7 @@ export function PlayfulHome() {
               </svg>
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* ── Suggested for you ── */}
         {suggestedTopics.length > 0 && (

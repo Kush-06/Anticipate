@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
 import { PayslipDocument } from "./decoderDocs/PayslipDocument";
 import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
@@ -71,11 +71,15 @@ const DOCUMENT_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => vo
 };
 
 export function DecoderPage() {
-  const [openDoc, setOpenDoc] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openDoc = searchParams.get("doc");
+
+  const openDocument = (id: string) => setSearchParams({ doc: id });
+  const closeDocument = () => setSearchParams({});
 
   if (openDoc && DOCUMENT_COMPONENTS[openDoc]) {
     const SelectedDoc = DOCUMENT_COMPONENTS[openDoc];
-    return <SelectedDoc onBack={() => setOpenDoc(null)} />;
+    return <SelectedDoc onBack={closeDocument} />;
   }
 
   return (
@@ -104,7 +108,7 @@ export function DecoderPage() {
             <div
               key={doc.id}
               className="anp-l-track active"
-              onClick={() => setOpenDoc(doc.id)}
+              onClick={() => openDocument(doc.id)}
             >
               <div className="anp-l-track-num">
                 {doc.icon}

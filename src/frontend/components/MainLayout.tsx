@@ -1,23 +1,45 @@
+import { useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { AppIcon } from "./AppIcon";
 
 const TABS = [
-  { name: "home",       path: "/",           icon: "home"       as const, label: "Home"       },
-  { name: "decoder",  path: "/decoder",  icon: "document" as const, label: "Decoder"  },
-  { name: "learn",      path: "/learn",      icon: "learn"      as const, label: "Learn"      },
+  { name: "home",      path: "/",          icon: "home"      as const, label: "Home"      },
+  { name: "decoder",   path: "/decoder",   icon: "document"  as const, label: "Decoder"   },
+  { name: "learn",     path: "/learn",     icon: "learn"     as const, label: "Learn"     },
   { name: "community", path: "/community", icon: "community" as const, label: "Community" },
-  { name: "profile",    path: "/profile",    icon: "profile"    as const, label: "Profile"    },
+  { name: "profile",   path: "/profile",   icon: "profile"   as const, label: "Profile"   },
 ];
+
+function getTabForPath(pathname: string): string {
+  if (pathname === "/decoder") return "decoder";
+  if (pathname === "/learn" || pathname.startsWith("/learn/") || pathname.startsWith("/topic/")) return "learn";
+  if (pathname === "/community" || pathname.startsWith("/community/")) return "community";
+  if (pathname.startsWith("/profile")) return "profile";
+  return "home";
+}
 
 export function MainLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const lastPaths = useRef<Record<string, string>>({});
 
-  let currentTab = "home";
-  if (pathname === "/decoder") currentTab = "decoder";
-  else if (pathname === "/learn" || pathname.startsWith("/learn/")) currentTab = "learn";
-  else if (pathname === "/community" || pathname.startsWith("/community/")) currentTab = "community";
-  else if (pathname.startsWith("/profile")) currentTab = "profile";
+  const { search } = useLocation();
+  const currentTab = getTabForPath(pathname);
+
+  // Keep the most-recent full URL (path + search params) for whichever tab is active
+  useEffect(() => {
+    lastPaths.current[currentTab] = pathname + search;
+  }, [pathname, search, currentTab]);
+
+  const handleTabPress = (tab: typeof TABS[0]) => {
+    if (tab.name === currentTab) {
+      // Already on this tab — tap again to go back to its root
+      navigate(tab.path);
+    } else {
+      // Restore the last place the user was in this tab, or fall back to root
+      navigate(lastPaths.current[tab.name] ?? tab.path);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
@@ -31,7 +53,7 @@ export function MainLayout() {
             <button
               key={tab.name}
               className={`av-tab${active ? " is-active" : ""}`}
-              onClick={() => navigate(tab.path)}
+              onClick={() => handleTabPress(tab)}
               aria-label={`${tab.label} tab`}
             >
               <span className="av-tab__ico">
