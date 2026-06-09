@@ -9,6 +9,7 @@ import {
   type SageConversation,
   type SageDisplayMessage,
 } from '@backend/sageConversationService'
+import { fetchSageMemories, type SageMemory } from '@backend/sageMemoryService'
 import { useProfile } from '../context/ProfileContext'
 
 export interface LessonChatBotProps {
@@ -17,13 +18,22 @@ export interface LessonChatBotProps {
   lessonContent: string
 }
 
-function buildSystemPrompt(lessonTitle: string, topicTitle: string, lessonContent: string): string {
+function buildSystemPrompt(
+  lessonTitle: string,
+  topicTitle: string,
+  lessonContent: string,
+  memories: SageMemory[],
+): string {
+  const memoriesSection = memories.length > 0
+    ? `\n## What Sage remembers about you\n${memories.map((m) => `- ${m.content}`).join('\n')}\n`
+    : ''
+
   return `You are a sharp, friendly personal finance tutor for young UK professionals on Anticipate.
 
 LESSON CONTEXT
 Topic: "${topicTitle}" | Lesson: "${lessonTitle}"
 ${lessonContent}
-
+${memoriesSection}
 RULES
 - British English only
 - Never give regulated financial advice; nudge users to verify with a professional when needed
@@ -54,9 +64,11 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [memories, setMemories] = useState<SageMemory[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [jumpingAssistantIndex, setJumpingAssistantIndex] = useState<number | null>(null)
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -65,6 +77,10 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
 
   const active = hasActiveProvider()
   const contextId = `${topicTitle}:${lessonTitle}`
+
+  useEffect(() => {
+    if (userId) void fetchSageMemories(userId).then(setMemories).catch(() => {})
+  }, [userId])
 
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId
@@ -161,6 +177,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
 
   function startNewConversation() {
     setMessages([])
+    setJumpingAssistantIndex(null)
     setActiveConversationId(null)
     setInput('')
     setError(null)
@@ -170,6 +187,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   function openConversation(conversation: SageConversation) {
     setActiveConversationId(conversation.id)
     setMessages(conversation.messages.map((message) => ({ role: message.role, content: message.content })))
+    setJumpingAssistantIndex(null)
     setInput('')
     setError(null)
     setHistoryOpen(false)
@@ -203,9 +221,10 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
     setError(null)
     const userTurnSaved = saveConversation(next).catch(() => null)
     try {
-      const reply = await sendChatMessage(buildSystemPrompt(lessonTitle, topicTitle, lessonContent), next)
+      const reply = await sendChatMessage(buildSystemPrompt(lessonTitle, topicTitle, lessonContent, memories), next)
       const savedMessages = [...next, { role: 'assistant' as ChatRole, content: reply }]
       setMessages(savedMessages)
+      setJumpingAssistantIndex(next.length)
       await userTurnSaved
       await saveConversation(savedMessages)
     } catch (err) {
@@ -310,7 +329,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
                   <div key={i} className={`lcb-row lcb-row--${m.role}`}>
                     {!isUser && (
                       <div className="lcb-msg-avatar">
-                        <SageAvatar size={28} />
+                        <SageAvatar size={28} leafJump={jumpingAssistantIndex === i} />
                       </div>
                     )}
                     <div className={`lcb-bubble lcb-bubble--${m.role}`}>
@@ -588,10 +607,11 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          overflow: hidden;
+          overflow: visible;
         }
         .lcb-msg-avatar--user {
           background: #95a4bb;
+          overflow: hidden;
         }
 
         .lcb-empty {
