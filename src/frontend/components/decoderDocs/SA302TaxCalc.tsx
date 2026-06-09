@@ -53,7 +53,17 @@ function Kw({ id, children, onTap, activeId }: { id: string; children: React.Rea
   const isActive = activeId === id;
   return (
     <span ref={ref} onClick={(e) => { e.stopPropagation(); if (ref.current) onTap(id, ref.current); }}
-      style={{ background: isActive ? "#fbbf24" : "#fef3c7", color: isActive ? "#78350f" : "#92400e", borderBottom: "1.5px dashed #d97706", borderRadius: 3, padding: "0 2px", cursor: "pointer", fontSize: "inherit", fontWeight: "inherit", display: "inline" }}>
+      style={{
+        background: isActive ? "var(--p-coral)" : "var(--p-coral-tint)",
+        color: isActive ? "#ffffff" : "var(--p-coral)",
+        borderBottom: "1.5px dashed var(--p-coral)",
+        borderRadius: 4,
+        padding: "1px 4px",
+        cursor: "pointer",
+        fontSize: "inherit",
+        fontWeight: 500,
+        display: "inline",
+      }}>
       {children}
     </span>
   );
@@ -104,24 +114,39 @@ export function SA302TaxCalc({ onBack }: { onBack: () => void }) {
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 14px 24px", position: "relative" }} onClick={() => { setTooltip(null); setActiveId(null); }}>
         {tooltip && (
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: tooltip.y, left: Math.max(8, Math.min(tooltip.x, 180)), zIndex: 50, background: "#1a2e4a", color: "#f0f4f8", borderRadius: 10, padding: "10px 12px", fontSize: 12, lineHeight: 1.6, maxWidth: 230, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", pointerEvents: "none" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>{tooltip.keyword.term}</div>
-            <div>{tooltip.keyword.definition}</div>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            position: "absolute",
+            top: tooltip.y,
+            left: Math.max(8, Math.min(tooltip.x, 180)),
+            zIndex: 50,
+            background: "var(--p-ink)",
+            color: "#fbf5e9",
+            borderRadius: 12,
+            padding: "12px 14px",
+            fontSize: 12,
+            lineHeight: 1.5,
+            maxWidth: 230,
+            boxShadow: "var(--shadow-raised)",
+            pointerEvents: "none",
+            border: "1px solid var(--p-line-2)",
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--p-coral)", marginBottom: 4, fontFamily: "var(--p-display)" }}>{tooltip.keyword.term}</div>
+            <div style={{ opacity: 0.9 }}>{tooltip.keyword.definition}</div>
           </div>
         )}
 
         <div style={{ background: "var(--p-card, #fff)", borderRadius: 16, overflow: "hidden", border: "0.5px solid rgba(0,0,0,0.08)" }}>
           {/* HMRC Header */}
-          <div style={{ background: "#1d3461", color: "#fff", padding: "16px 16px 14px" }}>
+          <div style={{ background: "var(--p-coral-tint)", color: "var(--p-ink)", padding: "16px 18px", borderBottom: "1px solid var(--p-line)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
-                <div style={{ fontSize: 11, opacity: 0.6, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>HM Revenue & Customs</div>
+                <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>HM Revenue & Customs</div>
                 <div style={{ fontSize: 17, fontWeight: 700 }}>{kw("sa302", "Tax Calculation Summary (SA302)")}</div>
-                <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>
+                <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>
                   {kw("tax_year", "Tax year: 6 April 2024 to 5 April 2025")}
                 </div>
               </div>
-              <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 8, padding: "6px 10px", textAlign: "center" }}>
+              <div style={{ background: "rgba(0,0,0,0.05)", borderRadius: 8, padding: "6px 10px", textAlign: "center", border: "1px solid var(--p-line)" }}>
                 <div style={{ fontSize: 10, opacity: 0.7 }}>UTR</div>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>1234 567890</div>
               </div>
@@ -146,8 +171,8 @@ export function SA302TaxCalc({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Tax calculation */}
-            <div style={{ background: "#f0f5ff", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #c5d0f0" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#1d3461", marginBottom: 8 }}>Income tax calculation</div>
+            <div style={{ background: "var(--p-card-2)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid var(--p-line)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink-2)", marginBottom: 8 }}>Income tax calculation</div>
               {row(kw("personal_allowance", "Less: Personal Allowance"), "−£12,570.00", false, false, true)}
               {row("Taxable income", "£51,430.00", false, true)}
               {row(kw("basic_rate", "Basic rate tax: £37,700 @ 20%"), "£7,540.00")}
@@ -165,28 +190,28 @@ export function SA302TaxCalc({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Summary */}
-            <div style={{ background: "#f0f7f0", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #c8e6c9" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#2d4a22", marginBottom: 8 }}>Tax & NI summary</div>
+            <div style={{ background: "var(--p-mint-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(95, 171, 132, 0.4)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink)", marginBottom: 8 }}>Tax & NI summary</div>
               {row("Total income tax", "£13,032.00")}
               {row("Total National Insurance", "£3,683.00")}
               {row("Less: tax already paid (PAYE)", "−£1,640.00", false, false, true)}
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0 3px", borderTop: "1px solid rgba(45,74,34,0.15)", marginTop: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#2d4a22" }}>Balancing payment due</span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: "#2d4a22" }}>£15,075.00</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0 3px", borderTop: "1px solid rgba(95, 171, 132, 0.25)", marginTop: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--p-ink)" }}>Balancing payment due</span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: "var(--p-ink)" }}>£15,075.00</span>
               </div>
-              <div style={{ fontSize: 11, color: "#2d4a22", opacity: 0.7, marginTop: 4 }}>Due by: 31 January 2026</div>
+              <div style={{ fontSize: 11, color: "var(--p-ink)", opacity: 0.7, marginTop: 4 }}>Due by: 31 January 2026</div>
             </div>
 
             {/* Payments on account */}
-            <div style={{ background: "#fff8e1", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #ffe082" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#7c5e00", marginBottom: 6 }}>{kw("payments_on_account", "Payments on Account for 2025–26")}</div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#7c5e00", padding: "3px 0" }}>
+            <div style={{ background: "var(--p-gold-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(239, 177, 60, 0.4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#78350f", marginBottom: 6 }}>{kw("payments_on_account", "Payments on Account for 2025–26")}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#78350f", padding: "3px 0" }}>
                 <span>First payment (31 Jan 2026)</span><span>£7,537.50</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#7c5e00", padding: "3px 0", borderBottom: "0.5px solid rgba(124,94,0,0.15)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#78350f", padding: "3px 0", borderBottom: "0.5px solid rgba(120,53,15,0.15)" }}>
                 <span>Second payment (31 Jul 2026)</span><span>£7,537.50</span>
               </div>
-              <p style={{ margin: "8px 0 0", fontSize: 11, color: "#7c5e00", lineHeight: 1.6 }}>
+              <p style={{ margin: "8px 0 0", fontSize: 11, color: "#78350f", lineHeight: 1.6 }}>
                 Total due 31 Jan 2026 (balancing + first POA): <strong>£22,612.50</strong>. Payments on account are advance payments toward next year's bill and can catch first-time {kw("self_assessment", "Self Assessment")} filers off guard.
               </p>
             </div>

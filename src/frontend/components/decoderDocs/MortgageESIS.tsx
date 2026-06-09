@@ -53,7 +53,17 @@ function Kw({ id, children, onTap, activeId }: { id: string; children: React.Rea
   const isActive = activeId === id;
   return (
     <span ref={ref} onClick={(e) => { e.stopPropagation(); if (ref.current) onTap(id, ref.current); }}
-      style={{ background: isActive ? "#fbbf24" : "#fef3c7", color: isActive ? "#78350f" : "#92400e", borderBottom: "1.5px dashed #d97706", borderRadius: 3, padding: "0 2px", cursor: "pointer", fontSize: "inherit", fontWeight: "inherit", display: "inline" }}>
+      style={{
+        background: isActive ? "var(--p-coral)" : "var(--p-coral-tint)",
+        color: isActive ? "#ffffff" : "var(--p-coral)",
+        borderBottom: "1.5px dashed var(--p-coral)",
+        borderRadius: 4,
+        padding: "1px 4px",
+        cursor: "pointer",
+        fontSize: "inherit",
+        fontWeight: 500,
+        display: "inline",
+      }}>
       {children}
     </span>
   );
@@ -104,22 +114,37 @@ export function MortgageESIS({ onBack }: { onBack: () => void }) {
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 14px 24px", position: "relative" }} onClick={() => { setTooltip(null); setActiveId(null); }}>
         {tooltip && (
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: tooltip.y, left: Math.max(8, Math.min(tooltip.x, 180)), zIndex: 50, background: "#1a2e4a", color: "#f0f4f8", borderRadius: 10, padding: "10px 12px", fontSize: 12, lineHeight: 1.6, maxWidth: 230, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", pointerEvents: "none" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>{tooltip.keyword.term}</div>
-            <div>{tooltip.keyword.definition}</div>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            position: "absolute",
+            top: tooltip.y,
+            left: Math.max(8, Math.min(tooltip.x, 180)),
+            zIndex: 50,
+            background: "var(--p-ink)",
+            color: "#fbf5e9",
+            borderRadius: 12,
+            padding: "12px 14px",
+            fontSize: 12,
+            lineHeight: 1.5,
+            maxWidth: 230,
+            boxShadow: "var(--shadow-raised)",
+            pointerEvents: "none",
+            border: "1px solid var(--p-line-2)",
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--p-coral)", marginBottom: 4, fontFamily: "var(--p-display)" }}>{tooltip.keyword.term}</div>
+            <div style={{ opacity: 0.9 }}>{tooltip.keyword.definition}</div>
           </div>
         )}
 
         <div style={{ background: "var(--p-card, #fff)", borderRadius: 16, overflow: "hidden", border: "0.5px solid rgba(0,0,0,0.08)" }}>
-          <div style={{ background: "#1a3550", color: "#fff", padding: "16px 16px 14px" }}>
-            <div style={{ fontSize: 11, opacity: 0.6, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Nationwide Building Society</div>
+          <div style={{ background: "var(--p-coral-tint)", color: "var(--p-ink)", padding: "16px 18px", borderBottom: "1px solid var(--p-line)" }}>
+            <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Nationwide Building Society</div>
             <div style={{ fontSize: 17, fontWeight: 700 }}>{kw("esis", "Mortgage Illustration (ESIS)")}</div>
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>Illustration ref: NBS-2025-MIL-003847 · Valid for: 30 days from 1 May 2025</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Illustration ref: NBS-2025-MIL-003847 · Valid for: 30 days from 1 May 2025</div>
           </div>
 
           <div style={{ padding: "16px", fontSize: 13, lineHeight: 1.7, color: "var(--p-text-1)", display: "flex", flexDirection: "column", gap: 14 }}>
 
-            <div style={{ fontSize: 12, color: "var(--p-text-2)", background: "#f8f8f8", borderRadius: 8, padding: "10px 12px", border: "0.5px solid rgba(0,0,0,0.07)" }}>
+            <div style={{ fontSize: 12, color: "var(--p-ink-2)", background: "var(--p-bg-2)", borderRadius: 8, padding: "10px 12px", border: "0.5px solid var(--p-line)" }}>
               This illustration is not a mortgage offer. It shows the key features of the mortgage you've enquired about so you can compare it with other products. Prepared for: <strong>Jamie L. Carter</strong>
             </div>
 
@@ -131,16 +156,16 @@ export function MortgageESIS({ onBack }: { onBack: () => void }) {
                 [kw("ltv", "LTV"), "80%"],
                 ["Term", "25 years"],
               ].map(([label, value], i) => (
-                <div key={i} style={{ background: "#f0f5ff", borderRadius: 10, padding: "10px 12px", border: "0.5px solid #c5d0f0" }}>
-                  <div style={{ fontSize: 11, color: "#1a3550", opacity: 0.6, marginBottom: 2 }}>{label}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#1a3550" }}>{value}</div>
+                <div key={i} style={{ background: "var(--p-card-2)", borderRadius: 12, padding: "10px 12px", border: "0.5px solid var(--p-line)" }}>
+                  <div style={{ fontSize: 11, color: "var(--p-ink)", opacity: 0.6, marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "var(--p-ink)" }}>{value}</div>
                 </div>
               ))}
             </div>
 
             {/* Rate details */}
-            <div style={{ background: "#f0f5ff", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #c5d0f0" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#1a3550", marginBottom: 10 }}>Rate details</div>
+            <div style={{ background: "var(--p-card-2)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid var(--p-line)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink-2)", marginBottom: 10 }}>Rate details</div>
               {row("Product", kw("fixed_rate", "5-Year Fixed Rate"))}
               {row("Initial rate", "4.39% fixed for 60 months")}
               {row("Monthly payment (initial)", "£984.62")}
@@ -159,29 +184,29 @@ export function MortgageESIS({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* ERC table */}
-            <div style={{ background: "#fff8e1", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #ffe082" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#7c5e00", marginBottom: 8 }}>{kw("early_repayment", "Early Repayment Charges (ERC)")}</div>
+            <div style={{ background: "var(--p-gold-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(239, 177, 60, 0.4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#78350f", marginBottom: 8 }}>{kw("early_repayment", "Early Repayment Charges (ERC)")}</div>
               {[["Year 1", "3% of outstanding balance"], ["Year 2", "2.5%"], ["Year 3", "2%"], ["Year 4", "1.5%"], ["Year 5", "1%"]].map(([yr, pct]) => (
-                <div key={yr as string} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#7c5e00", padding: "3px 0", borderBottom: yr !== "Year 5" ? "0.5px solid rgba(124,94,0,0.1)" : "none" }}>
+                <div key={yr as string} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#78350f", padding: "3px 0", borderBottom: yr !== "Year 5" ? "0.5px solid rgba(120,53,15,0.15)" : "none" }}>
                   <span>{yr}</span><span>{pct}</span>
                 </div>
               ))}
-              <p style={{ margin: "8px 0 0", fontSize: 11, color: "#7c5e00" }}>
+              <p style={{ margin: "8px 0 0", fontSize: 11, color: "#78350f" }}>
                 {kw("overpayment", "Overpayments up to 10%/year")} are permitted without charge.
               </p>
             </div>
 
             {/* Total cost */}
-            <div style={{ background: "#f0f7f0", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #c8e6c9" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#2d4a22", marginBottom: 8 }}>Total cost over full term</div>
+            <div style={{ background: "var(--p-mint-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(95, 171, 132, 0.4)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink)", marginBottom: 8 }}>Total cost over full term</div>
               {row("Total amount repayable", "£294,876.00")}
               {row("Of which: interest", "£113,877.00")}
               {row("Of which: fees", "£1,249.00")}
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0 3px", borderTop: "1px solid rgba(45,74,34,0.15)", marginTop: 4 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#2d4a22" }}>Total cost (inc. deposit)</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#2d4a22" }}>£340,124.00</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0 3px", borderTop: "1px solid rgba(95, 171, 132, 0.25)", marginTop: 4 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--p-ink)" }}>Total cost (inc. deposit)</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--p-ink)" }}>£340,124.00</span>
               </div>
-              <p style={{ margin: "6px 0 0", fontSize: 11, color: "#2d4a22", opacity: 0.75 }}>
+              <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--p-ink)", opacity: 0.75 }}>
                 Based on a {kw("repayment", "capital repayment mortgage")}. Figures assume the SVR remains at 7.49% after the fixed period.
               </p>
             </div>

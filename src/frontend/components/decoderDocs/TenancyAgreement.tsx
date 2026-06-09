@@ -53,7 +53,17 @@ function Kw({ id, children, onTap, activeId }: { id: string; children: React.Rea
   const isActive = activeId === id;
   return (
     <span ref={ref} onClick={(e) => { e.stopPropagation(); if (ref.current) onTap(id, ref.current); }}
-      style={{ background: isActive ? "#fbbf24" : "#fef3c7", color: isActive ? "#78350f" : "#92400e", borderBottom: "1.5px dashed #d97706", borderRadius: 3, padding: "0 2px", cursor: "pointer", fontSize: "inherit", fontWeight: "inherit", display: "inline" }}>
+      style={{
+        background: isActive ? "var(--p-coral)" : "var(--p-coral-tint)",
+        color: isActive ? "#ffffff" : "var(--p-coral)",
+        borderBottom: "1.5px dashed var(--p-coral)",
+        borderRadius: 4,
+        padding: "1px 4px",
+        cursor: "pointer",
+        fontSize: "inherit",
+        fontWeight: 500,
+        display: "inline",
+      }}>
       {children}
     </span>
   );
@@ -106,25 +116,40 @@ export function TenancyAgreement({ onBack }: { onBack: () => void }) {
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 14px 24px", position: "relative" }} onClick={() => { setTooltip(null); setActiveId(null); }}>
         {tooltip && (
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: tooltip.y, left: Math.max(8, Math.min(tooltip.x, 180)), zIndex: 50, background: "#1a2e4a", color: "#f0f4f8", borderRadius: 10, padding: "10px 12px", fontSize: 12, lineHeight: 1.6, maxWidth: 230, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", pointerEvents: "none" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>{tooltip.keyword.term}</div>
-            <div>{tooltip.keyword.definition}</div>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            position: "absolute",
+            top: tooltip.y,
+            left: Math.max(8, Math.min(tooltip.x, 180)),
+            zIndex: 50,
+            background: "var(--p-ink)",
+            color: "#fbf5e9",
+            borderRadius: 12,
+            padding: "12px 14px",
+            fontSize: 12,
+            lineHeight: 1.5,
+            maxWidth: 230,
+            boxShadow: "var(--shadow-raised)",
+            pointerEvents: "none",
+            border: "1px solid var(--p-line-2)",
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--p-coral)", marginBottom: 4, fontFamily: "var(--p-display)" }}>{tooltip.keyword.term}</div>
+            <div style={{ opacity: 0.9 }}>{tooltip.keyword.definition}</div>
           </div>
         )}
 
         <div style={{ background: "var(--p-card, #fff)", borderRadius: 16, overflow: "hidden", border: "0.5px solid rgba(0,0,0,0.08)" }}>
           {/* Header */}
-          <div style={{ background: "#1d3461", color: "#fff", padding: "16px 16px 14px" }}>
-            <div style={{ fontSize: 11, opacity: 0.6, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Residential Letting</div>
+          <div style={{ background: "var(--p-coral-tint)", color: "var(--p-ink)", padding: "16px 18px", borderBottom: "1px solid var(--p-line)" }}>
+            <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Residential Letting</div>
             <div style={{ fontSize: 17, fontWeight: 700 }}>{kw("ast", "Assured Shorthold Tenancy Agreement")}</div>
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>Document ref: AST-2025-00193 · Dated: 1 June 2025</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Document ref: AST-2025-00193 · Dated: 1 June 2025</div>
           </div>
 
           <div style={{ padding: "16px", fontSize: 13, lineHeight: 1.7, color: "var(--p-text-1)", display: "flex", flexDirection: "column", gap: 4 }}>
 
             {/* Parties */}
-            <div style={{ background: "#f5f5f5", borderRadius: 10, padding: "12px 14px", marginBottom: 10, border: "0.5px solid rgba(0,0,0,0.07)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-text-3)", marginBottom: 8 }}>Parties to this agreement</div>
+            <div style={{ background: "var(--p-card-2)", borderRadius: 12, padding: "12px 14px", marginBottom: 10, border: "0.5px solid var(--p-line)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink-3)", marginBottom: 8 }}>Parties to this agreement</div>
               {[
                 ["Landlord", "Harwood Property Holdings Ltd, 22 Gray's Inn Road, London WC1X 8HR"],
                 ["Tenant", "Jamie L. Carter, 47B Ferndale Road, London SW9 8AN"],
@@ -139,8 +164,8 @@ export function TenancyAgreement({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Key terms */}
-            <div style={{ background: "#f0f7f0", borderRadius: 10, padding: "12px 14px", marginBottom: 14, border: "0.5px solid #c8e6c9" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#2d4a22", marginBottom: 8 }}>Key terms</div>
+            <div style={{ background: "var(--p-mint-tint)", borderRadius: 10, padding: "12px 14px", marginBottom: 14, border: "0.5px solid rgba(95, 171, 132, 0.4)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink)", marginBottom: 8 }}>Key terms</div>
               {[
                 ["Property", "47B Ferndale Road, London SW9 8AN"],
                 ["Term", "12 months (1 Jun 2025 – 31 May 2026)"],
@@ -149,9 +174,9 @@ export function TenancyAgreement({ onBack }: { onBack: () => void }) {
                 ["Deposit scheme", kw("deposit_scheme", "Tenancy Deposit Scheme (TDS)")],
                 ["Break clause", kw("break_clause", "6 months — either party, 2 months' notice")],
               ].map(([label, value], i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "5px 0", borderBottom: i < 5 ? "0.5px solid rgba(45,74,34,0.12)" : "none", gap: 8, fontSize: 12 }}>
-                  <span style={{ color: "#2d4a22", opacity: 0.7 }}>{label}</span>
-                  <span style={{ fontWeight: 600, color: "#2d4a22", textAlign: "right" }}>{value}</span>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "5px 0", borderBottom: i < 5 ? "0.5px solid rgba(0,0,0,0.05)" : "none", gap: 8, fontSize: 12 }}>
+                  <span style={{ color: "var(--p-ink)", opacity: 0.7 }}>{label}</span>
+                  <span style={{ fontWeight: 600, color: "var(--p-ink)", textAlign: "right" }}>{value}</span>
                 </div>
               ))}
             </div>
@@ -166,9 +191,9 @@ export function TenancyAgreement({ onBack }: { onBack: () => void }) {
 
             {clause("5", "Ending the tenancy", <>After the fixed term, the landlord may serve a {kw("section_21", "Section 21 notice")} to request possession, requiring at least 2 months' notice. The tenant must give 1 month's notice in writing to end a periodic tenancy.</>)}
 
-            <div style={{ background: "#fff8e1", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #ffe082", marginTop: 4 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#7c5e00", marginBottom: 4 }}>Before you sign</div>
-              <p style={{ margin: 0, fontSize: 12, color: "#7c5e00", lineHeight: 1.6 }}>
+            <div style={{ background: "var(--p-gold-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(239, 177, 60, 0.4)", marginTop: 4 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#78350f", marginBottom: 4 }}>Before you sign</div>
+              <p style={{ margin: 0, fontSize: 12, color: "#78350f", lineHeight: 1.6 }}>
                 Read every clause carefully. Check the {kw("deposit_scheme", "deposit scheme")} details, confirm the {kw("break_clause", "break clause")} terms, and photograph the property thoroughly on move-in day alongside the {kw("inventory", "inventory")}. Keep copies of all signed documents.
               </p>
             </div>

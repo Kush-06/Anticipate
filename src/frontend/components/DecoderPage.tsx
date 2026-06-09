@@ -1,5 +1,6 @@
+import { useState, useContext } from "react";
 import { useSearchParams } from "react-router";
-import { Receipt, Landmark, Home, Mail, Calculator, GraduationCap } from "lucide-react";
+import { Receipt, Landmark, Home, Mail, Calculator, GraduationCap, ChevronDown } from "lucide-react";
 import { PayslipDocument } from "./decoderDocs/PayslipDocument";
 import { TenancyAgreement } from "./decoderDocs/TenancyAgreement";
 import { MortgageESIS } from "./decoderDocs/MortgageESIS";
@@ -7,6 +8,7 @@ import { PensionWelcomeLetter } from "./decoderDocs/PensionWelcomeLetter";
 import { SA302TaxCalc } from "./decoderDocs/SA302TaxCalc";
 import { StudentLoanStatement } from "./decoderDocs/StudentLoanStatement";
 import { TopBar } from "./TopBar";
+import { ProfileContext, type UserProfile } from "../context/ProfileContext";
 
 type Document = {
   id: string;
@@ -70,9 +72,84 @@ const DOCUMENT_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => vo
   tax: SA302TaxCalc,
 };
 
+function getRecommendedDocuments(profile: UserProfile | null): string[] {
+  if (!profile) return ["payslip"]; // default suggestion if no profile
+  
+  const recs: string[] = [];
+  
+  // 1. Payslip
+  if (
+    profile.lifeStage === "I've just started my first proper job" ||
+    profile.upcomingEvents?.includes("Starting a new job soon") ||
+    profile.upcomingEvents?.includes("Getting a pay rise or switching roles") ||
+    profile.sixMonthGoal?.includes("tax") ||
+    profile.sixMonthGoal?.includes("payslip") ||
+    profile.firstJobCompanyName ||
+    profile.salary
+  ) {
+    recs.push("payslip");
+  }
+  
+  // 2. Tenancy
+  if (
+    profile.livingSituation?.includes("Renting") ||
+    profile.upcomingEvents?.includes("Moving out for the very first time") ||
+    profile.upcomingEvents?.includes("Moving in with a partner") ||
+    profile.rentAmount
+  ) {
+    recs.push("tenancy");
+  }
+  
+  // 3. Student Loan
+  if (
+    profile.studentLoan?.includes("Yes") ||
+    profile.lifeStage === "I'm still at uni"
+  ) {
+    recs.push("student-loan");
+  }
+  
+  // 4. Mortgage
+  if (
+    profile.upcomingEvents?.includes("Thinking about buying a place") ||
+    profile.buyingBudget ||
+    profile.buyingLisa
+  ) {
+    recs.push("mortgage");
+  }
+  
+  // 5. Pension
+  if (
+    profile.lifeStage === "I've just started my first proper job" ||
+    profile.lifeStage === "I've been working for a year or two" ||
+    profile.sixMonthGoal?.includes("pension")
+  ) {
+    recs.push("pension");
+  }
+  
+  // 6. Tax
+  if (
+    profile.lifeStage?.includes("freelance") ||
+    profile.lifeStage?.includes("self-employed") ||
+    profile.sixMonthGoal?.includes("tax") ||
+    profile.freelanceIndustry
+  ) {
+    recs.push("tax");
+  }
+  
+  if (recs.length === 0) {
+    return ["payslip"];
+  }
+  
+  // Limit to at most 1-2 recommendations (slice to 2)
+  return recs.slice(0, 2);
+}
+
 export function DecoderPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const openDoc = searchParams.get("doc");
+  const context = useContext(ProfileContext);
+  const profile = context ? context.profile : null;
+  const [libraryOpen, setLibraryOpen] = useState(true);
 
   const openDocument = (id: string) => setSearchParams({ doc: id });
   const closeDocument = () => setSearchParams({});
@@ -82,9 +159,12 @@ export function DecoderPage() {
     return <SelectedDoc onBack={closeDocument} />;
   }
 
+  const recommendedIds = getRecommendedDocuments(profile);
+  const suggestedDocs = DOCUMENTS.filter((doc) => recommendedIds.includes(doc.id));
+
   return (
     <div className="anp-app anp-lessons-bg">
-      <TopBar showNotifications={false} />
+      <TopBar showNotifications={false} subtitle="Practice reading documents" />
 
       <div className="anp-scroll" style={{ 
         scrollbarWidth: 'none', 
@@ -96,35 +176,120 @@ export function DecoderPage() {
             display: none;
           }
         `}</style>
-        <div style={{ padding: "8px 20px 24px" }}>
-          <p style={{ color: "var(--p-ink-2)", fontSize: "14px", lineHeight: "1.5", opacity: 0.8 }}>
-            Practice reading realistic financial documents ahead of time.
-            Tap any highlighted word to get a plain-English definition.
-          </p>
-        </div>
 
-        <div className="anp-l-tracks">
-          {DOCUMENTS.map((doc) => (
-            <div
-              key={doc.id}
-              className="anp-l-track active"
-              onClick={() => openDocument(doc.id)}
-            >
-              <div className="anp-l-track-num">
-                {doc.icon}
-              </div>
-
-              <div className="anp-l-track-body">
-                <div className="anp-l-track-title">
-                  {doc.title}
-                  <span className="now-tag">READY</span>
-                </div>
-                <div className="anp-l-track-sub">
-                  {doc.description}
-                </div>
-              </div>
+        {/* Suggested for you */}
+        {suggestedDocs.length > 0 && (
+          <>
+            <div className="anp-sect-h" style={{ marginTop: "16px" }}>
+              <h3>Suggested for you</h3>
+              <span className="count">Based on your profile</span>
             </div>
-          ))}
+            <div className="anp-l-tracks">
+              {suggestedDocs.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="anp-l-track active"
+                  onClick={() => openDocument(doc.id)}
+                >
+                  <div className="anp-l-track-num">
+                    {doc.icon}
+                  </div>
+                  <div className="anp-l-track-body">
+                    <div className="anp-l-track-title">
+                      {doc.title}
+                      <span className="now-tag">READY</span>
+                      <span className="rec-tag" style={{ marginLeft: 6, background: "var(--p-coral-tint)", color: "var(--p-coral)", fontSize: 10, padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>FOR YOU</span>
+                    </div>
+                    <div className="anp-l-track-sub">
+                      {doc.description}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Collapsible Document Library */}
+        <div style={{
+          margin: "16px 20px 24px",
+          background: "var(--p-bg-card, #fff)",
+          borderRadius: "18px",
+          border: "1px solid var(--p-line)",
+          overflow: "hidden",
+        }}>
+          <button
+            onClick={() => setLibraryOpen((o) => !o)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "16px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{
+                fontFamily: "var(--p-display)",
+                fontWeight: 600,
+                fontSize: "16px",
+                letterSpacing: "-0.01em",
+                color: "var(--p-ink)",
+              }}>Document Library</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{
+                fontFamily: "var(--p-mono)",
+                fontSize: "10px",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--p-ink-3)",
+              }}>All documents</span>
+              <ChevronDown
+                size={16}
+                color="var(--p-ink-3)"
+                style={{
+                  transition: "transform 0.25s ease",
+                  transform: libraryOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  flexShrink: 0,
+                }}
+              />
+            </div>
+          </button>
+
+          {libraryOpen && (
+            <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+              {DOCUMENTS.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="anp-l-track active"
+                  onClick={() => openDocument(doc.id)}
+                  style={{
+                    background: "var(--p-bg)",
+                    border: "1px solid var(--p-line-2)",
+                    borderRadius: 12,
+                    padding: "12px 14px",
+                    cursor: "pointer"
+                  }}
+                >
+                  <div className="anp-l-track-num" style={{ minWidth: 40 }}>
+                    {doc.icon}
+                  </div>
+                  <div className="anp-l-track-body">
+                    <div className="anp-l-track-title" style={{ fontSize: 14, fontWeight: 700 }}>
+                      {doc.title}
+                    </div>
+                    <div className="anp-l-track-sub" style={{ fontSize: 12 }}>
+                      {doc.description}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={{ height: 60 }} />

@@ -53,7 +53,17 @@ function Kw({ id, children, onTap, activeId }: { id: string; children: React.Rea
   const isActive = activeId === id;
   return (
     <span ref={ref} onClick={(e) => { e.stopPropagation(); if (ref.current) onTap(id, ref.current); }}
-      style={{ background: isActive ? "#fbbf24" : "#fef3c7", color: isActive ? "#78350f" : "#92400e", borderBottom: "1.5px dashed #d97706", borderRadius: 3, padding: "0 2px", cursor: "pointer", fontSize: "inherit", fontWeight: "inherit", display: "inline" }}>
+      style={{
+        background: isActive ? "var(--p-coral)" : "var(--p-coral-tint)",
+        color: isActive ? "#ffffff" : "var(--p-coral)",
+        borderBottom: "1.5px dashed var(--p-coral)",
+        borderRadius: 4,
+        padding: "1px 4px",
+        cursor: "pointer",
+        fontSize: "inherit",
+        fontWeight: 500,
+        display: "inline",
+      }}>
       {children}
     </span>
   );
@@ -97,18 +107,33 @@ export function PensionWelcomeLetter({ onBack }: { onBack: () => void }) {
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 14px 24px", position: "relative" }} onClick={() => { setTooltip(null); setActiveId(null); }}>
         {tooltip && (
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: tooltip.y, left: Math.max(8, Math.min(tooltip.x, 180)), zIndex: 50, background: "#1a2e4a", color: "#f0f4f8", borderRadius: 10, padding: "10px 12px", fontSize: 12, lineHeight: 1.6, maxWidth: 230, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", pointerEvents: "none" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", marginBottom: 4 }}>{tooltip.keyword.term}</div>
-            <div>{tooltip.keyword.definition}</div>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            position: "absolute",
+            top: tooltip.y,
+            left: Math.max(8, Math.min(tooltip.x, 180)),
+            zIndex: 50,
+            background: "var(--p-ink)",
+            color: "#fbf5e9",
+            borderRadius: 12,
+            padding: "12px 14px",
+            fontSize: 12,
+            lineHeight: 1.5,
+            maxWidth: 230,
+            boxShadow: "var(--shadow-raised)",
+            pointerEvents: "none",
+            border: "1px solid var(--p-line-2)",
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--p-coral)", marginBottom: 4, fontFamily: "var(--p-display)" }}>{tooltip.keyword.term}</div>
+            <div style={{ opacity: 0.9 }}>{tooltip.keyword.definition}</div>
           </div>
         )}
 
         <div style={{ background: "var(--p-card, #fff)", borderRadius: 16, overflow: "hidden", border: "0.5px solid rgba(0,0,0,0.08)" }}>
           {/* Header */}
-          <div style={{ background: "#1e3a5f", color: "#fff", padding: "16px 16px 14px" }}>
-            <div style={{ fontSize: 11, opacity: 0.6, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>NEST — National Employment Savings Trust</div>
+          <div style={{ background: "var(--p-coral-tint)", color: "var(--p-ink)", padding: "16px 18px", borderBottom: "1px solid var(--p-line)" }}>
+            <div style={{ fontSize: 11, opacity: 0.7, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>NEST — National Employment Savings Trust</div>
             <div style={{ fontSize: 17, fontWeight: 700 }}>Welcome to your workplace pension</div>
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>Reference: NEST-2025-00847261 · Issued: 1 May 2025</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Reference: NEST-2025-00847261 · Issued: 1 May 2025</div>
           </div>
 
           <div style={{ padding: "16px 16px", fontSize: 13, lineHeight: 1.7, color: "var(--p-text-1, #111)", display: "flex", flexDirection: "column", gap: 14 }}>
@@ -124,8 +149,8 @@ export function PensionWelcomeLetter({ onBack }: { onBack: () => void }) {
             </p>
 
             {/* Key details box */}
-            <div style={{ background: "#f0f7ff", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #bcd4ee" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#1e3a5f", marginBottom: 10 }}>Your pension at a glance</div>
+            <div style={{ background: "var(--p-card-2)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid var(--p-line)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--p-ink-2)", marginBottom: 10 }}>Your pension at a glance</div>
               {[
                 ["Pension provider", kw("nest", "NEST")],
                 ["Enrolment date", "1 May 2025"],
@@ -134,9 +159,9 @@ export function PensionWelcomeLetter({ onBack }: { onBack: () => void }) {
                 ["Calculated on", kw("qualifying_earnings", "Qualifying earnings")],
                 ["Investment", kw("default_fund", "Default investment fund")],
               ].map(([label, value], i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "5px 0", borderBottom: i < 5 ? "0.5px solid rgba(30,58,95,0.1)" : "none", gap: 8 }}>
-                  <span style={{ fontSize: 12, color: "#1e3a5f", opacity: 0.7 }}>{label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1e3a5f", textAlign: "right" }}>{value}</span>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "5px 0", borderBottom: i < 5 ? "0.5px solid var(--p-line)" : "none", gap: 8 }}>
+                  <span style={{ fontSize: 12, color: "var(--p-ink-2)", opacity: 0.7 }}>{label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--p-ink-2)", textAlign: "right" }}>{value}</span>
                 </div>
               ))}
             </div>
@@ -152,9 +177,9 @@ export function PensionWelcomeLetter({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Opt out box */}
-            <div style={{ background: "#fff8e1", borderRadius: 10, padding: "12px 14px", border: "0.5px solid #ffe082" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#7c5e00", marginBottom: 6 }}>Your right to {kw("opt_out", "opt out")}</div>
-              <p style={{ margin: 0, fontSize: 12, color: "#7c5e00", lineHeight: 1.6 }}>
+            <div style={{ background: "var(--p-gold-tint)", borderRadius: 12, padding: "12px 14px", border: "0.5px solid rgba(239, 177, 60, 0.4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#78350f", marginBottom: 6 }}>Your right to {kw("opt_out", "opt out")}</div>
+              <p style={{ margin: 0, fontSize: 12, color: "#78350f", lineHeight: 1.6 }}>
                 You have one calendar month from your enrolment date to opt out and receive a full refund of any contributions deducted. After this window you may still leave, but contributions already made will remain in your pot until retirement. To opt out, visit nest.org.uk or call 0300 020 0090.
               </p>
             </div>
