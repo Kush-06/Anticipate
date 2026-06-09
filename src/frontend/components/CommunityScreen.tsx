@@ -251,11 +251,6 @@ export function CommunityScreen() {
       if (messagesContainerRef.current) {
         messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
       }
-      // Reset scroll position on viewport change to prevent iOS keyboard layout shifts
-      if (window.scrollY !== 0) {
-        window.scrollTo(0, 0)
-      }
-      document.body.scrollTop = 0
     }
 
     vv.addEventListener('resize', handleResize)
@@ -268,51 +263,36 @@ export function CommunityScreen() {
     }
   }, [])
 
-  // Prevent layout viewport scroll when modal/drawer is open
+  // Lock body scroll using position: fixed when modal/drawer is open (to prevent background layout scroll on iOS)
   useEffect(() => {
     if (!activeThread && !isCreating) return
 
-    const vv = window.visualViewport
-    const preventScroll = () => {
-      if (vv) {
-        document.documentElement.style.setProperty('--vv-height', `${vv.height}px`)
-        document.documentElement.style.setProperty('--vv-offset-top', `${vv.offsetTop}px`)
-      }
-      if (window.scrollY !== 0) {
-        window.scrollTo(0, 0)
-      }
-      document.body.scrollTop = 0
-    }
+    const scrollY = window.scrollY
+    
+    // Save original styles
+    const origPosition = document.body.style.position
+    const origTop = document.body.style.top
+    const origWidth = document.body.style.width
+    const origLeft = document.body.style.left
+    const origOverflow = document.body.style.overflow
+    const origHtmlOverflow = document.documentElement.style.overflow
 
-    // Force scroll reset immediately when drawer opens
-    window.scrollTo(0, 0)
-    document.body.scrollTop = 0
-
-    window.addEventListener('scroll', preventScroll)
-    if (vv) {
-      vv.addEventListener('scroll', preventScroll)
-    }
+    // Apply fixed positioning to lock background scrolling
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    document.body.style.left = '0'
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
 
     return () => {
-      window.removeEventListener('scroll', preventScroll)
-      if (vv) {
-        vv.removeEventListener('scroll', preventScroll)
-      }
-    }
-  }, [activeThread, isCreating])
-
-  // Prevent background body scrolling when modal/drawer is open
-  useEffect(() => {
-    if (activeThread || isCreating) {
-      document.body.style.overflow = 'hidden'
-      document.documentElement.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
+      document.body.style.position = origPosition
+      document.body.style.top = origTop
+      document.body.style.width = origWidth
+      document.body.style.left = origLeft
+      document.body.style.overflow = origOverflow
+      document.documentElement.style.overflow = origHtmlOverflow
+      window.scrollTo(0, scrollY)
     }
   }, [activeThread, isCreating])
 

@@ -493,6 +493,13 @@ function getQuestionConfigs(prof: UserProfile): QuestionConfig[] {
 export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopupProps) {
   const { profile, updateProfile } = useProfile();
   const typewriterRef = useRef<{ skipCurrent: () => void }>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, []);
 
   const [questions] = useState<QuestionConfig[]>(() => {
     if (!profile) return [];
@@ -525,6 +532,113 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, currentQuestion]);
+
+  // Auto scroll to bottom when typing is completed and input is revealed
+  useEffect(() => {
+    if (typingComplete) {
+      const timer = setTimeout(scrollToBottom, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [typingComplete, scrollToBottom]);
+
+  // Listen to visual viewport changes to dynamically center the modal above the keyboard on iOS
+  useEffect(() => {
+    if (!isOpen) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const handleResize = () => {
+      document.documentElement.style.setProperty('--extra-vv-height', `${vv.height}px`);
+      document.documentElement.style.setProperty('--extra-vv-offset-top', `${vv.offsetTop}px`);
+      // Keep input in view when visual viewport height changes due to keyboard showing/hiding
+      setTimeout(scrollToBottom, 60);
+    };
+
+    vv.addEventListener('resize', handleResize);
+    vv.addEventListener('scroll', handleResize);
+    handleResize();
+
+    return () => {
+      vv.removeEventListener('resize', handleResize);
+      vv.removeEventListener('scroll', handleResize);
+    };
+  }, [isOpen, scrollToBottom]);
+
+  // Lock body scroll using position: fixed to prevent background layout scroll on iOS
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const scrollY = window.scrollY;
+    
+    // Save original styles
+    const origPosition = document.body.style.position;
+    const origTop = document.body.style.top;
+    const origWidth = document.body.style.width;
+    const origLeft = document.body.style.left;
+    const origOverflow = document.body.style.overflow;
+    const origHtmlOverflow = document.documentElement.style.overflow;
+
+    // Apply fixed positioning to lock background scrolling
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.left = '0';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.position = origPosition;
+      document.body.style.top = origTop;
+      document.body.style.width = origWidth;
+      document.body.style.left = origLeft;
+      document.body.style.overflow = origOverflow;
+      document.documentElement.style.overflow = origHtmlOverflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  // Prevent touchmove scrolling background on iOS when open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let touchStartY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      const scrollEl = target.closest('.anp-scroll');
+
+      if (scrollEl) {
+        const el = scrollEl as HTMLElement;
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - touchStartY;
+
+        // If at top and trying to scroll up
+        if (el.scrollTop === 0 && deltaY > 0) {
+          if (e.cancelable) e.preventDefault();
+        }
+        // If at bottom and trying to scroll down
+        else if (el.scrollTop + el.clientHeight >= el.scrollHeight && deltaY < 0) {
+          if (e.cancelable) e.preventDefault();
+        }
+      } else {
+        const isInput = target.closest('textarea') || target.closest('input') || target.closest('select') || target.closest('button');
+        if (!isInput) {
+          if (e.cancelable) e.preventDefault();
+        }
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isOpen]);
 
   if (!isOpen || !profile) return null;
 
@@ -616,38 +730,49 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         zIndex: 2000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-        boxSizing: "border-box",
-        cursor: !typingComplete ? "pointer" : "default"
+        cursor: !typingComplete ? "pointer" : "default",
+        overflow: "hidden"
       }}
     >
       <div
-        className="extra-popup-card"
-        onClick={(e) => {
-          if (!typingComplete) {
-            typewriterRef.current?.skipCurrent();
-          }
-          e.stopPropagation();
-        }}
+        className="extra-popup-viewport-wrapper"
         style={{
-          width: "100%",
-          maxWidth: "440px",
-          height: "100%",
-          maxHeight: "580px",
-          background: "var(--p-bg-2)",
-          border: "1.5px solid var(--p-line-2)",
-          borderRadius: "28px",
+          position: "absolute",
+          top: "var(--extra-vv-offset-top, 0px)",
+          left: 0,
+          right: 0,
+          height: "var(--extra-vv-height, 100%)",
           display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          boxShadow: "0 16px 48px rgba(28, 26, 36, 0.18)",
-          position: "relative",
-          animation: "anp-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "max(20px, env(safe-area-inset-top)) 20px 20px 20px",
+          boxSizing: "border-box"
         }}
       >
+        <div
+          className="extra-popup-card"
+          onClick={(e) => {
+            if (!typingComplete) {
+              typewriterRef.current?.skipCurrent();
+            }
+            e.stopPropagation();
+          }}
+          style={{
+            width: "100%",
+            maxWidth: "440px",
+            height: "100%",
+            maxHeight: "min(580px, calc(var(--extra-vv-height, 100vh) - max(20px, env(safe-area-inset-top)) - 40px))",
+            background: "var(--p-bg-2)",
+            border: "1.5px solid var(--p-line-2)",
+            borderRadius: "28px",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            boxShadow: "0 16px 48px rgba(28, 26, 36, 0.18)",
+            position: "relative",
+            animation: "anp-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+          }}
+        >
         {/* Header bar */}
         <div style={{ padding: "18px 20px 14px", flexShrink: 0, borderBottom: "1px solid var(--p-line)", background: "var(--p-bg-2)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -692,7 +817,7 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
       </div>
 
       {/* Chat messages */}
-      <div className="anp-scroll" style={{ flex: 1, padding: "20px 20px 24px" }}>
+      <div ref={scrollContainerRef} className="anp-scroll" style={{ flex: 1, padding: "20px 20px 24px", overscrollBehavior: "contain" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <PopupTypewriterMessage
             ref={typewriterRef}
@@ -722,7 +847,6 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
                     placeholder={currentQuestion.placeholder}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    autoFocus
                   />
                 </div>
               )}
@@ -748,7 +872,6 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
                       placeholder={currentQuestion.placeholder}
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value.replace(/[^0-9.]/g, ""))}
-                      autoFocus
                     />
                   </div>
                 </div>
@@ -928,6 +1051,7 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
           display: inline-block;
         }
       `}</style>
+      </div>
       </div>
     </div>
   );

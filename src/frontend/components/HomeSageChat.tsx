@@ -401,10 +401,14 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     const handleResize = () => {
       document.documentElement.style.setProperty('--scc-vv-height', `${vv.height}px`)
       document.documentElement.style.setProperty('--scc-vv-offset-top', `${vv.offsetTop}px`)
-      if (window.scrollY !== 0) {
-        window.scrollTo(0, 0)
+      
+      // Auto-scroll messages to bottom when visual viewport shrinks (e.g. keyboard opens)
+      const container = messagesContainerRef.current
+      if (container) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight
+        }, 50)
       }
-      document.body.scrollTop = 0
     }
     vv.addEventListener('resize', handleResize)
     vv.addEventListener('scroll', handleResize)
@@ -415,23 +419,35 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
     }
   }, [open])
 
-  // Prevent layout viewport scroll when open
+  // Lock body scroll using position: fixed to prevent background layout scroll on iOS
   useEffect(() => {
     if (!open) return
 
-    const preventScroll = () => {
-      if (window.scrollY !== 0) {
-        window.scrollTo(0, 0)
-      }
-      document.body.scrollTop = 0
-    }
+    const scrollY = window.scrollY
+    
+    // Save original styles
+    const origPosition = document.body.style.position
+    const origTop = document.body.style.top
+    const origWidth = document.body.style.width
+    const origLeft = document.body.style.left
+    const origOverflow = document.body.style.overflow
+    const origHtmlOverflow = document.documentElement.style.overflow
 
-    window.scrollTo(0, 0)
-    document.body.scrollTop = 0
+    // Apply fixed positioning to lock background scrolling
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    document.body.style.left = '0'
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
 
-    window.addEventListener('scroll', preventScroll)
     return () => {
-      window.removeEventListener('scroll', preventScroll)
+      document.body.style.position = origPosition
+      document.body.style.top = origTop
+      document.body.style.width = origWidth
+      document.body.style.left = origLeft
+      document.body.style.overflow = origOverflow
+      document.documentElement.style.overflow = origHtmlOverflow
     }
   }, [open])
 
@@ -439,38 +455,42 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   useEffect(() => {
     if (!open) return
 
+    let touchStartY = 0
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY
+    }
+
     const handleTouchMove = (e: TouchEvent) => {
       const target = e.target as HTMLElement
-      const isScrollable =
-        target.closest('.scc-messages') ||
-        target.closest('.scc-history') ||
-        target.closest('textarea') ||
-        target.closest('input')
+      const scrollEl = target.closest('.scc-messages') || target.closest('.scc-history')
 
-      if (!isScrollable) {
-        if (e.cancelable) {
-          e.preventDefault()
+      if (scrollEl) {
+        const el = scrollEl as HTMLElement
+        const currentY = e.touches[0].clientY
+        const deltaY = currentY - touchStartY
+
+        // If at top and trying to scroll up
+        if (el.scrollTop === 0 && deltaY > 0) {
+          if (e.cancelable) e.preventDefault()
+        }
+        // If at bottom and trying to scroll down
+        else if (el.scrollTop + el.clientHeight >= el.scrollHeight && deltaY < 0) {
+          if (e.cancelable) e.preventDefault()
+        }
+      } else {
+        const isInput = target.closest('textarea') || target.closest('input')
+        if (!isInput) {
+          if (e.cancelable) e.preventDefault()
         }
       }
     }
 
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
     document.addEventListener('touchmove', handleTouchMove, { passive: false })
     return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
       document.removeEventListener('touchmove', handleTouchMove)
-    }
-  }, [open])
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-      document.documentElement.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
     }
   }, [open])
 
@@ -917,6 +937,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           gap: 8px;
           max-height: 220px;
           overflow-y: auto;
+          overscroll-behavior: contain;
         }
         .scc-history__top {
           display: flex;
@@ -978,6 +999,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           flex-direction: column;
           gap: 16px;
           scrollbar-width: none;
+          overscroll-behavior: contain;
         }
         .scc-messages::-webkit-scrollbar { display: none; }
 
