@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
+import { useNavigate } from "react-router";
 import { useProfile } from "../context/ProfileContext";
 import type { UserProfile } from "../context/ProfileContext";
 import { AppIcon } from "./AppIcon";
@@ -150,6 +151,7 @@ const TypewriterMessage = forwardRef(({
 
 export function OnboardingFlow() {
   const { completeOnboarding } = useProfile();
+  const navigate = useNavigate();
   const typewriterRef = useRef<{ skipCurrent: () => void }>(null);
 
   // Navigation and auth states
@@ -262,6 +264,7 @@ export function OnboardingFlow() {
     };
 
     completeOnboarding(profile);
+    navigate("/");
   };
 
   const handleSelectSingle = (setter: (v: string) => void, val: string) => {
@@ -562,12 +565,15 @@ export function OnboardingFlow() {
       setAuthError("");
       setIsSubmitting(true);
       try {
-        await supabase.auth.signOut();
         const { error } = await supabase.auth.signInWithPassword({
           email: authEmail.trim(),
           password: authPassword,
         });
-        if (error) setAuthError(error.message);
+        if (error) {
+          setAuthError(error.message);
+        } else {
+          navigate("/");
+        }
         // On success, onAuthStateChange in ProfileContext fires SIGNED_IN and loads the profile
       } catch {
         setAuthError("Something went wrong. Please try again.");

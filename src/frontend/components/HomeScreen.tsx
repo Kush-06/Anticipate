@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useProfile } from "../context/ProfileContext";
+import { useProfile, getPendingQuestions } from "../context/ProfileContext";
 import { useTimeline } from "../context/TimelineContext";
 import type { SpineItem } from "../context/TimelineContext";
 import { useProgress } from "../context/ProgressContext";
@@ -10,6 +10,8 @@ import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
 import { HomeSageChat } from "./HomeSageChat";
 import { TimelineUpdatePopup } from "./TimelineUpdatePopup";
+import { ExtraContextChatPopup } from "./ExtraContextChatPopup";
+
 
 function getGreeting(name: string) {
   const h = new Date().getHours();
@@ -58,6 +60,19 @@ export function HomeScreen() {
   const { groups, isLoading: timelineLoading } = useTimeline();
   const { completedSubTopicIds } = useProgress();
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+  const [showExtraPopup, setShowExtraPopup] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      const pending = getPendingQuestions(profile);
+      const skipped = sessionStorage.getItem("anticipate_skipped_extra_details");
+      const justOnboarded = localStorage.getItem("anticipate_just_onboarded") === "true";
+      if (pending.length > 0 && !skipped && justOnboarded) {
+        setShowExtraPopup(true);
+      }
+    }
+  }, [profile]);
+
 
   const firstName = profile?.firstName ?? "there";
   const company = profile?.companyName ?? "your employer";
@@ -266,6 +281,17 @@ export function HomeScreen() {
         isOpen={showUpdatePopup} 
         onClose={() => setShowUpdatePopup(false)} 
       />
+
+      {showExtraPopup && (
+        <ExtraContextChatPopup 
+          isOpen={showExtraPopup} 
+          onClose={() => {
+            setShowExtraPopup(false);
+            localStorage.removeItem("anticipate_just_onboarded");
+          }}
+        />
+      )}
+
 
       <style>{`
         .ut-btn {

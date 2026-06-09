@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
+import React from 'react';
 import { DecoderPage } from './DecoderPage';
 import { MemoryRouter } from 'react-router';
 
@@ -11,6 +12,26 @@ vi.mock('react-router', async () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate,
+  };
+});
+
+// Mock useProfile since it's used by DocumentChatBot within DecoderPage
+vi.mock('../context/ProfileContext', () => {
+  const mockContextValue = {
+    profile: { firstName: 'Jamie' },
+    userId: 'test-user',
+    completedOnboarding: true,
+    isLoading: false,
+    completeOnboarding: () => {},
+    updateProfile: async () => {},
+    resetProfile: async () => {},
+    logout: async () => {},
+  };
+  const ProfileContext = React.createContext(mockContextValue);
+  return {
+    ProfileContext,
+    useProfile: () => mockContextValue,
+    getPendingQuestions: () => [],
   };
 });
 

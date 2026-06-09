@@ -1,11 +1,12 @@
-import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { Trash2 } from "lucide-react";
-import { useProfile } from "../context/ProfileContext";
+import { useProfile, getPendingQuestions } from "../context/ProfileContext";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
 import { fetchSageMemories, deleteSageMemory, type SageMemory } from "@backend/sageMemoryService";
+import { ExtraContextChatPopup } from "./ExtraContextChatPopup";
 
 const MILESTONE_ICON: Record<string, React.ComponentProps<typeof AppIcon>["name"]> = {
   "New job starting":    "briefcase",
@@ -61,6 +62,7 @@ export function ProfileScreen() {
   const navigate = useNavigate();
   const { profile, userId, logout } = useProfile();
   const [memories, setMemories] = useState<SageMemory[]>([]);
+  const [showExtraPopup, setShowExtraPopup] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -80,6 +82,9 @@ export function ProfileScreen() {
   const employment   = profile?.employmentType ?? "—";
   const events       = profile?.upcomingEvents ?? [];
   const cs           = profile?.confidenceScores ?? { tax: 2, pensions: 1, budgeting: 3, investing: 1, contracts: 2 };
+
+  const hasPending   = getPendingQuestions(profile).length > 0;
+
 
   return (
     <div className="anp-app" style={{ background: "var(--p-bg)" }}>
@@ -116,6 +121,55 @@ export function ProfileScreen() {
               </div>
             </div>
           </div>
+
+          {hasPending && (
+            <div style={{
+              background: "var(--p-coral-tint)",
+              border: "1.5px solid var(--p-coral)",
+              borderRadius: "calc(18px * var(--d))",
+              padding: "calc(16px * var(--d))",
+              display: "flex",
+              flexDirection: "column",
+              gap: "calc(10px * var(--d))",
+            }}>
+              <div style={{ display: "flex", gap: "calc(12px * var(--d))", alignItems: "center" }}>
+                <span style={{ color: "var(--p-coral)", display: "flex" }}>
+                  <AppIcon name="profile" size={24} stroke={2} />
+                </span>
+                <div>
+                  <h4 style={{ fontFamily: "var(--p-display)", fontWeight: 700, fontSize: "calc(14px * var(--d))", color: "var(--p-ink)" }}>
+                    Profile setup incomplete
+                  </h4>
+                  <p style={{ fontSize: "calc(12px * var(--d))", color: "var(--p-ink-2)", marginTop: 2 }}>
+                    Answer a few extra questions to help Sage customize your timeline.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowExtraPopup(true)}
+                style={{
+                  background: "var(--p-coral)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "calc(10px * var(--d))",
+                  padding: "10px",
+                  fontSize: "calc(13px * var(--d))",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "var(--p-sans)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  boxShadow: "0 2px 4px rgba(233, 105, 74, 0.2)",
+                  transition: "background 0.2s"
+                }}
+              >
+                <span>Continue set-up</span>
+                <AppIcon name="arrowRight" size={14} stroke={2.5} />
+              </button>
+            </div>
+          )}
 
           {/* Sage check-in */}
           <div className="av-sage" style={{ margin: 0 }}>
@@ -244,6 +298,17 @@ export function ProfileScreen() {
 
         <div style={{ height: 32 }} />
       </div>
+
+      {showExtraPopup && (
+        <ExtraContextChatPopup 
+          isOpen={showExtraPopup} 
+          onClose={() => {
+            setShowExtraPopup(false);
+            localStorage.removeItem("anticipate_just_onboarded");
+          }}
+        />
+      )}
     </div>
   );
 }
+

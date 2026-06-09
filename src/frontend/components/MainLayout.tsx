@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { AppIcon } from "./AppIcon";
+import { useProfile, getPendingQuestions } from "../context/ProfileContext";
+
 
 const TABS = [
   { name: "home",      path: "/",          icon: "home"      as const, label: "Home"      },
@@ -22,9 +24,12 @@ export function MainLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const lastPaths = useRef<Record<string, string>>({});
+  const { profile } = useProfile();
 
   const { search } = useLocation();
   const currentTab = getTabForPath(pathname);
+
+  const hasPending = getPendingQuestions(profile).length > 0;
 
   // Keep the most-recent full URL (path + search params) for whichever tab is active
   useEffect(() => {
@@ -56,8 +61,29 @@ export function MainLayout() {
               onClick={() => handleTabPress(tab)}
               aria-label={`${tab.label} tab`}
             >
-              <span className="av-tab__ico">
+              <span className="av-tab__ico" style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                 <AppIcon name={tab.icon} size={22} stroke={active ? 2 : 1.8} />
+                {tab.name === "profile" && hasPending && (
+                  <span style={{
+                    position: "absolute",
+                    top: -5,
+                    right: -7,
+                    background: "var(--p-coral)",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    width: 14,
+                    height: 14,
+                    fontSize: 9,
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 0 1.5px var(--p-bg-2)",
+                    fontFamily: "var(--p-mono)"
+                  }}>
+                    1
+                  </span>
+                )}
               </span>
               <span className="av-tab__lbl">{tab.label}</span>
             </button>
@@ -67,3 +93,4 @@ export function MainLayout() {
     </div>
   );
 }
+
