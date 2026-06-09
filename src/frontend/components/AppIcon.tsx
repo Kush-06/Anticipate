@@ -1,12 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 type IconName =
-  | "home" | "learn" | "profile" | "bell" | "arrowRight" | "chevronRight"
+  | "home" | "learn" | "community" | "profile" | "bell" | "arrowRight" | "chevronRight"
   | "chevronDown" | "chevronLeft" | "check" | "play" | "clock" | "settings"
   | "briefcase" | "house" | "calendar" | "receipt" | "bank" | "document"
   | "piggy" | "chart" | "shield" | "flag" | "sparkle" | "handshake" | "lock";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: <><path d="M3.5 10.5L12 3.5l8.5 7" /><path d="M5.5 9.5V20h13V9.5" /><path d="M10 20v-5h4v5" /></>,
+  community: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></>,
   learn: <><path d="M3 5.5a1 1 0 011-1h6a2.5 2.5 0 012 1 2.5 2.5 0 012-1h6a1 1 0 011 1v12a1 1 0 01-1 1h-6a2.2 2.2 0 00-2 1 2.2 2.2 0 00-2-1H4a1 1 0 01-1-1z" /><path d="M12 5.5v13" /></>,
   profile: <><circle cx="12" cy="8" r="3.6" /><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" /></>,
   bell: <><path d="M6 9a6 6 0 0112 0c0 4 1.2 5.5 2 6.5H4c.8-1 2-2.5 2-6.5z" /><path d="M9.5 19a2.5 2.5 0 005 0" /></>,
