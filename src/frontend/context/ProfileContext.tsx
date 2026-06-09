@@ -37,6 +37,7 @@ export interface UserProfile {
 interface ProfileContextType {
   completedOnboarding: boolean;
   profile: UserProfile | null;
+  userId: string | null;
   isLoading: boolean;
   completeOnboarding: (p: UserProfile) => void;
   resetProfile: () => Promise<void>;
@@ -136,7 +137,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider
-      value={{ completedOnboarding: !!profile, profile, isLoading, completeOnboarding, resetProfile, logout }}
+      value={{ completedOnboarding: !!profile, profile, userId: currentUserId, isLoading, completeOnboarding, resetProfile, logout }}
     >
       {children}
     </ProfileContext.Provider>

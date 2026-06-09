@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useProfile } from "../context/ProfileContext";
 import { useTimeline } from "../context/TimelineContext";
@@ -7,6 +8,7 @@ import { topics, getRecommendedTopics } from "../data/topics";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
+import { HomeSageChat } from "./HomeSageChat";
 
 function getGreeting(name: string) {
   const h = new Date().getHours();
@@ -51,6 +53,7 @@ function SpineNode({ item, isLast, onNavigate }: { item: SpineItem; isLast: bool
 export function HomeScreen() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const [sageChatOpen, setSageChatOpen] = useState(false);
   const { groups, isLoading: timelineLoading } = useTimeline();
   const { completedSubTopicIds } = useProgress();
 
@@ -183,13 +186,11 @@ export function HomeScreen() {
           </div>
           <div className="av-sage__actions">
             <button className="av-sage__action-row" onClick={() => navigate(recTopic ? `/topic/${recTopic.id}` : "/learn")}>
-              Start the lesson <AppIcon name="arrowRight" size={13} stroke={2} />
+              Start lesson <AppIcon name="arrowRight" size={13} stroke={2} />
             </button>
-            {recTopic && (
-              <button className="av-sage__action-row" onClick={() => navigate(`/community?topic=${recTopic.id}`)}>
-                Ask the community <AppIcon name="arrowRight" size={13} stroke={2} />
-              </button>
-            )}
+            <button className="av-sage__action-row" onClick={() => setSageChatOpen(true)}>
+              Ask Sage <AppIcon name="arrowRight" size={13} stroke={2} />
+            </button>
           </div>
         </div>
 
@@ -243,6 +244,8 @@ export function HomeScreen() {
 
         <div style={{ height: 32 }} />
       </div>
+
+      <HomeSageChat open={sageChatOpen} onClose={() => setSageChatOpen(false)} />
     </div>
   );
 }

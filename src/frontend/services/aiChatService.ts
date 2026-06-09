@@ -8,8 +8,8 @@ const isNative = Capacitor.isNativePlatform()
 // In production (Vercel web), we use the Vercel proxy (configured in vercel.json) to bypass CORS.
 // In production (Capacitor native WebView), direct URLs work fine.
 const OPENAI_BASE = isNative ? 'https://api.openai.com' : '/api/openai'
-const GEMINI_BASE = isNative ? 'https://generativelanguage.googleapis.com' : '/api/gemini'
-const CLAUDE_BASE = isNative ? 'https://api.anthropic.com' : '/api/claude'
+export const GEMINI_BASE = isNative ? 'https://generativelanguage.googleapis.com' : '/api/gemini'
+export const CLAUDE_BASE = isNative ? 'https://api.anthropic.com' : '/api/claude'
 
 export type ChatRole = 'user' | 'assistant'
 
@@ -20,7 +20,7 @@ export interface ChatMessage {
 
 type Provider = 'gemini' | 'openai' | 'claude'
 
-function geminiKey(): string {
+export function geminiKey(): string {
   return ((import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? '').trim()
 }
 
@@ -28,7 +28,7 @@ function openaiKey(): string {
   return ((import.meta.env.VITE_OPENAI_API_KEY as string | undefined) ?? '').trim()
 }
 
-function claudeKey(): string {
+export function claudeKey(): string {
   return ((import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined) ?? '').trim()
 }
 
