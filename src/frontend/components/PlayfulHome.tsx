@@ -21,6 +21,7 @@ import { topics, getRecommendedTopics, getRecommendedSummary } from "../data/top
 import { useProgress } from "../context/ProgressContext";
 import { useProfile } from "../context/ProfileContext";
 import { TopBar } from "./TopBar";
+import { SageAvatar } from "./SageAvatar";
 
 const TOPIC_ICONS: Record<string, LucideIcon> = {
   "starting-work":    Briefcase,
@@ -258,17 +259,28 @@ export function PlayfulHome() {
           </div>
         </div>}
 
-        {/* ── Suggested for you ── */}
+        {/* ── Sage Recommendation Card (containing the suggested track tiles) ── */}
         {suggestedTopics.length > 0 && (
-          <>
-            <div className="anp-sect-h" style={{ marginTop: "calc(4px * var(--d))" }}>
-              <h3>Suggested for you</h3>
-              <span className="count">Based on your profile</span>
+          <div className="av-sage" style={{ 
+            marginBottom: "calc(16px * var(--d))", 
+            marginLeft: "calc(16px * var(--d))", 
+            marginRight: "calc(16px * var(--d))",
+            padding: "calc(16px * var(--d)) calc(16px * var(--d)) calc(16px * var(--d)) calc(16px * var(--d))"
+          }}>
+            <div className="av-sage__row">
+              <SageAvatar size={46} />
+              <div style={{ flex: 1 }}>
+                <div className="av-sage__eyebrow">Sage recommendation</div>
+                <div className="av-sage__text">
+                  Based on your profile, here are the lessons I suggest you focus on next:
+                </div>
+              </div>
             </div>
-            <div className="anp-l-tracks">
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "calc(10px * var(--d))", marginTop: "calc(14px * var(--d))" }}>
               {suggestedTopics.map(renderTrackTile)}
             </div>
-          </>
+          </div>
         )}
 
         {/* ── Module Library — collapsible card ── */}

@@ -682,7 +682,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
             <div className="scc-header">
               <div className="scc-header__left">
                 <SageAvatar size={28} />
-                <span className="scc-header__title">Ask Sage</span>
+                <span className="scc-header__title">Talk to Sage</span>
                 {userId && memories.length > 0 && (
                   <button
                     className={`scc-memory-chip ${memoryOpen ? 'scc-memory-chip--active' : ''}`}

@@ -8,6 +8,7 @@ import { PensionWelcomeLetter } from "./decoderDocs/PensionWelcomeLetter";
 import { SA302TaxCalc } from "./decoderDocs/SA302TaxCalc";
 import { StudentLoanStatement } from "./decoderDocs/StudentLoanStatement";
 import { TopBar } from "./TopBar";
+import { SageAvatar } from "./SageAvatar";
 import { ProfileContext, type UserProfile } from "../context/ProfileContext";
 
 type Document = {
@@ -179,12 +180,21 @@ export function DecoderPage() {
 
         {/* Suggested for you */}
         {suggestedDocs.length > 0 && (
-          <>
-            <div className="anp-sect-h" style={{ marginTop: "16px" }}>
-              <h3>Suggested for you</h3>
-              <span className="count">Based on your profile</span>
+          <div className="av-sage" style={{ 
+            margin: "0 20px 14px",
+            padding: "16px"
+          }}>
+            <div className="av-sage__row">
+              <SageAvatar size={46} />
+              <div style={{ flex: 1 }}>
+                <div className="av-sage__eyebrow">Sage recommendation</div>
+                <div className="av-sage__text">
+                  Based on your profile, I recommend starting with these document guides:
+                </div>
+              </div>
             </div>
-            <div className="anp-l-tracks">
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "14px" }}>
               {suggestedDocs.map((doc) => (
                 <div
                   key={doc.id}
@@ -207,7 +217,7 @@ export function DecoderPage() {
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Collapsible Document Library */}

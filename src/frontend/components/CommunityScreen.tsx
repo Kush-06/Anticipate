@@ -50,7 +50,7 @@ export function CommunityScreen() {
   // Inline Sage reply warning state (avoids ugly top red toasts getting cut off)
   const [replyWarning, setReplyWarning] = useState<string | null>(null)
   const [replyToMessage, setReplyToMessage] = useState<ForumMessage | null>(null)
-  const [isDbConnected, setIsDbConnected] = useState<boolean>(true)
+
 
   // New thread creation flow
   const [isCreating, setIsCreating] = useState(false)
@@ -356,13 +356,7 @@ export function CommunityScreen() {
     async function loadThreads() {
       setLoadingThreads(true)
       try {
-        // Quick check if the database tables exist in the schema cache
-        const { error: dbCheckErr } = await supabase.from('forum_threads').select('id').limit(1)
-        if (dbCheckErr && (dbCheckErr.code === 'PGRST205' || dbCheckErr.message.includes('not found') || dbCheckErr.message.includes('schema cache'))) {
-          setIsDbConnected(false)
-        } else {
-          setIsDbConnected(true)
-        }
+
 
         const fetched = await fetchThreads(selectedTopicId === 'all' ? undefined : selectedTopicId)
         if (!active) return
@@ -741,15 +735,6 @@ Keep it short (2-3 sentences max) and helpful.`
           <div className="av-logo">anticipate.</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: -2 }}>
             <span style={{ fontSize: 11, color: 'var(--p-ink-3)' }}>Ask the Community</span>
-            {isDbConnected ? (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--p-mint)', fontWeight: 600 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--p-mint)' }} /> Live
-              </span>
-            ) : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--p-gold)', fontWeight: 600 }} title="Database tables missing. Run 003_forum_schema.sql in Supabase SQL editor.">
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--p-gold)', animation: 'pulse 1.5s infinite ease-in-out' }} /> Local Only
-              </span>
-            )}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1361,15 +1346,6 @@ Keep it short (2-3 sentences max) and helpful.`
                     <span>{getTopic(activeThread.topic_id)?.title}</span>
                     <span>·</span>
                     <span>{activeThread.user_id === userId ? 'You' : activeThread.author_nickname}</span>
-                    {isDbConnected ? (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, color: 'var(--p-mint)', fontWeight: 600 }}>
-                        · <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--p-mint)' }} /> Live
-                      </span>
-                    ) : (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, color: 'var(--p-gold)', fontWeight: 600 }}>
-                        · <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--p-gold)', animation: 'pulse 1.5s infinite ease-in-out' }} /> Local Only
-                      </span>
-                    )}
                   </div>
                 )}
               </div>
