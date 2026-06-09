@@ -43,7 +43,7 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
+  const [, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const active = hasActiveProvider()
