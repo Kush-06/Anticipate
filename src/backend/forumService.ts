@@ -53,203 +53,18 @@ export function getUserNickname(): string {
   return name
 }
 
-// PREMIUM MOCK DATA
-const MOCK_THREADS: ForumThread[] = [
-  {
-    id: 'mock-thread-starting-work-1',
-    topic_id: 'starting-work',
-    title: 'How much tax am I paying on a £25k salary?',
-    created_at: new Date(Date.now() - 4 * 3600000).toISOString(),
-    author_nickname: 'Anonymous Badger 482'
-  },
-  {
-    id: 'mock-thread-starting-work-2',
-    topic_id: 'starting-work',
-    title: 'Is auto-enrolment pension really free money?',
-    created_at: new Date(Date.now() - 24 * 3600000).toISOString(),
-    author_nickname: 'Anonymous Panda 123'
-  },
-  {
-    id: 'mock-thread-renting-1',
-    topic_id: 'renting',
-    title: 'Landlord trying to deduct £200 for "cleaning"',
-    created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
-    author_nickname: 'Anonymous Fox 719'
-  },
-  {
-    id: 'mock-thread-buying-home-1',
-    topic_id: 'buying-a-home',
-    title: 'Is a Lifetime ISA (LISA) worth it?',
-    created_at: new Date(Date.now() - 12 * 3600000).toISOString(),
-    author_nickname: 'Anonymous Owl 554'
-  },
-  {
-    id: 'mock-thread-debt-1',
-    topic_id: 'debt',
-    title: 'Snowball vs Avalanche method?',
-    created_at: new Date(Date.now() - 1 * 3600000).toISOString(),
-    author_nickname: 'Anonymous Otter 881'
-  }
-]
-
-const MOCK_MESSAGES: Record<string, ForumMessage[]> = {
-  'mock-thread-starting-work-1': [
-    {
-      id: 'msg-sw1-1',
-      thread_id: 'mock-thread-starting-work-1',
-      content: 'I just got my first payslip and it says tax code 1257L. I don\'t understand how much of it is actually tax vs national insurance. Anyone can break it down?',
-      created_at: new Date(Date.now() - 4 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Badger 482',
-      is_sage_reply: false
-    },
-    {
-      id: 'msg-sw1-2',
-      thread_id: 'mock-thread-starting-work-1',
-      content: '1257L means you get £12,570 tax-free per year. Anything above that is taxed at 20% (up to £50k). National Insurance is separate, usually about 8% of your salary above £242/week. You can use online tools like Salary Calculator to check!',
-      created_at: new Date(Date.now() - 3.5 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Bear 910',
-      is_sage_reply: false
-    }
-  ],
-  'mock-thread-starting-work-2': [
-    {
-      id: 'msg-sw2-1',
-      thread_id: 'mock-thread-starting-work-2',
-      content: 'My employer says they match 3% if I contribute 5%. Why would I do that if it reduces my take-home pay? I need the cash now.',
-      created_at: new Date(Date.now() - 24 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Panda 123',
-      is_sage_reply: false
-    },
-    {
-      id: 'msg-sw2-2',
-      thread_id: 'mock-thread-starting-work-2',
-      content: 'Yes! It is literally a 100% return on your 3% portion. If you opt out, you\'re rejecting free money that your employer is contractually obliged to pay you. Over 40 years, that extra 3% compounding is huge!',
-      created_at: new Date(Date.now() - 22 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Koala 632',
-      is_sage_reply: false
-    }
-  ],
-  'mock-thread-renting-1': [
-    {
-      id: 'msg-r1-1',
-      thread_id: 'mock-thread-renting-1',
-      content: 'My tenancy ended last week and the landlord wants £200 for cleaning the kitchen, but it was spotless. What are my rights?',
-      created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Fox 719',
-      is_sage_reply: false
-    },
-    {
-      id: 'msg-r1-2',
-      thread_id: 'mock-thread-renting-1',
-      content: 'Your deposit must be protected in a scheme (TDP). Do NOT agree to the deduction. Dispute it through the scheme. The landlord has to prove the place was dirtier than when you moved in (using the check-in inventory). They usually back down when you say you\'ll dispute it.',
-      created_at: new Date(Date.now() - 1.8 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Robin 111',
-      is_sage_reply: false
-    }
-  ],
-  'mock-thread-buying-home-1': [
-    {
-      id: 'msg-bh1-1',
-      thread_id: 'mock-thread-buying-home-1',
-      content: 'I\'m 23 and want to buy a house in 5 years. Should I use a Cash LISA or Stocks & Shares LISA?',
-      created_at: new Date(Date.now() - 12 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Owl 554',
-      is_sage_reply: false
-    },
-    {
-      id: 'msg-bh1-2',
-      thread_id: 'mock-thread-buying-home-1',
-      content: 'Absolutely worth it for the 25% government bonus! If your timeline is 5 years, a Cash LISA is safer because stock markets can go down in the short term. Just make sure the house you buy is under £450k, otherwise there\'s a 25% penalty on withdrawal.',
-      created_at: new Date(Date.now() - 11 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Falcon 302',
-      is_sage_reply: false
-    }
-  ],
-  'mock-thread-debt-1': [
-    {
-      id: 'msg-d1-1',
-      thread_id: 'mock-thread-debt-1',
-      content: 'I have £3k on a credit card (19% APR) and a £2k student overdraft (0% APR but interest starting soon). Which one do I pay off first?',
-      created_at: new Date(Date.now() - 1 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Otter 881',
-      is_sage_reply: false
-    },
-    {
-      id: 'msg-d1-2',
-      thread_id: 'mock-thread-debt-1',
-      content: 'Avalanche method: pay off the 19% credit card first because it has the highest interest. It mathematically saves you the most money. Snowball is good for psychological wins (paying smallest balance first), but here the credit card interest is too high to ignore!',
-      created_at: new Date(Date.now() - 0.8 * 3600000).toISOString(),
-      author_nickname: 'Anonymous Squirrel 225',
-      is_sage_reply: false
-    }
-  ]
-}
-
-// LocalStorage helpers to simulate database tables locally if DB fails
-const LOCAL_THREADS_KEY = 'anticipate_local_forum_threads'
-const LOCAL_MESSAGES_KEY = 'anticipate_local_forum_messages'
-
-function getLocalThreads(): ForumThread[] {
-  try {
-    const data = localStorage.getItem(LOCAL_THREADS_KEY)
-    if (!data) {
-      localStorage.setItem(LOCAL_THREADS_KEY, JSON.stringify(MOCK_THREADS))
-      return MOCK_THREADS
-    }
-    return JSON.parse(data)
-  } catch {
-    return MOCK_THREADS
-  }
-}
-
-function saveLocalThreads(threads: ForumThread[]) {
-  localStorage.setItem(LOCAL_THREADS_KEY, JSON.stringify(threads))
-}
-
-function getLocalMessages(): Record<string, ForumMessage[]> {
-  try {
-    const data = localStorage.getItem(LOCAL_MESSAGES_KEY)
-    if (!data) {
-      localStorage.setItem(LOCAL_MESSAGES_KEY, JSON.stringify(MOCK_MESSAGES))
-      return MOCK_MESSAGES
-    }
-    return JSON.parse(data)
-  } catch {
-    return MOCK_MESSAGES
-  }
-}
-
-function saveLocalMessages(messages: Record<string, ForumMessage[]>) {
-  localStorage.setItem(LOCAL_MESSAGES_KEY, JSON.stringify(messages))
-}
-
 // PUBLIC SERVICE METHODS
 
 export async function fetchThreads(topicId?: string): Promise<ForumThread[]> {
-  try {
-    let query = supabase.from('forum_threads').select('*').order('created_at', { ascending: false })
-    if (topicId) {
-      query = query.eq('topic_id', topicId)
-    }
-    const { data, error } = await query
-    
-    if (error) {
-      // If table doesn't exist, fall back to LocalStorage
-      console.warn('Supabase fetchThreads error, falling back to LocalStorage:', error.message)
-      return getLocalThreads().filter(t => !topicId || t.topic_id === topicId)
-    }
-    
-    // Seed with mock threads if empty and no database entries yet
-    if (!data || data.length === 0) {
-      const filteredMocks = MOCK_THREADS.filter(t => !topicId || t.topic_id === topicId)
-      return filteredMocks
-    }
-    
-    return data as ForumThread[]
-  } catch (err) {
-    console.warn('fetchThreads exception, falling back to LocalStorage:', err)
-    return getLocalThreads().filter(t => !topicId || t.topic_id === topicId)
+  let query = supabase.from('forum_threads').select('*').order('created_at', { ascending: false })
+  if (topicId) {
+    query = query.eq('topic_id', topicId)
   }
+  const { data, error } = await query
+
+  if (error) throw new Error(`fetchThreads failed: ${error.message}`)
+
+  return (data ?? []) as ForumThread[]
 }
 
 export async function createThread(
@@ -281,94 +96,64 @@ export async function createThread(
     is_sage_reply: false
   }
 
-  try {
-    // Attempt Supabase write
-    const { data, error } = await supabase
-      .from('forum_threads')
-      .insert({
-        id: newThread.id,
-        topic_id: newThread.topic_id,
-        title: newThread.title,
-        created_at: newThread.created_at,
-        author_nickname: newThread.author_nickname,
-        user_id: newThread.user_id
-      })
-      .select()
-      .single()
+  const { data, error } = await supabase
+    .from('forum_threads')
+    .insert({
+      id: newThread.id,
+      topic_id: newThread.topic_id,
+      title: newThread.title,
+      created_at: newThread.created_at,
+      author_nickname: newThread.author_nickname,
+      user_id: newThread.user_id
+    })
+    .select()
+    .single()
 
-    if (error) throw error
+  if (error) throw new Error(`createThread failed: ${error.message}`)
 
-    // Insert first message
-    const { error: msgError } = await supabase
-      .from('forum_messages')
-      .insert({
-        id: firstMessage.id,
-        thread_id: firstMessage.thread_id,
-        content: firstMessage.content,
-        created_at: firstMessage.created_at,
-        author_nickname: firstMessage.author_nickname,
-        user_id: firstMessage.user_id,
-        is_sage_reply: firstMessage.is_sage_reply
-      })
+  const { error: msgError } = await supabase
+    .from('forum_messages')
+    .insert({
+      id: firstMessage.id,
+      thread_id: firstMessage.thread_id,
+      content: firstMessage.content,
+      created_at: firstMessage.created_at,
+      author_nickname: firstMessage.author_nickname,
+      user_id: firstMessage.user_id,
+      is_sage_reply: firstMessage.is_sage_reply
+    })
 
-    if (msgError) throw msgError
-
-    return data as ForumThread
-  } catch (err) {
-    console.warn('Supabase createThread failed, saving to LocalStorage:', err)
-    
-    // Save locally
-    const threads = getLocalThreads()
-    threads.unshift(newThread)
-    saveLocalThreads(threads)
-
-    const messages = getLocalMessages()
-    messages[threadId] = [firstMessage]
-    saveLocalMessages(messages)
-
-    return newThread
+  if (msgError) {
+    await supabase.from('forum_threads').delete().eq('id', newThread.id)
+    throw new Error(`createThread first message failed: ${msgError.message}`)
   }
+
+  return data as ForumThread
 }
 
 export async function fetchMessages(threadId: string): Promise<ForumMessage[]> {
-  try {
-    const { data, error } = await supabase
-      .from('forum_messages')
-      .select('*')
-      .eq('thread_id', threadId)
-      .order('created_at', { ascending: true })
+  const { data, error } = await supabase
+    .from('forum_messages')
+    .select('*')
+    .eq('thread_id', threadId)
+    .order('created_at', { ascending: true })
 
-    if (error) {
-      console.warn('Supabase fetchMessages error, falling back to LocalStorage:', error.message)
-      return getLocalMessages()[threadId] || []
-    }
+  if (error) throw new Error(`fetchMessages failed: ${error.message}`)
 
-    if (!data || data.length === 0) {
-      return getLocalMessages()[threadId] || []
-    }
-
-    return data as ForumMessage[]
-  } catch (err) {
-    console.warn('fetchMessages exception, falling back to LocalStorage:', err)
-    return getLocalMessages()[threadId] || []
-  }
+  return (data ?? []) as ForumMessage[]
 }
 
 export async function fetchReplyCount(threadId: string): Promise<number> {
-  try {
-    const res = await supabase
-      .from('forum_messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('thread_id', threadId)
-    const { count, error } = res
-    if (error || count === null || count === undefined) {
-      throw new Error(error?.message || 'Count is null')
-    }
-    return count
-  } catch {
-    const messages = getLocalMessages()
-    return messages[threadId]?.length ?? 0
+  const { count, error } = await supabase
+    .from('forum_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('thread_id', threadId)
+
+  if (error) throw new Error(`fetchReplyCount failed: ${error.message}`)
+  if (count === null || count === undefined) {
+    throw new Error('fetchReplyCount failed: count is null')
   }
+  return count
 }
 
 
@@ -396,38 +181,25 @@ export async function createMessage(
     parent_nickname: parentNickname || null
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('forum_messages')
-      .insert({
-        id: newMessage.id,
-        thread_id: newMessage.thread_id,
-        content: newMessage.content,
-        created_at: newMessage.created_at,
-        author_nickname: newMessage.author_nickname,
-        user_id: newMessage.user_id,
-        is_sage_reply: newMessage.is_sage_reply,
-        parent_id: newMessage.parent_id,
-        parent_content: newMessage.parent_content,
-        parent_nickname: newMessage.parent_nickname
-      })
-      .select()
-      .single()
+  const { data, error } = await supabase
+    .from('forum_messages')
+    .insert({
+      id: newMessage.id,
+      thread_id: newMessage.thread_id,
+      content: newMessage.content,
+      created_at: newMessage.created_at,
+      author_nickname: newMessage.author_nickname,
+      user_id: newMessage.user_id,
+      is_sage_reply: newMessage.is_sage_reply,
+      parent_id: newMessage.parent_id,
+      parent_content: newMessage.parent_content,
+      parent_nickname: newMessage.parent_nickname
+    })
+    .select()
+    .single()
 
-    if (error) throw error
-    return data as ForumMessage
-  } catch (err) {
-    console.warn('Supabase createMessage failed, saving to LocalStorage:', err)
-    
-    const messages = getLocalMessages()
-    if (!messages[threadId]) {
-      messages[threadId] = []
-    }
-    messages[threadId].push(newMessage)
-    saveLocalMessages(messages)
-
-    return newMessage
-  }
+  if (error) throw new Error(`createMessage failed: ${error.message}`)
+  return data as ForumMessage
 }
 
 // SAGE AI MODERATION AND REDIRECT CHECKER

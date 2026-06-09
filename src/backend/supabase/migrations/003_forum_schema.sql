@@ -49,13 +49,20 @@ create policy "forum_messages_delete" on public.forum_messages
   for delete using (auth.uid() = user_id);
 
 -- Enable Realtime for these tables by adding them to the supabase_realtime publication
-begin;
-  -- Remove them if already added to avoid errors
-  alter publication supabase_realtime drop table if exists public.forum_threads;
-  alter publication supabase_realtime drop table if exists public.forum_messages;
-  
-  -- Add them
-  alter publication supabase_realtime add table public.forum_threads;
-  alter publication supabase_realtime add table public.forum_messages;
-commit;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'forum_threads'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.forum_threads;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'forum_messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.forum_messages;
+  END IF;
+END $$;
 

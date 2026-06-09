@@ -11,7 +11,8 @@
     "test": "vitest",
     "test:ci": "vitest run",
     "preview": "vite preview",
-    "seed": "node --experimental-strip-types scripts/seed-quizzes.ts"
+    "seed": "node --experimental-strip-types scripts/seed-quizzes.ts",
+    "seed:forum": "node --experimental-strip-types scripts/seed-forum.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
