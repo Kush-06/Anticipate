@@ -1123,6 +1123,10 @@ body {
 .anp-app * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
 .anp-spacer { height: max(48px, env(safe-area-inset-top)); flex-shrink: 0; }
+.anp-header-spacer {
+  height: max(calc(16px * var(--d)), env(safe-area-inset-top));
+  flex-shrink: 0;
+}
 
 .anp-scroll {
   flex: 1;
@@ -2026,9 +2030,10 @@ body {
 
 /* Logo wordmark */
 .av-logo {
-  font-family: var(--p-display); font-size: calc(19px * var(--d));
+  font-family: var(--p-display); font-size: calc(22.8px * var(--d));
   font-weight: 700; letter-spacing: -0.01em; color: var(--p-ink);
   text-transform: lowercase; line-height: 1;
+  display: inline-block; padding-top: calc(4px * var(--d));
 }
 
 /* Greeting */

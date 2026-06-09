@@ -22,7 +22,7 @@ describe('DecoderPage', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getAllByText('Decoder')[0]).toBeInTheDocument();
+    expect(screen.getByText(/Practice reading realistic financial documents ahead of time/)).toBeInTheDocument();
     expect(screen.getByText('Monthly payslip')).toBeInTheDocument();
     expect(screen.getByText('Student loan')).toBeInTheDocument();
     expect(screen.getByText('Tenancy agreement')).toBeInTheDocument();

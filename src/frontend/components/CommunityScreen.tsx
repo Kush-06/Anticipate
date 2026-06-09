@@ -44,6 +44,7 @@ export function CommunityScreen() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const replyInputRef = useRef<HTMLTextAreaElement>(null)
+  const scrollRegionStartY = useRef(0)
 
   // Inline Sage reply warning state (avoids ugly top red toasts getting cut off)
   const [replyWarning, setReplyWarning] = useState<string | null>(null)
@@ -180,10 +181,16 @@ export function CommunityScreen() {
   }
 
   const handleMessageTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (messageScrollTop.current > 0 || isMessageRefreshingState) return
     const touch = e.touches[0]
     const diffY = touch.clientY - messageTouchStart.current.y
     const diffX = touch.clientX - messageTouchStart.current.x
+
+    // Dismiss the keyboard when the list is dragged vertically.
+    if (Math.abs(diffY) > 16 && Math.abs(diffY) > Math.abs(diffX)) {
+      dismissKeyboard()
+    }
+
+    if (messageScrollTop.current > 0 || isMessageRefreshingState) return
 
     if (diffY > 0 && Math.abs(diffY) > Math.abs(diffX)) {
       const pull = Math.min(80, Math.pow(diffY, 0.82))
@@ -230,6 +237,15 @@ export function CommunityScreen() {
 
     const handleResize = () => {
       document.documentElement.style.setProperty('--vv-height', `${vv.height}px`)
+      // offsetTop = how far the visual viewport has shifted down within the layout
+      // viewport (iOS shifts it up to keep the focused input visible when keyboard
+      // opens). The thread overlay uses this to stay anchored to the visual viewport.
+      document.documentElement.style.setProperty('--vv-offset-top', `${vv.offsetTop}px`)
+      // Keyboard height = layout viewport minus the visible (visual) viewport.
+      // Used to float bottom drawers above the soft keyboard while keeping their
+      // backdrop covering the full screen (no peek-through during keyboard anim).
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      document.documentElement.style.setProperty('--kb-height', `${kb}px`)
       // Scroll messages container to bottom directly
       if (messagesContainerRef.current) {
         messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
@@ -259,6 +275,7 @@ export function CommunityScreen() {
     const preventScroll = () => {
       if (vv) {
         document.documentElement.style.setProperty('--vv-height', `${vv.height}px`)
+        document.documentElement.style.setProperty('--vv-offset-top', `${vv.offsetTop}px`)
       }
       if (window.scrollY !== 0) {
         window.scrollTo(0, 0)
@@ -304,8 +321,14 @@ export function CommunityScreen() {
 
     const handleTouchMove = (e: TouchEvent) => {
       const target = e.target as HTMLElement
-      const isScrollable = target.closest('.anp-scrollable-messages') || target.closest('.anp-modal-scrollable')
-      
+      // Allow scrolling inside designated scroll regions and any text field
+      // (textarea/input) so multi-line content can be scrolled on iOS.
+      const isScrollable =
+        target.closest('.anp-scrollable-messages') ||
+        target.closest('.anp-modal-scrollable') ||
+        target.closest('textarea') ||
+        target.closest('input')
+
       if (!isScrollable) {
         if (e.cancelable) {
           e.preventDefault()
@@ -325,6 +348,25 @@ export function CommunityScreen() {
       window.scrollTo(0, 0)
       document.body.scrollTop = 0
     }, 100)
+  }
+
+  // Dismiss the on-screen keyboard by blurring the focused text field.
+  // Used when the user swipes/scrolls a scroll region, mirroring native chat apps.
+  const dismissKeyboard = () => {
+    const active = document.activeElement as HTMLElement | null
+    if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
+      active.blur()
+    }
+  }
+
+  // Blur the focused input on a downward swipe within a scroll region.
+  const handleScrollRegionTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    scrollRegionStartY.current = e.touches[0].clientY
+  }
+  const handleScrollRegionTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches[0].clientY - scrollRegionStartY.current > 16) {
+      dismissKeyboard()
+    }
   }
 
   // Load threads and subscribe to real-time additions
@@ -922,27 +964,20 @@ Keep it short (2-3 sentences max) and helpful.`
           className={`anp-modal-backdrop ${isClosingCreating ? 'anp-modal-backdrop--closing' : ''}`}
           style={{ 
             zIndex: 100,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
             overflow: 'hidden'
           }}
         >
-          <div 
-            className={`anp-modal-drawer ${isClosingCreating ? 'anp-modal-drawer--closing' : ''}`}
-            style={{
-              maxHeight: 'calc(var(--vv-height, 100%) * 0.9)'
-            }}
-          >
+          <div className="anp-modal-viewport">
+            <div className={`anp-modal-drawer ${isClosingCreating ? 'anp-modal-drawer--closing' : ''}`}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '16px 20px',
+              padding: '12px 16px',
               borderBottom: '1.5px solid var(--p-line)',
               background: 'var(--p-bg)'
             }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16 }}>Make a Post Anonymously</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15 }}>Make a Post Anonymously</span>
               <button 
                 onClick={handleCloseCreate} 
                 style={{
@@ -957,18 +992,23 @@ Keep it short (2-3 sentences max) and helpful.`
               </button>
             </div>
 
-            <div className="anp-modal-scrollable" style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+            <div
+              className="anp-modal-scrollable"
+              onTouchStart={handleScrollRegionTouchStart}
+              onTouchMove={handleScrollRegionTouchMove}
+              style={{ flex: 1, overflowY: 'auto', padding: '14px 16px 16px' }}
+            >
               {!validationResult && !isValidating && (
-                <form onSubmit={handleValidatePost} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <form onSubmit={handleValidatePost} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--p-ink-2)', marginBottom: 4 }}>Select Topic</label>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--p-ink-2)', marginBottom: 3 }}>Select Topic</label>
                     <select
                       value={newTopicId}
                       onChange={(e) => setNewTopicId(e.target.value)}
                       onFocus={handleInputFocus}
                       style={{
                         width: '100%',
-                        padding: '10px 12px',
+                        padding: '8px 10px',
                         borderRadius: 'var(--r-md)',
                         border: '1.5px solid var(--p-line)',
                         background: '#ffffff',
@@ -983,7 +1023,7 @@ Keep it short (2-3 sentences max) and helpful.`
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--p-ink-2)', marginBottom: 4 }}>Title / Question</label>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--p-ink-2)', marginBottom: 3 }}>Title / Question</label>
                     <input
                       type="text"
                       placeholder="e.g. How do I dispute a tenancy deposit charge?"
@@ -993,7 +1033,7 @@ Keep it short (2-3 sentences max) and helpful.`
                       required
                       style={{
                         width: '100%',
-                        padding: '10px 12px',
+                        padding: '8px 10px',
                         borderRadius: 'var(--r-md)',
                         border: '1.5px solid var(--p-line)',
                         background: '#ffffff',
@@ -1004,17 +1044,17 @@ Keep it short (2-3 sentences max) and helpful.`
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--p-ink-2)', marginBottom: 4 }}>Details / Context</label>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--p-ink-2)', marginBottom: 3 }}>Details / Context</label>
                     <textarea
                       placeholder="Type details or content here..."
                       value={newContent}
                       onChange={(e) => setNewContent(e.target.value)}
                       onFocus={handleInputFocus}
                       required
-                      rows={4}
+                      rows={3}
                       style={{
                         width: '100%',
-                        padding: '10px 12px',
+                        padding: '8px 10px',
                         borderRadius: 'var(--r-md)',
                         border: '1.5px solid var(--p-line)',
                         background: '#ffffff',
@@ -1035,7 +1075,7 @@ Keep it short (2-3 sentences max) and helpful.`
                   <button
                     type="submit"
                     className="av-sage__cta"
-                    style={{ margin: '10px 0 0', width: '100%', justifyContent: 'center', background: 'var(--p-coral)', color: '#ffffff', border: 'none' }}
+                    style={{ margin: '4px 0 0', width: '100%', justifyContent: 'center', background: 'var(--p-coral)', color: '#ffffff', border: 'none' }}
                   >
                     Post Anonymously
                   </button>
@@ -1237,6 +1277,7 @@ Keep it short (2-3 sentences max) and helpful.`
                 </div>
               )}
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -1256,7 +1297,7 @@ Keep it short (2-3 sentences max) and helpful.`
             style={{
               display: 'flex',
               flexDirection: 'column',
-              height: '100%',
+              height: 'var(--vv-height, 100%)',
               width: '100%',
               overflow: 'hidden'
             }}
@@ -1693,6 +1734,8 @@ Keep it short (2-3 sentences max) and helpful.`
                 disabled={postingReply}
                 style={{
                   maxHeight: 80,
+                  overflowY: 'auto',
+                  WebkitOverflowScrolling: 'touch',
                   fontSize: 16,
                   borderRadius: 18,
                   padding: '8px 14px',
@@ -1760,11 +1803,10 @@ Keep it short (2-3 sentences max) and helpful.`
         }
 
         .anp-modal-backdrop {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: var(--vv-height, 100%);
+          position: fixed;
+          inset: 0;
+          /* Keep the backdrop full-screen; the sheet itself moves above the
+             keyboard so the forum list never peeks through during animation. */
           background: rgba(28, 26, 36, 0.4);
           backdrop-filter: blur(6px);
           -webkit-backdrop-filter: blur(6px);
@@ -1778,9 +1820,25 @@ Keep it short (2-3 sentences max) and helpful.`
           animation: fade-out 0.22s ease-out both;
         }
 
+        .anp-modal-viewport {
+          position: absolute;
+          top: var(--vv-offset-top, 0px);
+          left: 0;
+          right: 0;
+          height: var(--vv-height, 100%);
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
         .anp-modal-drawer {
           width: 100%;
           max-width: 360px;
+          max-height: min(390px, calc(var(--vv-height, 100%) - env(safe-area-inset-top) - 10px));
+          margin: 0 auto;
+          pointer-events: auto;
           background: var(--p-bg-2);
           border-radius: 24px 24px 0 0;
           display: flex;
@@ -1796,13 +1854,14 @@ Keep it short (2-3 sentences max) and helpful.`
           animation: slide-down 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
           will-change: transform;
         }
+        .anp-modal-scrollable {
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+        }
 
         .anp-thread-drawer-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: var(--vv-height, 100%);
+          position: fixed;
+          inset: 0;
           z-index: 110;
           background: var(--p-bg-2);
           overflow: hidden;
@@ -1811,11 +1870,8 @@ Keep it short (2-3 sentences max) and helpful.`
           will-change: transform;
         }
         .anp-thread-drawer-overlay--closing {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: var(--vv-height, 100%);
+          position: fixed;
+          inset: 0;
           z-index: 110;
           background: var(--p-bg-2);
           overflow: hidden;
@@ -1825,7 +1881,12 @@ Keep it short (2-3 sentences max) and helpful.`
         }
 
         .anp-thread-drawer {
-          /* static container, slides with parent */
+          position: absolute;
+          top: var(--vv-offset-top, 0px);
+          left: 0;
+          right: 0;
+          height: var(--vv-height, 100%);
+          background: var(--p-bg-2);
         }
         .anp-thread-drawer--closing {
           /* static container */

@@ -80,7 +80,7 @@ export function DecoderPage() {
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <TopBar />
+      <TopBar showNotifications={false} />
 
       <div className="anp-scroll" style={{ 
         scrollbarWidth: 'none', 
@@ -93,9 +93,6 @@ export function DecoderPage() {
           }
         `}</style>
         <div style={{ padding: "8px 20px 24px" }}>
-          <h1 className="anp-wordmark" style={{ fontSize: "28px", marginBottom: "8px", letterSpacing: "-0.03em" }}>
-            Decoder
-          </h1>
           <p style={{ color: "var(--p-ink-2)", fontSize: "14px", lineHeight: "1.5", opacity: 0.8 }}>
             Practice reading realistic financial documents ahead of time.
             Tap any highlighted word to get a plain-English definition.

@@ -20,6 +20,7 @@ import {
 import { topics, getRecommendedTopics, getRecommendedSummary } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
 import { useProfile } from "../context/ProfileContext";
+import { TopBar } from "./TopBar";
 
 const TOPIC_ICONS: Record<string, LucideIcon> = {
   "starting-work":    Briefcase,
@@ -52,7 +53,6 @@ const TOPIC_SUBTITLES: Record<string, string> = {
   "investing-101":    "Funds, ISAs and building long-term wealth",
   "taxes-wealth":     "Tax brackets, CGT and the state pension",
 };
-import { TopBar } from "./TopBar";
 
 type TrackStatus = "done" | "active" | "queued";
 
@@ -210,7 +210,7 @@ export function PlayfulHome() {
 
   return (
     <div className="anp-app anp-lessons-bg">
-      <TopBar />
+      <TopBar showNotifications={false} />
 
       <div className="anp-scroll">
 

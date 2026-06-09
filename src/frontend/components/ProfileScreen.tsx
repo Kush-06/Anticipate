@@ -69,7 +69,7 @@ export function ProfileScreen() {
 
   return (
     <div className="anp-app" style={{ background: "var(--p-bg)" }}>
-      <TopBar />
+      <TopBar showNotifications={false} />
 
       <div className="av-greet" style={{ paddingBottom: "calc(12px * var(--d))" }}>
         <h1>Your profile</h1>
