@@ -43,10 +43,21 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [, setViewportHeight] = useState(window.innerHeight)
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const active = hasActiveProvider()
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!active || !open) return
@@ -127,6 +138,9 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
           />
           <div 
             className={`dcb-panel ${isClosing ? 'dcb-panel--closing' : ''}`} 
+            style={{
+              height: `${viewportHeight * 0.85}px`
+            }}
           >
             <div className="dcb-header">
               <div className="dcb-header__left">
@@ -231,7 +245,7 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
           transform: translateY(-2px);
         }
         .dcb-backdrop {
-          position: absolute;
+          position: fixed;
           top: 0;
           left: 0;
           right: 0;
@@ -254,7 +268,7 @@ export function DocumentChatBot({ documentTitle, documentContent }: DocumentChat
           to   { opacity: 0; }
         }
         .dcb-panel {
-          position: absolute;
+          position: fixed;
           left: 0;
           right: 0;
           bottom: 0;
