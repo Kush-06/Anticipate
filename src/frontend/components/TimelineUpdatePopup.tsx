@@ -288,11 +288,6 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
                 </div>
               </div>
 
-              <div className="ut-nudge">
-                <Sparkles size={14} className="icon" />
-                <span>Sage will schedule {selectedEvent?.items.length} lessons around these dates automatically</span>
-              </div>
-
               <button 
                 className="ut-activate"
                 onClick={handleActivate}
@@ -483,19 +478,6 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
         .ut-date-input input {
           width: 100%;
           padding-left: 42px;
-        }
-
-        .ut-nudge {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: #fbe1d6;
-          border-radius: 16px;
-          padding: 14px 18px;
-          color: #e9694a;
-          font-size: 12px;
-          font-weight: 600;
-          line-height: 1.4;
         }
 
         .ut-activate {
