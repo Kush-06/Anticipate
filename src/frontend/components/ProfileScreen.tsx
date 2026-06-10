@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
 import { Trash2 } from "lucide-react";
 import { useProfile, getPendingQuestions } from "../context/ProfileContext";
-import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
 import { fetchSageMemories, deleteSageMemory, type SageMemory } from "@backend/sageMemoryService";
@@ -14,14 +12,6 @@ const MILESTONE_ICON: Record<string, React.ComponentProps<typeof AppIcon>["name"
   "Going freelance":     "briefcase",
   "Saving for something big": "piggy",
 };
-
-const CONF_LABELS = [
-  { key: "tax",       label: "Tax & NI" },
-  { key: "pensions",  label: "Pensions" },
-  { key: "budgeting", label: "Budget & saving" },
-  { key: "investing", label: "Investing" },
-  { key: "contracts", label: "Contracts & job info" },
-] as const;
 
 function KV({ label, value }: { label: string; value: string }) {
   return (
@@ -59,7 +49,6 @@ function SectionCard({ label, children }: { label: string; children: React.React
 }
 
 export function ProfileScreen() {
-  const navigate = useNavigate();
   const { profile, userId, logout } = useProfile();
   const [memories, setMemories] = useState<SageMemory[]>([]);
   const [showExtraPopup, setShowExtraPopup] = useState(false);
@@ -81,7 +70,6 @@ export function ProfileScreen() {
   const sixMonthGoal = profile?.sixMonthGoal ?? "—";
   const employment   = profile?.employmentType ?? "—";
   const events       = profile?.upcomingEvents ?? [];
-  const cs           = profile?.confidenceScores ?? { tax: 2, pensions: 1, budgeting: 3, investing: 1, contracts: 2 };
 
   const hasPending   = getPendingQuestions(profile).length > 0;
 
@@ -171,22 +159,6 @@ export function ProfileScreen() {
             </div>
           )}
 
-          {/* Sage check-in */}
-          <div className="av-sage" style={{ margin: 0 }}>
-            <div className="av-sage__row">
-              <SageAvatar size={46} />
-              <div>
-                <div className="av-sage__eyebrow">Sage check-in</div>
-                <div className="av-sage__text">
-                  Hi {firstName}, your pension confidence is still low (<b>{cs.pensions}/5</b>). Let's work through auto-enrolment this week.
-                </div>
-                <button className="av-sage__cta" onClick={() => navigate("/learn")}>
-                  Open pension lessons <AppIcon name="arrowRight" size={13} stroke={2} />
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* Personal details */}
           <SectionCard label="Personal details">
             <KV label="First name" value={firstName} />
@@ -222,28 +194,6 @@ export function ProfileScreen() {
                 </div>
               ))
             )}
-          </SectionCard>
-
-          {/* Confidence ratings */}
-          <SectionCard label="Confidence ratings">
-            {CONF_LABELS.map(({ key, label }, i) => (
-              <div key={key} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
-                padding: "calc(11px * var(--d)) 0", borderTop: i === 0 ? "none" : "1px solid var(--p-line)",
-              }}>
-                <span style={{ fontSize: "calc(12.5px * var(--d))", color: "var(--p-ink-2)" }}>{label}</span>
-                <div style={{ display: "flex", gap: "calc(5px * var(--d))" }}>
-                  {[1, 2, 3, 4, 5].map((d) => (
-                    <span key={d} style={{
-                      width: "calc(8px * var(--d))", height: "calc(8px * var(--d))",
-                      borderRadius: "50%",
-                      background: d <= cs[key] ? "var(--p-plum)" : "var(--p-line)",
-                      display: "block",
-                    }} />
-                  ))}
-                </div>
-              </div>
-            ))}
           </SectionCard>
 
           {/* Sage's Memory */}
@@ -311,4 +261,3 @@ export function ProfileScreen() {
     </div>
   );
 }
-
