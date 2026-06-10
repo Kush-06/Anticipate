@@ -208,7 +208,7 @@ export function HomeScreen() {
             <button className="av-sage__action-row" onClick={() => navigate(recTopic ? `/topic/${recTopic.id}` : "/learn")}>
               Start lesson <AppIcon name="arrowRight" size={13} stroke={2} />
             </button>
-            <button className="av-sage__action-row" onClick={() => navigate("/communities")}>
+            <button className="av-sage__action-row" onClick={() => navigate("/community")}>
               Ask community <AppIcon name="arrowRight" size={13} stroke={2} />
             </button>
           </div>
