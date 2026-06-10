@@ -1,10 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@backend/supabaseClient";
-import { fetchTimeline, seedTimeline } from "@backend/timelineService";
+import { fetchTimeline, markTimelineItemsDone, seedTimeline } from "@backend/timelineService";
 import { useProfile } from "./ProfileContext";
+import { useProgress } from "./ProgressContext";
 import { generateTimeline } from "../utils/timelineGenerator";
 import type { SpineGroup, SpineItem } from "../utils/timelineGenerator";
+import { isLessonPathCompleted } from "@shared/lessonPath";
 import {
   deriveSpineGroup,
   duePartsFromWhenLabel,
@@ -65,6 +67,7 @@ function itemsToGroups(items: SpineItem[]): TimelineGroup[] {
 
 export function TimelineProvider({ children }: { children: React.ReactNode }) {
   const { profile } = useProfile();
+  const { completedSubTopicIds, isLoading: progressLoading } = useProgress();
   const [groups, setGroups] = useState<TimelineGroup[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,10 +78,14 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
       const dbItems = await fetchTimeline(uid);
 
       if (dbItems.length > 0) {
+        const newlyDoneIds = dbItems
+          .filter((item) => item.status !== "done" && isLessonPathCompleted(item.lessonPath, completedSubTopicIds))
+          .map((item) => item.id);
+
         // Use the DB's unique 'id' for SpineItem, allowing items with same itemKey to coexist
         const spineItems: SpineItem[] = dbItems.map((item) => ({
           id: item.id, // Use actual DB row ID
-          status: item.status,
+          status: isLessonPathCompleted(item.lessonPath, completedSubTopicIds) ? "done" : item.status,
           when: item.whenLabel,
           title: item.title,
           tag: item.tag,
@@ -89,6 +96,9 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
           dueDay: item.dueDay,
         }));
         setGroups(itemsToGroups(spineItems));
+        if (newlyDoneIds.length > 0) {
+          markTimelineItemsDone(uid, newlyDoneIds).catch(() => {});
+        }
       } else {
         // No DB rows yet — seed from profile and fall back to generated timeline
         const generated = generateTimeline(currentProfile);
@@ -103,7 +113,7 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [completedSubTopicIds]);
 
   // Synchronously track auth state — no async work inside this callback
   useEffect(() => {
@@ -127,14 +137,14 @@ export function TimelineProvider({ children }: { children: React.ReactNode }) {
 
   // Async: load timeline from DB when userId is set
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || progressLoading) return;
     const timer = setTimeout(() => {
       void loadTimeline(userId, profile);
     }, 0);
     return () => clearTimeout(timer);
   // profile excluded — loadTimeline captures it at call time
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, loadTimeline]);
+  }, [userId, loadTimeline, progressLoading]);
 
   const refreshTimeline = useCallback(async () => {
     if (userId) await loadTimeline(userId, profile);

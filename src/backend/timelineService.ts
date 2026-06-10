@@ -251,3 +251,13 @@ export async function markTimelineItemDone(userId: string, itemId: string): Prom
     .eq('user_id', userId)
     .eq('id', itemId)
 }
+
+export async function markTimelineItemsDone(userId: string, itemIds: string[]): Promise<void> {
+  if (itemIds.length === 0) return
+
+  await supabase
+    .from('user_timeline_items')
+    .update({ status: 'done', updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .in('id', itemIds)
+}

@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { getNextReminderDate } from '@shared/notificationSchedule'
 import type { SpineItem } from '@shared/types'
+import { parseLessonPath } from '@shared/lessonPath'
 import { getSubTopicById } from '../data/topics'
 import { getNotificationPermissionStatus, requestNotificationPermission } from './notificationPermissions'
 
@@ -13,16 +14,7 @@ export interface TimelineReminder {
   lessonPath?: string
 }
 
-interface LessonRef {
-  topicId: string
-  subTopicId: string
-}
-
-export function parseLessonPath(lessonPath: string): LessonRef | null {
-  const match = lessonPath.match(/^\/topic\/([^/]+)\/subtopic\/([^/]+)/)
-  if (!match) return null
-  return { topicId: match[1], subTopicId: match[2] }
-}
+export { parseLessonPath }
 
 // Local notification ids must be 32-bit ints, so derive a stable one from the item's UUID.
 export function notificationIdForItem(itemId: string): number {
