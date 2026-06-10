@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { TopicIcon } from './TopicIcon'
 import { SageAvatar } from './SageAvatar'
-import { MessageSquare, Send, ArrowLeft, AlertCircle, CheckCircle, HelpCircle, RotateCw, CornerUpLeft, Heart } from 'lucide-react'
+import { MessageSquare, Send, ArrowLeft, AlertCircle, CheckCircle, HelpCircle, RotateCw, CornerUpLeft, Heart, Search } from 'lucide-react'
 import { topics } from '../data/topics'
 import { sendChatMessage } from '../services/aiChatService'
 import { Toaster, toast } from 'sonner'
@@ -38,6 +38,7 @@ export function CommunityScreen() {
   const [threads, setThreads] = useState<ForumThread[]>([])
   const [replyCounts, setReplyCounts] = useState<Record<string, number>>({})
   const [loadingThreads, setLoadingThreads] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Active Thread / Messaging view
   const [activeThread, setActiveThread] = useState<ForumThread | null>(null)
@@ -573,6 +574,13 @@ export function CommunityScreen() {
   // Get topic object
   const getTopic = (id: string) => topics.find(t => t.id === id)
 
+  // Threads matching the current search query (title only)
+  const filteredThreads = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return threads
+    return threads.filter((t) => t.title.toLowerCase().includes(q))
+  }, [threads, searchQuery])
+
   // Format date helper
   function formatRelativeTime(dateStr: string): string {
     const date = new Date(dateStr)
@@ -869,6 +877,40 @@ Keep it short (2-3 sentences max) and helpful.`
           />
           <span>{isThreadRefreshingState ? 'Refreshing...' : threadPullY > 50 ? 'Release to refresh' : 'Pull to refresh'}</span>
         </div>
+        {/* Thread search */}
+        <div style={{ padding: '8px 16px 0', flexShrink: 0 }}>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--p-ink-3)',
+                pointerEvents: 'none'
+              }}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={handleInputFocus}
+              placeholder="Search threads..."
+              style={{
+                width: '100%',
+                padding: '8px 10px 8px 34px',
+                borderRadius: 'var(--r-md)',
+                border: '1.5px solid var(--p-line)',
+                background: '#ffffff',
+                fontSize: 16,
+                color: 'var(--p-ink)',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+        </div>
+
         {/* Horizontal filter bar */}
         <div className="anp-community-filters" style={{
           display: 'flex',
@@ -979,9 +1021,27 @@ Keep it short (2-3 sentences max) and helpful.`
                 Ask the community
               </button>
             </div>
+          ) : filteredThreads.length === 0 ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '64px 24px',
+              textAlign: 'center',
+              background: 'var(--p-card)',
+              borderRadius: 'var(--r-xl)',
+              border: '1.5px solid var(--p-line)'
+            }}>
+              <Search size={32} style={{ color: 'var(--p-ink-4)', marginBottom: 12 }} />
+              <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--p-ink)' }}>No threads match your search</div>
+              <div style={{ fontSize: 13, color: 'var(--p-ink-3)', marginTop: 4, maxWidth: 220 }}>
+                Try a different search term or clear the search.
+              </div>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {threads.map((t) => {
+              {filteredThreads.map((t) => {
                 const topic = getTopic(t.topic_id)
                 const replies = replyCounts[t.id] ?? 0
                 return (
