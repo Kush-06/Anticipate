@@ -17,6 +17,7 @@ import {
   getReactorId,
   fetchReactionSummaries,
   toggleMessageReaction,
+  notifyForumActivity,
   validatePostWithSage,
   type ForumThread,
   type ForumMessage,
@@ -744,12 +745,41 @@ export function CommunityScreen() {
       setMessages(prev => [...prev, newMsg])
       setReplyInput('')
       setReplyToMessage(null) // Reset reply-to after sending
-      
+
       // Increment count locally
       setReplyCounts(prev => ({
         ...prev,
         [activeThread.id]: (prev[activeThread.id] || 0) + 1
       }))
+
+      // Notify whoever the reply is aimed at: a direct reply to a specific
+      // message notifies that message's author, otherwise a top-level reply
+      // notifies the thread's original poster.
+      try {
+        if (replyToMessage) {
+          await notifyForumActivity({
+            recipientId: replyToMessage.user_id,
+            actorUserId: userId,
+            actorNickname: userNickname,
+            type: 'message_reply',
+            threadId: activeThread.id,
+            messageId: newMsg.id,
+            content: trimmed
+          })
+        } else {
+          await notifyForumActivity({
+            recipientId: activeThread.user_id,
+            actorUserId: userId,
+            actorNickname: userNickname,
+            type: 'thread_reply',
+            threadId: activeThread.id,
+            messageId: newMsg.id,
+            content: trimmed
+          })
+        }
+      } catch (err) {
+        console.error('Failed to send forum notification:', err)
+      }
 
       // Handle Sage direct mentions
       if (trimmed.toLowerCase().includes('@sage') || trimmed.toLowerCase().includes('sage')) {
@@ -806,7 +836,26 @@ Keep it short (2-3 sentences max) and helpful.`
     setPendingReactionIds((prev) => new Set(prev).add(messageId))
 
     try {
-      await toggleMessageReaction(messageId, getReactorId(userId))
+      const { reacted } = await toggleMessageReaction(messageId, getReactorId(userId))
+
+      if (reacted) {
+        const likedMessage = messages.find((m) => m.id === messageId)
+        if (likedMessage && activeThread) {
+          try {
+            await notifyForumActivity({
+              recipientId: likedMessage.user_id,
+              actorUserId: userId,
+              actorNickname: userNickname,
+              type: 'message_like',
+              threadId: activeThread.id,
+              messageId: likedMessage.id,
+              content: likedMessage.content
+            })
+          } catch (notifyErr) {
+            console.error('Failed to send forum notification:', notifyErr)
+          }
+        }
+      }
     } catch (err) {
       console.error('Failed to toggle reaction:', err)
       setReactionSummaries((prev) => ({ ...prev, [messageId]: previous }))

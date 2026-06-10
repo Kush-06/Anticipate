@@ -276,6 +276,83 @@ export async function createMessage(
   return data as ForumMessage
 }
 
+// FORUM NOTIFICATIONS
+
+export type ForumNotificationType = 'thread_reply' | 'message_reply' | 'message_like'
+
+export interface ForumNotification {
+  id: string
+  recipient_id: string
+  type: ForumNotificationType
+  thread_id: string
+  message_id: string | null
+  actor_nickname: string
+  preview: string | null
+  created_at: string
+  read_at: string | null
+}
+
+const NOTIFICATION_PREVIEW_LENGTH = 140
+
+function truncatePreview(content: string): string {
+  const trimmed = content.trim()
+  return trimmed.length > NOTIFICATION_PREVIEW_LENGTH
+    ? `${trimmed.slice(0, NOTIFICATION_PREVIEW_LENGTH)}…`
+    : trimmed
+}
+
+// Records a forum notification for `recipientId`. No-ops if there's no
+// recipient to notify (anonymous authors have no stable id) or the recipient
+// is the person who triggered the activity (no self-notifications).
+export async function notifyForumActivity(params: {
+  recipientId?: string | null
+  actorUserId?: string | null
+  actorNickname: string
+  type: ForumNotificationType
+  threadId: string
+  messageId?: string | null
+  content: string
+}): Promise<void> {
+  const { recipientId, actorUserId, actorNickname, type, threadId, messageId, content } = params
+  if (!recipientId || recipientId === actorUserId) return
+
+  const { error } = await supabase
+    .from('forum_notifications')
+    .insert({
+      recipient_id: recipientId,
+      type,
+      thread_id: threadId,
+      message_id: messageId || null,
+      actor_nickname: actorNickname,
+      preview: truncatePreview(content)
+    })
+
+  if (error) throw new Error(`notifyForumActivity failed: ${error.message}`)
+}
+
+export async function fetchForumNotifications(recipientId: string): Promise<ForumNotification[]> {
+  const { data, error } = await supabase
+    .from('forum_notifications')
+    .select('*')
+    .eq('recipient_id', recipientId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(`fetchForumNotifications failed: ${error.message}`)
+  return (data ?? []) as ForumNotification[]
+}
+
+export async function markForumNotificationsRead(notificationIds: string[]): Promise<void> {
+  if (notificationIds.length === 0) return
+
+  const { error } = await supabase
+    .from('forum_notifications')
+    .update({ read_at: new Date().toISOString() })
+    .in('id', notificationIds)
+    .is('read_at', null)
+
+  if (error) throw new Error(`markForumNotificationsRead failed: ${error.message}`)
+}
+
 // SAGE AI MODERATION AND REDIRECT CHECKER
 export async function validatePostWithSage(
   currentTopicId: string,
