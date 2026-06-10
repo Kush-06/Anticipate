@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import { useTimeline } from "../context/TimelineContext";
 import { useProgress } from "../context/ProgressContext";
 import { buildTimelineReminders } from "../services/notificationScheduler";
-import { UID_KEY } from "../context/ProfileContext";
+import { useProfile } from "../context/ProfileContext";
+import { supabase } from "@backend/supabaseClient";
 import {
   fetchForumNotifications,
   markForumNotificationsRead,
@@ -50,6 +51,7 @@ export function NotificationsScreen() {
   const navigate = useNavigate();
   const { groups, isLoading: timelineLoading } = useTimeline();
   const { completedSubTopicIds, isLoading: progressLoading } = useProgress();
+  const { userId } = useProfile();
   const [forumNotifications, setForumNotifications] = useState<ForumNotification[]>([]);
 
   const isLoading = timelineLoading || progressLoading;
@@ -59,13 +61,47 @@ export function NotificationsScreen() {
         .sort((a, b) => a.scheduleAt.getTime() - b.scheduleAt.getTime());
 
   useEffect(() => {
-    const userId = localStorage.getItem(UID_KEY);
-    if (!userId) return;
+    if (!userId) {
+      setForumNotifications([]);
+      return;
+    }
+
+    let active = true;
 
     fetchForumNotifications(userId)
-      .then(setForumNotifications)
+      .then((notifications) => {
+        if (active) setForumNotifications(notifications);
+      })
       .catch((err) => console.error("Failed to load forum notifications:", err));
-  }, []);
+
+    const channel = supabase
+      .channel(`forum_notifications_${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "forum_notifications",
+          filter: `recipient_id=eq.${userId}`,
+        },
+        (payload) => {
+          const notification = payload.new as ForumNotification;
+          if (!active) return;
+          setForumNotifications((prev) => {
+            if (prev.some((n) => n.id === notification.id)) return prev;
+            return [notification, ...prev];
+          });
+        }
+      )
+      .subscribe((status, err) => {
+        if (err) console.error(`Supabase Realtime notification subscription status: ${status}`, err);
+      });
+
+    return () => {
+      active = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   const handleOpenForumNotification = (notification: ForumNotification) => {
     if (!notification.read_at) {

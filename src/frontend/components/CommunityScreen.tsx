@@ -7,6 +7,7 @@ import { topics } from '../data/topics'
 import { sendChatMessage } from '../services/aiChatService'
 import { Toaster, toast } from 'sonner'
 import { supabase } from '@backend/supabaseClient'
+import { useProfile } from '../context/ProfileContext'
 import {
   fetchThreads,
   createThread,
@@ -28,6 +29,7 @@ import {
 export function CommunityScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { userId } = useProfile()
   
   // Topic filtering - driven directly by searchParams URL query state
   const selectedTopicId = searchParams.get('topic') || 'all'
@@ -238,7 +240,6 @@ export function CommunityScreen() {
     }
   }
 
-  const userId = localStorage.getItem('anticipate_uid')
   const userNickname = getUserNickname()
 
   // Track visual viewport changes (e.g. keyboard showing up on iOS)
