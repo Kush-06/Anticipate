@@ -18,6 +18,7 @@ import { TimelineProvider } from "./context/TimelineContext";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { CommunityScreen } from "./components/CommunityScreen";
 import { NotificationScheduler } from "./components/NotificationScheduler";
+import { ForumNotificationListener } from "./components/ForumNotificationListener";
 
 function MainApp() {
   const { completedOnboarding } = useProfile();
@@ -41,6 +42,7 @@ function MainApp() {
         ) : (
           <>
             <NotificationScheduler />
+            <ForumNotificationListener />
             <Routes>
               <Route element={<MainLayout />}>
                 <Route path="/" element={<HomeScreen />} />

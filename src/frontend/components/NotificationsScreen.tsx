@@ -61,10 +61,7 @@ export function NotificationsScreen() {
         .sort((a, b) => a.scheduleAt.getTime() - b.scheduleAt.getTime());
 
   useEffect(() => {
-    if (!userId) {
-      setForumNotifications([]);
-      return;
-    }
+    if (!userId) return;
 
     let active = true;
 
