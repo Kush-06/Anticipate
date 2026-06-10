@@ -24,6 +24,11 @@ export interface ForumMessage {
   parent_nickname?: string | null
 }
 
+export interface MessageReactionSummary {
+  count: number
+  reactedByMe: boolean
+}
+
 export interface SageValidationResult {
   relevance: 'relevant' | 'off_topic'
   bestTopicId: string | null
@@ -35,6 +40,7 @@ export interface SageValidationResult {
   explanation: string
 }
 
+const ANON_ID_KEY = 'anticipate_anon_id'
 const NICKNAME_KEY = 'anticipate_anon_nickname'
 const ANIMALS = [
   'Owl', 'Badger', 'Fox', 'Squirrel', 'Panda', 'Koala', 'Otter', 'Hedgehog',
@@ -51,6 +57,19 @@ export function getUserNickname(): string {
     localStorage.setItem(NICKNAME_KEY, name)
   }
   return name
+}
+
+// Stable id used to dedupe message reactions. Falls back to a generated
+// per-device id for anonymous users, since anticipate_uid is only set when
+// the user is authenticated.
+export function getReactorId(userId?: string | null): string {
+  if (userId) return userId
+  let id = localStorage.getItem(ANON_ID_KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(ANON_ID_KEY, id)
+  }
+  return id
 }
 
 // PUBLIC SERVICE METHODS
@@ -154,6 +173,61 @@ export async function fetchReplyCount(threadId: string): Promise<number> {
     throw new Error('fetchReplyCount failed: count is null')
   }
   return count
+}
+
+export async function fetchReactionSummaries(
+  messageIds: string[],
+  reactorId: string
+): Promise<Record<string, MessageReactionSummary>> {
+  const summaries: Record<string, MessageReactionSummary> = {}
+  if (messageIds.length === 0) return summaries
+
+  const { data, error } = await supabase
+    .from('forum_message_reactions')
+    .select('message_id, reactor_id')
+    .in('message_id', messageIds)
+
+  if (error) throw new Error(`fetchReactionSummaries failed: ${error.message}`)
+
+  const rows = (data ?? []) as { message_id: string; reactor_id: string }[]
+  for (const row of rows) {
+    const summary = summaries[row.message_id] ?? { count: 0, reactedByMe: false }
+    summary.count += 1
+    if (row.reactor_id === reactorId) summary.reactedByMe = true
+    summaries[row.message_id] = summary
+  }
+  return summaries
+}
+
+export async function toggleMessageReaction(
+  messageId: string,
+  reactorId: string
+): Promise<{ reacted: boolean }> {
+  const { data: existing, error: fetchError } = await supabase
+    .from('forum_message_reactions')
+    .select('id')
+    .eq('message_id', messageId)
+    .eq('reactor_id', reactorId)
+    .maybeSingle()
+
+  if (fetchError) throw new Error(`toggleMessageReaction lookup failed: ${fetchError.message}`)
+
+  if (existing) {
+    const { error } = await supabase
+      .from('forum_message_reactions')
+      .delete()
+      .eq('id', (existing as { id: string }).id)
+
+    if (error) throw new Error(`toggleMessageReaction delete failed: ${error.message}`)
+    return { reacted: false }
+  }
+
+  const { error } = await supabase
+    .from('forum_message_reactions')
+    .insert({ message_id: messageId, reactor_id: reactorId })
+
+  if (error) throw new Error(`toggleMessageReaction insert failed: ${error.message}`)
+  return { reacted: true }
 }
 
 
