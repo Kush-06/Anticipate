@@ -338,17 +338,12 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const pendingCardsRef = useRef<LessonCard[]>([])
   const pendingActivityRef = useRef<string[]>([])
   const activeConversationIdRef = useRef<string | null>(null)
-  const renderedMessagesLengthRef = useRef(0)
 
   const timelineItems: SpineItem[] = groups.flatMap((g) => g.items)
 
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId
   }, [activeConversationId])
-
-  useEffect(() => {
-    renderedMessagesLengthRef.current = renderedMessages.length
-  }, [renderedMessages.length])
 
   useEffect(() => {
     if (!open) return
@@ -359,11 +354,6 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         .then((saved) => {
           if (cancelled) return
           setConversations(saved)
-          if (activeConversationIdRef.current || renderedMessagesLengthRef.current > 0 || saved.length === 0) return
-          const latest = saved[0]
-          setActiveConversationId(latest.id)
-          setRenderedMessages(latest.messages as HomeChatMessage[])
-          setHistory(latest.history)
         })
         .catch((err) => {
           if (!cancelled) setError("I didn't quite get that, please try again.")

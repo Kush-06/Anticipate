@@ -111,7 +111,6 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const activeConversationIdRef = useRef<string | null>(null)
-  const messagesLengthRef = useRef(0)
 
   const active = hasActiveProvider()
   const contextId = `${topicTitle}:${lessonTitle}`
@@ -125,10 +124,6 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
   }, [activeConversationId])
 
   useEffect(() => {
-    messagesLengthRef.current = messages.length
-  }, [messages.length])
-
-  useEffect(() => {
     if (!active || !open) return
     let cancelled = false
     const timer = setTimeout(() => {
@@ -137,10 +132,6 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
         .then((saved) => {
           if (cancelled) return
           setConversations(saved)
-          if (activeConversationIdRef.current || messagesLengthRef.current > 0 || saved.length === 0) return
-          const latest = saved[0]
-          setActiveConversationId(latest.id)
-          setMessages(latest.messages.map((message) => ({ role: message.role, content: message.content })))
         })
         .catch((err) => {
           if (!cancelled) setError("I didn't quite get that, please try again.")

@@ -107,15 +107,10 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const activeConversationIdRef = useRef<string | null>(null)
-  const messagesLengthRef = useRef(0)
 
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId
   }, [activeConversationId])
-
-  useEffect(() => {
-    messagesLengthRef.current = messages.length
-  }, [messages.length])
 
   useEffect(() => {
     if (!open) return
@@ -126,10 +121,6 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
         .then((saved) => {
           if (cancelled) return
           setConversations(saved)
-          if (activeConversationIdRef.current || messagesLengthRef.current > 0 || saved.length === 0) return
-          const latest = saved[0]
-          setActiveConversationId(latest.id)
-          setMessages(latest.messages.map((m) => ({ role: m.role as ChatRole, content: m.content })))
         })
         .catch((err) => {
           if (!cancelled) setError("I didn't quite get that, please try again.")
