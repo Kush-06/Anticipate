@@ -17,6 +17,7 @@ import { ProfileProvider, useProfile } from "./context/ProfileContext";
 import { TimelineProvider } from "./context/TimelineContext";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { CommunityScreen } from "./components/CommunityScreen";
+import { NotificationScheduler } from "./components/NotificationScheduler";
 
 function MainApp() {
   const { completedOnboarding } = useProfile();
@@ -38,21 +39,24 @@ function MainApp() {
             <OnboardingFlow />
           </div>
         ) : (
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<HomeScreen />} />
-              <Route path="/decoder" element={<DecoderPage />} />
-              <Route path="/learn" element={<PlayfulHome />} />
-              <Route path="/community" element={<CommunityScreen />} />
-              <Route path="/profile" element={<ProfileScreen />} />
-              <Route path="/notifications" element={<NotificationsScreen />} />
-              <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
-              <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
-              <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
-              <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
-              <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
-            </Route>
-          </Routes>
+          <>
+            <NotificationScheduler />
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<HomeScreen />} />
+                <Route path="/decoder" element={<DecoderPage />} />
+                <Route path="/learn" element={<PlayfulHome />} />
+                <Route path="/community" element={<CommunityScreen />} />
+                <Route path="/profile" element={<ProfileScreen />} />
+                <Route path="/notifications" element={<NotificationsScreen />} />
+                <Route path="/topic/:topicId" element={<PlayfulLessonPlan />} />
+                <Route path="/topic/:topicId/quiz" element={<PlayfulQuiz />} />
+                <Route path="/topic/:topicId/subtopic/:subTopicId" element={<PlayfulSubTopic />} />
+                <Route path="/topic/:topicId/subtopic/:subTopicId/quiz" element={<PlayfulQuiz />} />
+                <Route path="/topic/:topicId/subtopic/:subTopicId/complete" element={<LessonComplete />} />
+              </Route>
+            </Routes>
+          </>
         )}
       </TimelineProvider>
     </ProgressProvider>
