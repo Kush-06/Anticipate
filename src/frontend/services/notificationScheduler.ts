@@ -10,6 +10,7 @@ export interface TimelineReminder {
   title: string
   body: string
   scheduleAt: Date
+  lessonPath?: string
 }
 
 interface LessonRef {
@@ -66,6 +67,7 @@ export function buildTimelineReminders(
         ? `Due ${item.when} — finish "${lessonTitle}" before then`
         : `Coming up ${item.when} — don't forget to prepare`,
       scheduleAt: nextReminder,
+      lessonPath: item.lessonPath,
     })
   }
 
