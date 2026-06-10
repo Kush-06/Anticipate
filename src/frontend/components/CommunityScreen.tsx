@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { TopicIcon } from './TopicIcon'
 import { SageAvatar } from './SageAvatar'
-import { MessageSquare, Send, ArrowLeft, AlertCircle, CheckCircle, HelpCircle, RotateCw, CornerUpLeft } from 'lucide-react'
+import { MessageSquare, Send, ArrowLeft, AlertCircle, CheckCircle, HelpCircle, RotateCw, CornerUpLeft, Heart } from 'lucide-react'
 import { topics } from '../data/topics'
 import { sendChatMessage } from '../services/aiChatService'
 import { Toaster, toast } from 'sonner'
@@ -14,10 +14,14 @@ import {
   createMessage,
   fetchReplyCount,
   getUserNickname,
+  getReactorId,
+  fetchReactionSummaries,
+  toggleMessageReaction,
   validatePostWithSage,
   type ForumThread,
   type ForumMessage,
-  type SageValidationResult
+  type SageValidationResult,
+  type MessageReactionSummary
 } from '../../backend/forumService'
 
 export function CommunityScreen() {
@@ -39,6 +43,10 @@ export function CommunityScreen() {
   const [activeThread, setActiveThread] = useState<ForumThread | null>(null)
   const [messages, setMessages] = useState<ForumMessage[]>([])
   const [loadingMessages, setLoadingMessages] = useState(false)
+
+  // Message reaction (like) state
+  const [reactionSummaries, setReactionSummaries] = useState<Record<string, MessageReactionSummary>>({})
+  const [pendingReactionIds, setPendingReactionIds] = useState<Set<string>>(new Set())
   const [replyInput, setReplyInput] = useState('')
   const [postingReply, setPostingReply] = useState(false)
   const [jumpingSageMessageId, setJumpingSageMessageId] = useState<string | null>(null)
@@ -443,14 +451,20 @@ export function CommunityScreen() {
   useEffect(() => {
     if (!activeThread) return
     let active = true
-    
+    let threadMessageIds = new Set<string>()
+    const reactorId = getReactorId(userId)
+
     async function loadMessages() {
       setLoadingMessages(true)
       try {
         const fetched = await fetchMessages(activeThread!.id)
         // Add a small delay to allow the slide-in animation to finish smoothly without GPU stutter
         await new Promise(resolve => setTimeout(resolve, 200))
-        if (active) setMessages(fetched)
+        if (!active) return
+        setMessages(fetched)
+        threadMessageIds = new Set(fetched.map((m) => m.id))
+        const summaries = await fetchReactionSummaries(fetched.map((m) => m.id), reactorId)
+        if (active) setReactionSummaries(summaries)
       } catch (err) {
         console.error('Failed to load messages:', err)
       } finally {
@@ -485,11 +499,62 @@ export function CommunityScreen() {
         console.log(`Supabase Realtime thread messages subscription status: ${status}`, err || '')
       })
 
+    // Subscribe to reaction changes for messages in this thread, so likes from
+    // other viewers update live. Own optimistic updates are skipped via the
+    // reactedByMe checks below to avoid double-counting.
+    const reactionChannel = supabase
+      .channel(`forum_message_reactions_thread_${activeThread.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'forum_message_reactions' },
+        (payload) => {
+          const row = payload.new as { message_id: string; reactor_id: string }
+          if (!active || !threadMessageIds.has(row.message_id)) return
+          setReactionSummaries((prev) => {
+            const existing = prev[row.message_id] ?? { count: 0, reactedByMe: false }
+            if (row.reactor_id === reactorId && existing.reactedByMe) return prev
+            return {
+              ...prev,
+              [row.message_id]: {
+                count: existing.count + 1,
+                reactedByMe: existing.reactedByMe || row.reactor_id === reactorId
+              }
+            }
+          })
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'forum_message_reactions' },
+        (payload) => {
+          const row = payload.old as { message_id: string; reactor_id: string }
+          if (!active || !threadMessageIds.has(row.message_id)) return
+          setReactionSummaries((prev) => {
+            const existing = prev[row.message_id]
+            if (!existing) return prev
+            const wasMine = row.reactor_id === reactorId
+            if (wasMine && !existing.reactedByMe) return prev
+            return {
+              ...prev,
+              [row.message_id]: {
+                count: Math.max(0, existing.count - 1),
+                reactedByMe: wasMine ? false : existing.reactedByMe
+              }
+            }
+          })
+        }
+      )
+      .subscribe((status, err) => {
+        console.log(`Supabase Realtime reactions subscription status: ${status}`, err || '')
+      })
+
     return () => {
       active = false
       void supabase.removeChannel(channel)
+      void supabase.removeChannel(reactionChannel)
+      setReactionSummaries({})
     }
-  }, [activeThread])
+  }, [activeThread, userId])
 
   // Scroll to bottom of messages when messages change or reply banner toggles
   useEffect(() => {
@@ -722,6 +787,31 @@ Keep it short (2-3 sentences max) and helpful.`
     }
   }
 
+  const handleToggleReaction = async (messageId: string) => {
+    if (pendingReactionIds.has(messageId)) return
+    const previous = reactionSummaries[messageId] ?? { count: 0, reactedByMe: false }
+    const optimistic: MessageReactionSummary = {
+      count: previous.reactedByMe ? Math.max(0, previous.count - 1) : previous.count + 1,
+      reactedByMe: !previous.reactedByMe
+    }
+    setReactionSummaries((prev) => ({ ...prev, [messageId]: optimistic }))
+    setPendingReactionIds((prev) => new Set(prev).add(messageId))
+
+    try {
+      await toggleMessageReaction(messageId, getReactorId(userId))
+    } catch (err) {
+      console.error('Failed to toggle reaction:', err)
+      setReactionSummaries((prev) => ({ ...prev, [messageId]: previous }))
+      toast.error('Failed to update like.')
+    } finally {
+      setPendingReactionIds((prev) => {
+        const next = new Set(prev)
+        next.delete(messageId)
+        return next
+      })
+    }
+  }
+
   return (
     <div className="anp-app" style={{ background: 'var(--p-bg)' }}>
       {/* Toast notifications positioned at the bottom center to avoid top notch cutoff */}
@@ -881,9 +971,9 @@ Keep it short (2-3 sentences max) and helpful.`
               <div style={{ fontSize: 13, color: 'var(--p-ink-3)', marginTop: 4, maxWidth: 220 }}>
                 Be the first to ask a question anonymously or start a discussion!
               </div>
-              <button 
+              <button
                 onClick={handleOpenCreate}
-                className="av-sage__cta" 
+                className="av-sage__cta"
                 style={{ marginTop: 16 }}
               >
                 Ask the community
@@ -1579,6 +1669,35 @@ Keep it short (2-3 sentences max) and helpful.`
                             title="Reply"
                           >
                             <CornerUpLeft size={14} />
+                          </button>
+
+                          {/* Like button next to the bubble */}
+                          <button
+                            onClick={() => void handleToggleReaction(m.id)}
+                            disabled={pendingReactionIds.has(m.id)}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              color: reactionSummaries[m.id]?.reactedByMe ? 'var(--p-coral)' : 'var(--p-ink-3)',
+                              opacity: reactionSummaries[m.id]?.reactedByMe ? 1 : 0.6,
+                              cursor: 'pointer',
+                              padding: 6,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 3,
+                              borderRadius: '50%',
+                              transition: 'all 0.15s ease',
+                              outline: 'none',
+                              flexShrink: 0
+                            }}
+                            className="anp-reply-icon-btn"
+                            title="Like"
+                            aria-label={reactionSummaries[m.id]?.reactedByMe ? 'Remove like' : 'Like message'}
+                          >
+                            <Heart size={14} fill={reactionSummaries[m.id]?.reactedByMe ? 'var(--p-coral)' : 'none'} />
+                            {(reactionSummaries[m.id]?.count ?? 0) > 0 && (
+                              <span style={{ fontSize: 10, fontWeight: 600 }}>{reactionSummaries[m.id]!.count}</span>
+                            )}
                           </button>
                         </div>
                       </div>
