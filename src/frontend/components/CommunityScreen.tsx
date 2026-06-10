@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { TopicIcon } from './TopicIcon'
 import { SageAvatar } from './SageAvatar'
-import { MessageSquare, Send, ArrowLeft, AlertCircle, CheckCircle, HelpCircle, RotateCw, CornerUpLeft } from 'lucide-react'
+import { MessageSquare, Send, ArrowLeft, AlertCircle, CheckCircle, HelpCircle, RotateCw, CornerUpLeft, Heart, Search } from 'lucide-react'
 import { topics } from '../data/topics'
 import { sendChatMessage } from '../services/aiChatService'
 import { Toaster, toast } from 'sonner'
 import { supabase } from '@backend/supabaseClient'
+import { useProfile } from '../context/ProfileContext'
 import {
   fetchThreads,
   createThread,
@@ -14,15 +15,21 @@ import {
   createMessage,
   fetchReplyCount,
   getUserNickname,
+  getReactorId,
+  fetchReactionSummaries,
+  toggleMessageReaction,
+  notifyForumActivity,
   validatePostWithSage,
   type ForumThread,
   type ForumMessage,
-  type SageValidationResult
+  type SageValidationResult,
+  type MessageReactionSummary
 } from '../../backend/forumService'
 
 export function CommunityScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { userId } = useProfile()
   
   // Topic filtering - driven directly by searchParams URL query state
   const selectedTopicId = searchParams.get('topic') || 'all'
@@ -34,11 +41,16 @@ export function CommunityScreen() {
   const [threads, setThreads] = useState<ForumThread[]>([])
   const [replyCounts, setReplyCounts] = useState<Record<string, number>>({})
   const [loadingThreads, setLoadingThreads] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Active Thread / Messaging view
   const [activeThread, setActiveThread] = useState<ForumThread | null>(null)
   const [messages, setMessages] = useState<ForumMessage[]>([])
   const [loadingMessages, setLoadingMessages] = useState(false)
+
+  // Message reaction (like) state
+  const [reactionSummaries, setReactionSummaries] = useState<Record<string, MessageReactionSummary>>({})
+  const [pendingReactionIds, setPendingReactionIds] = useState<Set<string>>(new Set())
   const [replyInput, setReplyInput] = useState('')
   const [postingReply, setPostingReply] = useState(false)
   const [jumpingSageMessageId, setJumpingSageMessageId] = useState<string | null>(null)
@@ -228,7 +240,6 @@ export function CommunityScreen() {
     }
   }
 
-  const userId = localStorage.getItem('anticipate_uid')
   const userNickname = getUserNickname()
 
   // Track visual viewport changes (e.g. keyboard showing up on iOS)
@@ -443,14 +454,20 @@ export function CommunityScreen() {
   useEffect(() => {
     if (!activeThread) return
     let active = true
-    
+    let threadMessageIds = new Set<string>()
+    const reactorId = getReactorId(userId)
+
     async function loadMessages() {
       setLoadingMessages(true)
       try {
         const fetched = await fetchMessages(activeThread!.id)
         // Add a small delay to allow the slide-in animation to finish smoothly without GPU stutter
         await new Promise(resolve => setTimeout(resolve, 200))
-        if (active) setMessages(fetched)
+        if (!active) return
+        setMessages(fetched)
+        threadMessageIds = new Set(fetched.map((m) => m.id))
+        const summaries = await fetchReactionSummaries(fetched.map((m) => m.id), reactorId)
+        if (active) setReactionSummaries(summaries)
       } catch (err) {
         console.error('Failed to load messages:', err)
       } finally {
@@ -485,11 +502,62 @@ export function CommunityScreen() {
         console.log(`Supabase Realtime thread messages subscription status: ${status}`, err || '')
       })
 
+    // Subscribe to reaction changes for messages in this thread, so likes from
+    // other viewers update live. Own optimistic updates are skipped via the
+    // reactedByMe checks below to avoid double-counting.
+    const reactionChannel = supabase
+      .channel(`forum_message_reactions_thread_${activeThread.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'forum_message_reactions' },
+        (payload) => {
+          const row = payload.new as { message_id: string; reactor_id: string }
+          if (!active || !threadMessageIds.has(row.message_id)) return
+          setReactionSummaries((prev) => {
+            const existing = prev[row.message_id] ?? { count: 0, reactedByMe: false }
+            if (row.reactor_id === reactorId && existing.reactedByMe) return prev
+            return {
+              ...prev,
+              [row.message_id]: {
+                count: existing.count + 1,
+                reactedByMe: existing.reactedByMe || row.reactor_id === reactorId
+              }
+            }
+          })
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'forum_message_reactions' },
+        (payload) => {
+          const row = payload.old as { message_id: string; reactor_id: string }
+          if (!active || !threadMessageIds.has(row.message_id)) return
+          setReactionSummaries((prev) => {
+            const existing = prev[row.message_id]
+            if (!existing) return prev
+            const wasMine = row.reactor_id === reactorId
+            if (wasMine && !existing.reactedByMe) return prev
+            return {
+              ...prev,
+              [row.message_id]: {
+                count: Math.max(0, existing.count - 1),
+                reactedByMe: wasMine ? false : existing.reactedByMe
+              }
+            }
+          })
+        }
+      )
+      .subscribe((status, err) => {
+        console.log(`Supabase Realtime reactions subscription status: ${status}`, err || '')
+      })
+
     return () => {
       active = false
       void supabase.removeChannel(channel)
+      void supabase.removeChannel(reactionChannel)
+      setReactionSummaries({})
     }
-  }, [activeThread])
+  }, [activeThread, userId])
 
   // Scroll to bottom of messages when messages change or reply banner toggles
   useEffect(() => {
@@ -507,6 +575,13 @@ export function CommunityScreen() {
 
   // Get topic object
   const getTopic = (id: string) => topics.find(t => t.id === id)
+
+  // Threads matching the current search query (title only)
+  const filteredThreads = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return threads
+    return threads.filter((t) => t.title.toLowerCase().includes(q))
+  }, [threads, searchQuery])
 
   // Format date helper
   function formatRelativeTime(dateStr: string): string {
@@ -671,12 +746,41 @@ export function CommunityScreen() {
       setMessages(prev => [...prev, newMsg])
       setReplyInput('')
       setReplyToMessage(null) // Reset reply-to after sending
-      
+
       // Increment count locally
       setReplyCounts(prev => ({
         ...prev,
         [activeThread.id]: (prev[activeThread.id] || 0) + 1
       }))
+
+      // Notify whoever the reply is aimed at: a direct reply to a specific
+      // message notifies that message's author, otherwise a top-level reply
+      // notifies the thread's original poster.
+      try {
+        if (replyToMessage) {
+          await notifyForumActivity({
+            recipientId: replyToMessage.user_id,
+            actorUserId: userId,
+            actorNickname: userNickname,
+            type: 'message_reply',
+            threadId: activeThread.id,
+            messageId: newMsg.id,
+            content: trimmed
+          })
+        } else {
+          await notifyForumActivity({
+            recipientId: activeThread.user_id,
+            actorUserId: userId,
+            actorNickname: userNickname,
+            type: 'thread_reply',
+            threadId: activeThread.id,
+            messageId: newMsg.id,
+            content: trimmed
+          })
+        }
+      } catch (err) {
+        console.error('Failed to send forum notification:', err)
+      }
 
       // Handle Sage direct mentions
       if (trimmed.toLowerCase().includes('@sage') || trimmed.toLowerCase().includes('sage')) {
@@ -719,6 +823,50 @@ Keep it short (2-3 sentences max) and helpful.`
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       void handleSendReply()
+    }
+  }
+
+  const handleToggleReaction = async (messageId: string) => {
+    if (pendingReactionIds.has(messageId)) return
+    const previous = reactionSummaries[messageId] ?? { count: 0, reactedByMe: false }
+    const optimistic: MessageReactionSummary = {
+      count: previous.reactedByMe ? Math.max(0, previous.count - 1) : previous.count + 1,
+      reactedByMe: !previous.reactedByMe
+    }
+    setReactionSummaries((prev) => ({ ...prev, [messageId]: optimistic }))
+    setPendingReactionIds((prev) => new Set(prev).add(messageId))
+
+    try {
+      const { reacted } = await toggleMessageReaction(messageId, getReactorId(userId))
+
+      if (reacted) {
+        const likedMessage = messages.find((m) => m.id === messageId)
+        if (likedMessage && activeThread) {
+          try {
+            await notifyForumActivity({
+              recipientId: likedMessage.user_id,
+              actorUserId: userId,
+              actorNickname: userNickname,
+              type: 'message_like',
+              threadId: activeThread.id,
+              messageId: likedMessage.id,
+              content: likedMessage.content
+            })
+          } catch (notifyErr) {
+            console.error('Failed to send forum notification:', notifyErr)
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to toggle reaction:', err)
+      setReactionSummaries((prev) => ({ ...prev, [messageId]: previous }))
+      toast.error('Failed to update like.')
+    } finally {
+      setPendingReactionIds((prev) => {
+        const next = new Set(prev)
+        next.delete(messageId)
+        return next
+      })
     }
   }
 
@@ -779,6 +927,40 @@ Keep it short (2-3 sentences max) and helpful.`
           />
           <span>{isThreadRefreshingState ? 'Refreshing...' : threadPullY > 50 ? 'Release to refresh' : 'Pull to refresh'}</span>
         </div>
+        {/* Thread search */}
+        <div style={{ padding: '8px 16px 0', flexShrink: 0 }}>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--p-ink-3)',
+                pointerEvents: 'none'
+              }}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={handleInputFocus}
+              placeholder="Search threads..."
+              style={{
+                width: '100%',
+                padding: '8px 10px 8px 34px',
+                borderRadius: 'var(--r-md)',
+                border: '1.5px solid var(--p-line)',
+                background: '#ffffff',
+                fontSize: 16,
+                color: 'var(--p-ink)',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+        </div>
+
         {/* Horizontal filter bar */}
         <div className="anp-community-filters" style={{
           display: 'flex',
@@ -881,17 +1063,35 @@ Keep it short (2-3 sentences max) and helpful.`
               <div style={{ fontSize: 13, color: 'var(--p-ink-3)', marginTop: 4, maxWidth: 220 }}>
                 Be the first to ask a question anonymously or start a discussion!
               </div>
-              <button 
+              <button
                 onClick={handleOpenCreate}
-                className="av-sage__cta" 
+                className="av-sage__cta"
                 style={{ marginTop: 16 }}
               >
                 Ask the community
               </button>
             </div>
+          ) : filteredThreads.length === 0 ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '64px 24px',
+              textAlign: 'center',
+              background: 'var(--p-card)',
+              borderRadius: 'var(--r-xl)',
+              border: '1.5px solid var(--p-line)'
+            }}>
+              <Search size={32} style={{ color: 'var(--p-ink-4)', marginBottom: 12 }} />
+              <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--p-ink)' }}>No threads match your search</div>
+              <div style={{ fontSize: 13, color: 'var(--p-ink-3)', marginTop: 4, maxWidth: 220 }}>
+                Try a different search term or clear the search.
+              </div>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {threads.map((t) => {
+              {filteredThreads.map((t) => {
                 const topic = getTopic(t.topic_id)
                 const replies = replyCounts[t.id] ?? 0
                 return (
@@ -1579,6 +1779,35 @@ Keep it short (2-3 sentences max) and helpful.`
                             title="Reply"
                           >
                             <CornerUpLeft size={14} />
+                          </button>
+
+                          {/* Like button next to the bubble */}
+                          <button
+                            onClick={() => void handleToggleReaction(m.id)}
+                            disabled={pendingReactionIds.has(m.id)}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              color: reactionSummaries[m.id]?.reactedByMe ? 'var(--p-coral)' : 'var(--p-ink-3)',
+                              opacity: reactionSummaries[m.id]?.reactedByMe ? 1 : 0.6,
+                              cursor: 'pointer',
+                              padding: 6,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 3,
+                              borderRadius: '50%',
+                              transition: 'all 0.15s ease',
+                              outline: 'none',
+                              flexShrink: 0
+                            }}
+                            className="anp-reply-icon-btn"
+                            title="Like"
+                            aria-label={reactionSummaries[m.id]?.reactedByMe ? 'Remove like' : 'Like message'}
+                          >
+                            <Heart size={14} fill={reactionSummaries[m.id]?.reactedByMe ? 'var(--p-coral)' : 'none'} />
+                            {(reactionSummaries[m.id]?.count ?? 0) > 0 && (
+                              <span style={{ fontSize: 10, fontWeight: 600 }}>{reactionSummaries[m.id]!.count}</span>
+                            )}
                           </button>
                         </div>
                       </div>

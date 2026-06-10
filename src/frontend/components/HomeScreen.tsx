@@ -5,6 +5,8 @@ import { useTimeline } from "../context/TimelineContext";
 import type { SpineItem } from "../context/TimelineContext";
 import { useProgress } from "../context/ProgressContext";
 import { topics, getRecommendedTopics } from "../data/topics";
+import { getFallbackAccessibleTimelineItemId, isTimelineItemAccessible } from "../utils/timelineAccessibility";
+import { getTimelineItemDestination } from "../utils/timelineNavigation";
 import { SageAvatar } from "./SageAvatar";
 import { AppIcon } from "./AppIcon";
 import { TopBar } from "./TopBar";
@@ -23,10 +25,42 @@ function getGreeting(name: string) {
   );
 }
 
-function SpineNode({ item, isLast, onNavigate }: { item: SpineItem; isLast: boolean; onNavigate: (path: string) => void }) {
-  const isActive = item.status === "active";
+function SpineNode({
+  item,
+  isLast,
+  isAccessible,
+  destination,
+  onNavigate,
+}: {
+  item: SpineItem;
+  isLast: boolean;
+  isAccessible: boolean;
+  destination: string | null;
+  onNavigate: (path: string) => void;
+}) {
+  const isExplicitlyActive = item.status === "active";
+  const isActive = isExplicitlyActive || isAccessible;
+  const canNavigate = isActive && destination !== null;
+
+  const handleOpen = () => {
+    if (canNavigate) onNavigate(destination);
+  };
+
   return (
-    <div className="av-spine-item" style={{ "--is-last": isLast ? "1" : "0" } as React.CSSProperties}>
+    <div
+      className={`av-spine-item ${item.status === "done" ? "is-done" : ""} ${canNavigate ? "is-clickable" : ""}`}
+      style={{ "--is-last": isLast ? "1" : "0" } as React.CSSProperties}
+      role={canNavigate ? "button" : undefined}
+      tabIndex={canNavigate ? 0 : undefined}
+      onClick={handleOpen}
+      onKeyDown={(event) => {
+        if (!canNavigate) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleOpen();
+        }
+      }}
+    >
       <div className="av-spine-rail">
         <div className={`av-spine-node ${isActive ? "active" : item.status === "done" ? "done" : ""}`}>
           {isActive
@@ -41,11 +75,11 @@ function SpineNode({ item, isLast, onNavigate }: { item: SpineItem; isLast: bool
         <div className="av-spine-when">{item.when}</div>
         <div className="av-spine-ttl">{item.title}</div>
         <span className="av-spine-tag">{item.tag}</span>
-        {isActive && item.lessonPath && (
+        {isActive && canNavigate && (
           <div>
-            <button className="av-spine-go" onClick={() => onNavigate(item.lessonPath!)}>
-              Start now <AppIcon name="arrowRight" size={12} stroke={2} />
-            </button>
+            <span className="av-spine-go">
+              {item.lessonPath ? "Start now" : "Explore topic"} <AppIcon name="arrowRight" size={12} stroke={2} />
+            </span>
           </div>
         )}
       </div>
@@ -68,6 +102,7 @@ export function HomeScreen() {
       const skipped = sessionStorage.getItem("anticipate_skipped_extra_details");
       const justOnboarded = localStorage.getItem("anticipate_just_onboarded") === "true";
       if (pending.length > 0 && !skipped && justOnboarded) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowExtraPopup(true);
       }
     }
@@ -123,6 +158,7 @@ export function HomeScreen() {
   const nextLesson = activeEntry?.topic.subTopics.find((s) => !completedSubTopicIds.includes(s.id));
 
   const totalItems = groups.reduce((a, g) => a + g.items.length, 0);
+  const accessibleItemId = getFallbackAccessibleTimelineItemId(groups.flatMap((g) => g.items));
 
   return (
     <div className="anp-app" style={{ background: "var(--p-bg)" }}>
@@ -264,6 +300,8 @@ export function HomeScreen() {
                     key={item.id}
                     item={item}
                     isLast={i === group.items.length - 1 && group.key === "later"}
+                    isAccessible={isTimelineItemAccessible(item, accessibleItemId)}
+                    destination={getTimelineItemDestination(item, topics)}
                     onNavigate={navigate}
                   />
                 ))}

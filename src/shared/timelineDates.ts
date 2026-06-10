@@ -33,13 +33,13 @@ const MONTH_INDEX: Record<string, number> = {
   december: 12,
 }
 
-function startOfToday(today = new Date()): Date {
+export function startOfToday(today = new Date()): Date {
   const date = new Date(today)
   date.setHours(0, 0, 0, 0)
   return date
 }
 
-function addDays(date: Date, days: number): Date {
+export function addDays(date: Date, days: number): Date {
   const next = new Date(date)
   next.setDate(next.getDate() + days)
   return next

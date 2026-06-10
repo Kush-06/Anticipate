@@ -24,6 +24,11 @@ export interface ForumMessage {
   parent_nickname?: string | null
 }
 
+export interface MessageReactionSummary {
+  count: number
+  reactedByMe: boolean
+}
+
 export interface SageValidationResult {
   relevance: 'relevant' | 'off_topic'
   bestTopicId: string | null
@@ -35,6 +40,7 @@ export interface SageValidationResult {
   explanation: string
 }
 
+const ANON_ID_KEY = 'anticipate_anon_id'
 const NICKNAME_KEY = 'anticipate_anon_nickname'
 const ANIMALS = [
   'Owl', 'Badger', 'Fox', 'Squirrel', 'Panda', 'Koala', 'Otter', 'Hedgehog',
@@ -51,6 +57,19 @@ export function getUserNickname(): string {
     localStorage.setItem(NICKNAME_KEY, name)
   }
   return name
+}
+
+// Stable id used to dedupe message reactions. Falls back to a generated
+// per-device id for anonymous users, since anticipate_uid is only set when
+// the user is authenticated.
+export function getReactorId(userId?: string | null): string {
+  if (userId) return userId
+  let id = localStorage.getItem(ANON_ID_KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(ANON_ID_KEY, id)
+  }
+  return id
 }
 
 // PUBLIC SERVICE METHODS
@@ -156,6 +175,61 @@ export async function fetchReplyCount(threadId: string): Promise<number> {
   return count
 }
 
+export async function fetchReactionSummaries(
+  messageIds: string[],
+  reactorId: string
+): Promise<Record<string, MessageReactionSummary>> {
+  const summaries: Record<string, MessageReactionSummary> = {}
+  if (messageIds.length === 0) return summaries
+
+  const { data, error } = await supabase
+    .from('forum_message_reactions')
+    .select('message_id, reactor_id')
+    .in('message_id', messageIds)
+
+  if (error) throw new Error(`fetchReactionSummaries failed: ${error.message}`)
+
+  const rows = (data ?? []) as { message_id: string; reactor_id: string }[]
+  for (const row of rows) {
+    const summary = summaries[row.message_id] ?? { count: 0, reactedByMe: false }
+    summary.count += 1
+    if (row.reactor_id === reactorId) summary.reactedByMe = true
+    summaries[row.message_id] = summary
+  }
+  return summaries
+}
+
+export async function toggleMessageReaction(
+  messageId: string,
+  reactorId: string
+): Promise<{ reacted: boolean }> {
+  const { data: existing, error: fetchError } = await supabase
+    .from('forum_message_reactions')
+    .select('id')
+    .eq('message_id', messageId)
+    .eq('reactor_id', reactorId)
+    .maybeSingle()
+
+  if (fetchError) throw new Error(`toggleMessageReaction lookup failed: ${fetchError.message}`)
+
+  if (existing) {
+    const { error } = await supabase
+      .from('forum_message_reactions')
+      .delete()
+      .eq('id', (existing as { id: string }).id)
+
+    if (error) throw new Error(`toggleMessageReaction delete failed: ${error.message}`)
+    return { reacted: false }
+  }
+
+  const { error } = await supabase
+    .from('forum_message_reactions')
+    .insert({ message_id: messageId, reactor_id: reactorId })
+
+  if (error) throw new Error(`toggleMessageReaction insert failed: ${error.message}`)
+  return { reacted: true }
+}
+
 
 export async function createMessage(
   threadId: string,
@@ -200,6 +274,83 @@ export async function createMessage(
 
   if (error) throw new Error(`createMessage failed: ${error.message}`)
   return data as ForumMessage
+}
+
+// FORUM NOTIFICATIONS
+
+export type ForumNotificationType = 'thread_reply' | 'message_reply' | 'message_like'
+
+export interface ForumNotification {
+  id: string
+  recipient_id: string
+  type: ForumNotificationType
+  thread_id: string
+  message_id: string | null
+  actor_nickname: string
+  preview: string | null
+  created_at: string
+  read_at: string | null
+}
+
+const NOTIFICATION_PREVIEW_LENGTH = 140
+
+function truncatePreview(content: string): string {
+  const trimmed = content.trim()
+  return trimmed.length > NOTIFICATION_PREVIEW_LENGTH
+    ? `${trimmed.slice(0, NOTIFICATION_PREVIEW_LENGTH)}…`
+    : trimmed
+}
+
+// Records a forum notification for `recipientId`. No-ops if there's no
+// recipient to notify (anonymous authors have no stable id) or the recipient
+// is the person who triggered the activity (no self-notifications).
+export async function notifyForumActivity(params: {
+  recipientId?: string | null
+  actorUserId?: string | null
+  actorNickname: string
+  type: ForumNotificationType
+  threadId: string
+  messageId?: string | null
+  content: string
+}): Promise<void> {
+  const { recipientId, actorUserId, actorNickname, type, threadId, messageId, content } = params
+  if (!recipientId || recipientId === actorUserId) return
+
+  const { error } = await supabase
+    .from('forum_notifications')
+    .insert({
+      recipient_id: recipientId,
+      type,
+      thread_id: threadId,
+      message_id: messageId || null,
+      actor_nickname: actorNickname,
+      preview: truncatePreview(content)
+    })
+
+  if (error) throw new Error(`notifyForumActivity failed: ${error.message}`)
+}
+
+export async function fetchForumNotifications(recipientId: string): Promise<ForumNotification[]> {
+  const { data, error } = await supabase
+    .from('forum_notifications')
+    .select('*')
+    .eq('recipient_id', recipientId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(`fetchForumNotifications failed: ${error.message}`)
+  return (data ?? []) as ForumNotification[]
+}
+
+export async function markForumNotificationsRead(notificationIds: string[]): Promise<void> {
+  if (notificationIds.length === 0) return
+
+  const { error } = await supabase
+    .from('forum_notifications')
+    .update({ read_at: new Date().toISOString() })
+    .in('id', notificationIds)
+    .is('read_at', null)
+
+  if (error) throw new Error(`markForumNotificationsRead failed: ${error.message}`)
 }
 
 // SAGE AI MODERATION AND REDIRECT CHECKER

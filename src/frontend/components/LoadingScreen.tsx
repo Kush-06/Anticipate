@@ -2,29 +2,35 @@ import { useEffect, useState } from "react";
 import { SageAvatar } from "./SageAvatar";
 
 export function LoadingScreen({ onFinished, fade = true }: { onFinished: () => void; fade?: boolean }) {
+  const [avatarJumping, setAvatarJumping] = useState(false);
   const [fadeAway, setFadeAway] = useState(false);
 
   useEffect(() => {
+    const jumpTimer = setTimeout(() => {
+      setAvatarJumping(true);
+    }, 550);
+
     if (fade) {
-      // Start fading out slightly before the 1.5 second loading ends
       const fadeTimer = setTimeout(() => {
         setFadeAway(true);
-      }, 1200);
+      }, 1500);
 
       const finishTimer = setTimeout(() => {
         onFinished();
-      }, 1500);
+      }, 1800);
 
       return () => {
+        clearTimeout(jumpTimer);
         clearTimeout(fadeTimer);
         clearTimeout(finishTimer);
       };
     } else {
       const finishTimer = setTimeout(() => {
         onFinished();
-      }, 1200);
+      }, 1500);
 
       return () => {
+        clearTimeout(jumpTimer);
         clearTimeout(finishTimer);
       };
     }
@@ -55,7 +61,7 @@ export function LoadingScreen({ onFinished, fade = true }: { onFinished: () => v
           gap: "calc(4px * var(--d, 1))",
         }}
       >
-        <SageAvatar size={100} />
+        <SageAvatar size={100} leafJump={avatarJumping} />
         <div
           style={{
             fontFamily: "var(--font-display, 'Bricolage Grotesque')",

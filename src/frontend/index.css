@@ -2157,7 +2157,14 @@ body {
 .av-spine-item {
   display: grid; grid-template-columns: calc(34px * var(--d)) 1fr;
   gap: calc(13px * var(--d)); position: relative;
+  border-radius: calc(12px * var(--d));
 }
+.av-spine-item.is-clickable { cursor: pointer; }
+.av-spine-item.is-clickable:focus-visible {
+  outline: 2px solid var(--p-coral);
+  outline-offset: 4px;
+}
+.av-spine-item.is-clickable:active .av-spine-ttl { transform: translateY(1px); }
 .av-spine-rail { display: flex; flex-direction: column; align-items: center; }
 .av-spine-node {
   width: calc(34px * var(--d)); height: calc(34px * var(--d)); border-radius: 50%;
@@ -2187,12 +2194,12 @@ body {
 }
 .av-spine-go {
   margin-top: calc(9px * var(--d)); display: inline-flex; align-items: center; gap: 5px;
-  white-space: nowrap; background: var(--p-ink); color: #fff; border: none; cursor: pointer;
+  white-space: nowrap; background: var(--p-ink); color: #fff; border: none;
   font-family: var(--p-sans); font-weight: 600; font-size: calc(12px * var(--d));
   padding: calc(8px * var(--d)) calc(13px * var(--d)); border-radius: 999px;
   box-shadow: 0 3px 0 #0b0a0e; transition: transform 0.12s, box-shadow 0.12s;
 }
-.av-spine-go:active { transform: translateY(2px); box-shadow: 0 1px 0 #0b0a0e; }
+.av-spine-item.is-clickable:active .av-spine-go { transform: translateY(2px); box-shadow: 0 1px 0 #0b0a0e; }
 
 /* ============================================================
    ANTICIPATE LOGO & BOTTOM NAVIGATION
