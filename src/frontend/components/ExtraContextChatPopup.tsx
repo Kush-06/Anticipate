@@ -523,11 +523,15 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
     if (currentQuestion) {
       const val = profile?.[currentQuestion.field];
       if (val !== undefined && val !== null) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setInputValue(String(val));
       } else {
+         
         setInputValue("");
       }
+       
       setTypingComplete(false);
+       
       setErrorMsg("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -640,8 +644,6 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
     };
   }, [isOpen]);
 
-  if (!isOpen || !profile) return null;
-
   const handleSkipAll = () => {
     sessionStorage.setItem("anticipate_skipped_extra_details", "true");
     onClose();
@@ -670,9 +672,9 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
         // All finished!
         setShowFinishedScreen(true);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err?.message || "Failed to save details. Please try again.");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save details. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -711,6 +713,8 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
   }, [currentStep, showFinishedScreen, rawParagraphs, profile?.firstName]);
 
   const totalSteps = questions.length;
+
+  if (!isOpen || !profile) return null;
 
   return (
     <div
