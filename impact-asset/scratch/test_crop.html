@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #e2dbd0;
+      margin: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+    }
+    
+    /* Store Badges Crop Tests */
+    .badge-crop-container {
+      position: relative;
+      overflow: hidden;
+      border: 1px dashed red;
+    }
+    .badge-crop-container img {
+      position: absolute;
+    }
+
+    /* Phone Mockup Border Refinement Tests */
+    .phone-container {
+      position: relative;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      background: #fdfaf6;
+    }
+    .phone-container img {
+      position: absolute;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Section 1: Badges Crop -->
+  <div class="test-section">
+    <h2>Badges Crop Tests</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <!-- Crop A: W 220px, H 30px, top -26px -->
+      <div>
+        <h4>Crop A: W 220px, H 30px, top -26px</h4>
+        <div class="badge-crop-container" style="width: 220px; height: 30px;">
+          <img src="../store_badges.png" style="width: 220px; height: auto; top: -26px; left: 0;">
+        </div>
+      </div>
+      <!-- Crop B: W 220px, H 28px, top -28px -->
+      <div>
+        <h4>Crop B: W 220px, H 28px, top -28px</h4>
+        <div class="badge-crop-container" style="width: 220px; height: 28px;">
+          <img src="../store_badges.png" style="width: 220px; height: auto; top: -28px; left: 0;">
+        </div>
+      </div>
+      <!-- Crop C: W 210px, H 28px, top -25px -->
+      <div>
+        <h4>Crop C: W 210px, H 28px, top -25px</h4>
+        <div class="badge-crop-container" style="width: 210px; height: 28px;">
+          <img src="../store_badges.png" style="width: 210px; height: auto; top: -25px; left: 0;">
+        </div>
+      </div>
+      <!-- Crop D: W 210px, H 26px, top -27px -->
+      <div>
+        <h4>Crop D: W 210px, H 26px, top -27px</h4>
+        <div class="badge-crop-container" style="width: 210px; height: 26px;">
+          <img src="../store_badges.png" style="width: 210px; height: auto; top: -27px; left: 0;">
+        </div>
+      </div>
+      <!-- Crop E: W 230px, H 32px, top -28px -->
+      <div>
+        <h4>Crop E: W 230px, H 32px, top -28px</h4>
+        <div class="badge-crop-container" style="width: 230px; height: 32px;">
+          <img src="../store_badges.png" style="width: 230px; height: auto; top: -28px; left: 0;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Phone Border Refinement -->
+  <div class="test-section">
+    <h2>Phone Border Refinement</h2>
+    <div style="display: flex; gap: 30px;">
+      <!-- Refinement 2: 4.5px border, scaled img -->
+      <div>
+        <h4>Refinement 2: 4.5px border, scaled img</h4>
+        <div class="phone-container" style="width: 205px; height: 421px; border: 4.5px solid #14131a;">
+          <img src="../home_screen.png" style="width: 213px; height: 437px; left: -8.5px; top: -12.5px;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

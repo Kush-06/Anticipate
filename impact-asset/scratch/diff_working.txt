@@ -1,0 +1,951 @@
+diff --git a/scripts/build-poster.js b/scripts/build-poster.js
+index 37d9759..12e9767 100644
+--- a/scripts/build-poster.js
++++ b/scripts/build-poster.js
+@@ -66,46 +66,92 @@ const htmlContent = `<!DOCTYPE html>
+       color: var(--p-ink);
+       margin: 0;
+       padding: 0;
++      overflow: hidden;
++    }
++
++    #poster-wrapper {
++      width: 100vw;
++      height: 100vh;
+       display: flex;
+-      flex-direction: column;
+       align-items: center;
+       justify-content: center;
+-      min-height: 100vh;
++      overflow: hidden;
++      box-sizing: border-box;
+     }
+ 
+     /* Poster Container (Vibrant Orange Background themed from the app) */
+     #poster-page {
+       width: 1120px;
+-      height: 770px;
++      height: 792px;
++      box-sizing: border-box;
++      padding: 12px 28px 16px 28px;
++      position: relative;
++      z-index: 1;
++      display: flex;
++      flex-direction: column;
++      gap: 10px;
++      overflow: hidden;
++      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
++    }
++
++    #poster-page::before {
++      content: "";
++      position: absolute;
++      top: 0;
++      left: 0;
++      right: 0;
++      bottom: 0;
+       background-color: var(--p-coral);
+       background-image: 
+         radial-gradient(rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px),
+         radial-gradient(rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px);
+       background-size: 28px 28px;
+       background-position: 0 0, 14px 14px;
++      z-index: -2;
++      pointer-events: none;
++    }
++
++    .poster-header-strip {
++      display: flex;
++      justify-content: space-between;
++      width: 100%;
++      border-bottom: 1.5px solid rgba(255, 255, 255, 0.35);
++      padding-bottom: 6px;
++      font-family: var(--font-mono);
++      font-size: 11px;
++      font-weight: 700;
++      color: #fffdf8;
++      text-transform: uppercase;
++      letter-spacing: 0.15em;
+       box-sizing: border-box;
+-      padding: 40px 45px;
+-      position: relative;
++    }
++
++    .columns-grid {
+       display: grid;
+       grid-template-columns: 1.15fr 1.35fr 1.15fr;
+-      gap: 35px;
+-      overflow: hidden;
+-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
++      gap: 26px;
++      flex: 1;
++      min-height: 0;
++      box-sizing: border-box;
++      position: relative;
++      z-index: 10;
++      transform: translate3d(0, 0, 0);
+     }
+ 
+     /* Columns layout transformed to rounded cards overlaying the orange background */
+     .col {
+       background-color: var(--p-card);
+       border-radius: 24px;
+-      padding: 24px 22px;
++      padding: 14px 16px;
+       box-shadow: 0 10px 35px rgba(28, 26, 36, 0.1);
+       display: flex;
+       flex-direction: column;
+       justify-content: space-between;
+       height: 100%;
+       box-sizing: border-box;
+-      z-index: 5;
++      z-index: 10;
+       position: relative;
++      transform: translate3d(0, 0, 0);
+     }
+ 
+     /* Column headers */
+@@ -116,9 +162,9 @@ const htmlContent = `<!DOCTYPE html>
+       text-transform: uppercase;
+       color: var(--p-coral);
+       letter-spacing: 0.15em;
+-      margin-bottom: 12px;
++      margin-bottom: 8px;
+       border-bottom: 2px solid var(--p-ink);
+-      padding-bottom: 6px;
++      padding-bottom: 4px;
+     }
+ 
+     /* Top Logo section */
+@@ -147,9 +193,9 @@ const htmlContent = `<!DOCTYPE html>
+     /* Double phone presentation styling */
+     .phones-wrapper {
+       position: relative;
+-      width: 280px;
+-      height: 380px;
+-      margin: 10px auto;
++      width: 240px;
++      height: 290px;
++      margin: 8px auto 4px auto;
+       transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+     }
+ 
+@@ -158,7 +204,7 @@ const htmlContent = `<!DOCTYPE html>
+     }
+ 
+     .phone-mockup-new {
+-      width: 175px;
++      width: 146px;
+       height: auto;
+       display: block;
+       filter: drop-shadow(0 12px 24px rgba(28,26,36,0.22));
+@@ -167,7 +213,7 @@ const htmlContent = `<!DOCTYPE html>
+ 
+     /* Tilted background phone (Learn screen) */
+     .phone-back {
+-      left: 100px;
++      left: 85px;
+       top: 5px;
+       transform: rotate(8deg) scale(0.96);
+       z-index: 1;
+@@ -177,10 +223,22 @@ const htmlContent = `<!DOCTYPE html>
+     /* Straight foreground phone (Home timeline screen) */
+     .phone-front {
+       left: 10px;
+-      top: 25px;
++      top: 20px;
+       z-index: 2;
+     }
+ 
++    .phone-peeking-sage-new {
++      position: absolute;
++      width: 80px;
++      height: 80px;
++      left: -32px;
++      top: -20px;
++      z-index: 1.5;
++      transform: rotate(-18deg);
++      pointer-events: none;
++      filter: drop-shadow(0 6px 12px rgba(28,26,36,0.18));
++    }
++
+     /* Typography */
+     h2 {
+       font-family: var(--font-display);
+@@ -221,7 +279,7 @@ const htmlContent = `<!DOCTYPE html>
+     }
+ 
+     .stat-number {
+-      font-family: var(--font-display);
++      font-family: var(--font-body);
+       font-size: 32px;
+       font-weight: 700;
+       color: var(--p-coral);
+@@ -358,20 +416,19 @@ const htmlContent = `<!DOCTYPE html>
+     /* Peeking Sage sticker styles */
+     .peeking-sage {
+       position: absolute;
+-      z-index: 2; /* Positioned behind the cards but in front of background */
++      z-index: 1; /* Positioned behind the cards (.col has z-index: 10) */
+       pointer-events: none;
+-      filter: drop-shadow(0 5px 12px rgba(28,26,36,0.22));
+     }
+ 
+     .sage-top-left {
+-      top: 10px;
+-      left: 110px;
++      top: -30px;
++      left: 82px;
+       transform: rotate(-14deg);
+     }
+ 
+     .sage-top-right {
+-      top: 10px;
+-      right: 110px;
++      top: -30px;
++      right: 212px;
+       transform: rotate(14deg);
+     }
+ 
+@@ -442,12 +499,19 @@ const htmlContent = `<!DOCTYPE html>
+         -webkit-print-color-adjust: exact;
+         print-color-adjust: exact;
+       }
++      #poster-wrapper {
++        width: 297mm !important;
++        height: 210mm !important;
++        overflow: visible !important;
++        display: block !important;
++        background: none !important;
++      }
+       #poster-page {
+         width: 297mm !important;
+         height: 210mm !important;
+         box-shadow: none !important;
+         border: none !important;
+-        padding: 40px 45px !important;
++        padding: 12px 28px 16px 28px !important;
+         position: absolute !important;
+         top: 0 !important;
+         left: 0 !important;
+@@ -486,147 +550,339 @@ const htmlContent = `<!DOCTYPE html>
+     </button>
+   </div>
+ 
+-  <!-- Poster Element -->
+-  <div id="poster-page">
++  <div id="poster-wrapper">
++    <!-- Poster Element -->
++    <div id="poster-page">
+     
+-    <!-- Peeking Sage Stickers -->
+-    <!-- Sage 1: Peeking out top-left of column 1 -->
+-    <div class="peeking-sage sage-top-left">
+-      <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+-        <defs>
+-          <linearGradient id="sage-grad-pk1" x1="0" y1="0" x2="1" y2="1">
+-            <stop offset="0%" stop-color="#FFE4D4" />
+-            <stop offset="100%" stop-color="#FFD4B8" />
+-          </linearGradient>
+-        </defs>
+-        <g>
+-          <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-          <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-          <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-          <circle cx="50" cy="62" r="30" fill="url(#sage-grad-pk1)" stroke="#e9694a" stroke-width="3.5" />
+-          <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-          <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-          <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-          <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-          <circle cx="33" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
+-          <circle cx="67" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
+-          <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-        </g>
+-      </svg>
++    <!-- Poster Header Strip -->
++    <div class="poster-header-strip">
++      <span>Sterling</span>
++      <span>September 2027</span>
+     </div>
++    
++    <!-- Columns Grid -->
++    <div class="columns-grid">
++
++      <!-- Peeking Sage Stickers (Positioned inside columns-grid to stack behind cards) -->
++      <!-- Sage 1: Peeking out top-left of column 1 -->
++      <div class="peeking-sage sage-top-left">
++        <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++          <defs>
++            <linearGradient id="sage-grad-pk1" x1="0" y1="0" x2="1" y2="1">
++              <stop offset="0%" stop-color="#FFE4D4" />
++              <stop offset="100%" stop-color="#FFD4B8" />
++            </linearGradient>
++          </defs>
++          <g>
++            <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++            <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++            <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++            <circle cx="50" cy="62" r="30" fill="url(#sage-grad-pk1)" stroke="#e9694a" stroke-width="3.5" />
++            <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++            <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++            <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++            <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++            <circle cx="33" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
++            <circle cx="67" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
++            <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++          </g>
++        </svg>
++      </div>
+ 
+-    <!-- Sage 2: Peeking out top-right of column 3 -->
+-    <div class="peeking-sage sage-top-right">
+-      <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+-        <defs>
+-          <linearGradient id="sage-grad-pk2" x1="0" y1="0" x2="1" y2="1">
+-            <stop offset="0%" stop-color="#FFE4D4" />
+-            <stop offset="100%" stop-color="#FFD4B8" />
+-          </linearGradient>
+-        </defs>
+-        <g>
+-          <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-          <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-          <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-          <circle cx="50" cy="62" r="30" fill="url(#sage-grad-pk2)" stroke="#e9694a" stroke-width="3.5" />
+-          <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-          <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-          <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-          <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-          <circle cx="33" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
+-          <circle cx="67" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
+-          <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-        </g>
+-      </svg>
+-    </div>
++      <!-- Sage 2: Peeking out top-right of column 3 -->
++      <div class="peeking-sage sage-top-right">
++        <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++          <defs>
++            <linearGradient id="sage-grad-pk2" x1="0" y1="0" x2="1" y2="1">
++              <stop offset="0%" stop-color="#FFE4D4" />
++              <stop offset="100%" stop-color="#FFD4B8" />
++            </linearGradient>
++          </defs>
++          <g>
++            <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++            <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++            <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++            <circle cx="50" cy="62" r="30" fill="url(#sage-grad-pk2)" stroke="#e9694a" stroke-width="3.5" />
++            <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++            <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++            <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++            <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++            <circle cx="33" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
++            <circle cx="67" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
++            <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++          </g>
++        </svg>
++      </div>
+ 
+-    <!-- Left Column: The Crisis -->
+-    <div class="col">
++      <!-- Left Column: The Crisis -->
++    <div class="col" style="justify-content: flex-start; gap: 2.5px; height: 100%;">
++      <!-- Opening quote -->
++      <div style="font-family: var(--font-display); font-size: 11px; font-style: italic; color: var(--p-coral); text-align: center; border-bottom: 1px dashed var(--p-line); padding-bottom: 2px; line-height: 1.3; margin-bottom: 1px;">
++        "She opened her first payslip, saw a number she didn't recognise, and quietly closed the app."
++      </div>
++      
+       <div>
+-        <div class="col-header">01 / The Transition Crisis</div>
+-        <h2>A deficit in school leaves graduates vulnerable.</h2>
+-        <p class="col-desc">
+-          Young adults enter the workforce unequipped for financial independence. Without school guidance, they face immense psychological strain and vulnerability to costly mistakes.
++        <h2 style="font-size: 20px; margin-bottom: 3px; line-height: 1.2;">A generation entering the workforce financially blind.</h2>
++        <p class="col-desc" style="font-size: 10.5px; line-height: 1.35; margin-bottom: 0;">
++          Young adults are leaving education and entering the workforce with no understanding of the financial systems that govern their lives. The school system dedicates 48 minutes per month to financial education, 33 times less than maths. The consequences are immediate, measurable, and lasting.
+         </p>
+       </div>
+ 
+-      <!-- Stats Grid -->
+-      <div class="stats-container">
+-        <div class="stat-box">
+-          <div class="stat-number">61%</div>
+-          <div class="stat-label">Do not recall receiving any finance lessons at school.</div>
++      <!-- Primary Stats Grid -->
++      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 1px;">
++        <!-- 61% Stat Box -->
++        <div class="stat-box" style="padding: 5px 6px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px;">
++          <div class="stat-number" style="font-family: 'Instrument Sans', Arial, sans-serif !important; font-size: 20px; line-height: 1; color: var(--p-coral); font-weight: 700; margin-bottom: 0px;">61%</div>
++          <div class="stat-label" style="font-size: 8.5px; line-height: 1.25; color: var(--p-ink-secondary);">of young adults do not recall receiving any financial education in school</div>
+         </div>
+-        <div class="stat-box">
+-          <div class="stat-number">70%</div>
+-          <div class="stat-label">Avoid looking at bills due to money anxiety.</div>
++        <!-- 70% Stat Box -->
++        <div class="stat-box" style="padding: 5px 6px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px;">
++          <div class="stat-number" style="font-family: 'Instrument Sans', Arial, sans-serif !important; font-size: 20px; line-height: 1; color: var(--p-coral); font-weight: 700; margin-bottom: 0px;">70%</div>
++          <div class="stat-label" style="font-size: 8.5px; line-height: 1.25; color: var(--p-ink-secondary);">of UK adults aged 18 to 40 actively avoid looking at their bills due to anxiety</div>
+         </div>
+-        <div class="stat-box">
+-          <div class="stat-number">33%</div>
+-          <div class="stat-label">Have taken time off work due to money worries.</div>
++      </div>
++
++      <!-- Smaller Stats Grid -->
++      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
++        <div class="stat-box" style="padding: 5px 6px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px;">
++          <div class="stat-number" style="font-family: 'Instrument Sans', Arial, sans-serif !important; font-size: 20px; line-height: 1; color: var(--p-coral); font-weight: 700; margin-bottom: 0px;">33%</div>
++          <div class="stat-label" style="font-size: 8.5px; line-height: 1.25; color: var(--p-ink-secondary);">Have taken time off due to financial stress</div>
+         </div>
+-        <div class="stat-box">
+-          <div class="stat-number">28%</div>
+-          <div class="stat-label">Of staff under 35 query HR about payslips monthly.</div>
++        <div class="stat-box" style="padding: 5px 6px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px;">
++          <div class="stat-number" style="font-family: 'Instrument Sans', Arial, sans-serif !important; font-size: 20px; line-height: 1; color: var(--p-coral); font-weight: 700; margin-bottom: 0px;">28%</div>
++          <div class="stat-label" style="font-size: 8.5px; line-height: 1.25; color: var(--p-ink-secondary);">Of under-35s query HR about payslips monthly</div>
+         </div>
+       </div>
+ 
+-      <!-- Testimonials -->
+-      <div class="quote-box">
+-        <p class="quote-text">
+-          "I opened my first NHS payslip and felt absolute dread. The deductions were completely confusing. I just closed it and ignored it."
++      <!-- Authority Quote -->
++      <div style="border-bottom: 1.5px dashed var(--p-line); padding-bottom: 4px; margin-bottom: 4px; margin-top: 5px;">
++        <p style="font-family: var(--font-display); font-size: 11.5px; line-height: 1.35; font-style: italic; color: var(--p-ink); margin: 0 0 2px 0;">
++          "Financial illiteracy is a quiet crisis holding back millions of people across the UK"
+         </p>
+-        <span class="quote-author">~ Jamie, 22, Early-career Nurse</span>
++        <span style="font-size: 8.5px; font-weight: 700; color: var(--p-ink-tertiary);">~ Bim Afolami, Former Economic Secretary to the Treasury</span>
++      </div>
++
++      <!-- What it does for you (Moved from Column 3) -->
++      <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 1px;">
++        <div style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--p-coral); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
++          How anticipate changes this
++        </div>
++        
++        <div class="feature-list" style="gap: 2px;">
++          <div class="feature-item">
++            <!-- Sage bullet icon -->
++            <div class="feature-icon" style="width: 16px; height: 16px; margin-top: 1px;">
++              <svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++                <defs>
++                  <linearGradient id="sage-grad-ft1-col1" x1="0" y1="0" x2="1" y2="1">
++                    <stop offset="0%" stop-color="#FFE4D4" />
++                    <stop offset="100%" stop-color="#FFD4B8" />
++                  </linearGradient>
++                </defs>
++                <g>
++                  <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++                  <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft1-col1)" stroke="#e9694a" stroke-width="3.5" />
++                  <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++                </g>
++              </svg>
++            </div>
++            <div class="feature-content">
++              <div class="feature-desc" style="font-size: 10.5px; line-height: 1.35; color: var(--p-ink-secondary);">
++                <strong style="color: var(--p-ink);">A financial friend who knows your life.</strong> Sage is a personalised AI companion that builds a picture of your life from day one, your job, your worries, your upcoming milestones, and quietly prepares you for each one before it arrives. Not a chatbot. A guide that gets more useful the more your life changes.
++              </div>
++            </div>
++          </div>
++
++          <div class="feature-item">
++            <!-- Sage bullet icon -->
++            <div class="feature-icon" style="width: 16px; height: 16px; margin-top: 1px;">
++              <svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++                <defs>
++                  <linearGradient id="sage-grad-ft2-col1" x1="0" y1="0" x2="1" y2="1">
++                    <stop offset="0%" stop-color="#FFE4D4" />
++                    <stop offset="100%" stop-color="#FFD4B8" />
++                  </linearGradient>
++                </defs>
++                <g>
++                  <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++                  <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft2-col1)" stroke="#e9694a" stroke-width="3.5" />
++                  <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++                </g>
++              </svg>
++            </div>
++            <div class="feature-content">
++              <div class="feature-desc" style="font-size: 10.5px; line-height: 1.35; color: var(--p-ink-secondary);">
++                <strong style="color: var(--p-ink);">You stop dreading the documents.</strong> Employment contracts, HMRC letters, pension opt-out forms decoded instantly into plain English at the exact moment they land in front of you.
++              </div>
++            </div>
++          </div>
++
++          <div class="feature-item">
++            <!-- Sage bullet icon -->
++            <div class="feature-icon" style="width: 16px; height: 16px; margin-top: 1px;">
++              <svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++                <defs>
++                  <linearGradient id="sage-grad-ft3-col1" x1="0" y1="0" x2="1" y2="1">
++                    <stop offset="0%" stop-color="#FFE4D4" />
++                    <stop offset="100%" stop-color="#FFD4B8" />
++                  </linearGradient>
++                </defs>
++                <g>
++                  <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++                  <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft3-col1)" stroke="#e9694a" stroke-width="3.5" />
++                  <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++                </g>
++              </svg>
++            </div>
++            <div class="feature-content">
++              <div class="feature-desc" style="font-size: 10.5px; line-height: 1.35; color: var(--p-ink-secondary);">
++                <strong style="color: var(--p-ink);">You learn what you need, when you need it.</strong> A wide range of real-life financial milestones covered through short, jargon-free lessons timed to your life, not a generic curriculum.
++              </div>
++            </div>
++          </div>
++
++          <div class="feature-item">
++            <!-- Sage bullet icon -->
++            <div class="feature-icon" style="width: 16px; height: 16px; margin-top: 1px;">
++              <svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++                <defs>
++                  <linearGradient id="sage-grad-ft4-col1" x1="0" y1="0" x2="1" y2="1">
++                    <stop offset="0%" stop-color="#FFE4D4" />
++                    <stop offset="100%" stop-color="#FFD4B8" />
++                  </linearGradient>
++                </defs>
++                <g>
++                  <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++                  <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++                  <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft4-col1)" stroke="#e9694a" stroke-width="3.5" />
++                  <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++                  <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++                  <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++                </g>
++              </svg>
++            </div>
++            <div class="feature-content">
++              <div class="feature-desc" style="font-size: 10.5px; line-height: 1.35; color: var(--p-ink-secondary);">
++                <strong style="color: var(--p-ink);">You are never the only one who doesn't know.</strong> An anonymous peer community where people ask the questions they are too embarrassed to raise with anyone else.
++              </div>
++            </div>
++          </div>
++        </div>
++      </div>
++
++      <!-- Sources -->
++      <div style="font-family: var(--font-mono); font-size: 7px; color: var(--p-ink-tertiary); line-height: 1.2; border-top: 1.5px solid var(--p-ink); padding-top: 4px; margin-top: auto;">
++        Sources: MoneyReady Financial Education Report; OneFamily Money Anxiety Survey; PayFit / HR Review Payslip Study.
+       </div>
+     </div>
+ 
+     <!-- Center Column: The Product -->
+     <div class="col" style="justify-content: flex-start; gap: 0px; height: 100%;">
+-      <div class="brand-section" style="margin-bottom: 12px; width: 100%; display: flex; flex-direction: column; align-items: center;">
+-        <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px;">
+-          <!-- Sage Avatar (Enlarged and positioned close to the logo) -->
+-          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+-            <defs>
+-              <linearGradient id="sage-grad-logo" x1="0" y1="0" x2="1" y2="1">
+-                <stop offset="0%" stop-color="#FFE4D4" />
+-                <stop offset="100%" stop-color="#FFD4B8" />
+-              </linearGradient>
+-            </defs>
+-            <g>
+-              <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-              <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-              <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-              <circle cx="50" cy="62" r="30" fill="url(#sage-grad-logo)" stroke="#e9694a" stroke-width="3.5" />
+-              <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-              <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-              <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-              <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-              <circle cx="33" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
+-              <circle cx="67" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
+-              <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-            </g>
+-          </svg>
+-          <div class="brand-logo" style="line-height: 1; margin: 0;">anticipate.</div>
+-        </div>
+-        <div class="brand-tagline" style="margin-left: 18px; text-align: center;">YOUR PERSONALISED FINANCIAL GUIDE</div>
++      <div class="brand-section" style="margin-bottom: 6px; width: 100%; display: flex; flex-direction: column; align-items: center;">
++        <div class="brand-logo" style="line-height: 1; margin: 0 0 4px 0; text-align: center;">anticipate.</div>
++        <div class="brand-tagline" style="text-align: center;">YOUR PERSONALISED FINANCIAL GUIDE</div>
+       </div>
+ 
+       <!-- Overlapping Smartphone Mockups (Image 2 style) -->
+       <div class="phones-wrapper">
++        <!-- Sage Avatar (Coming out sideways from the top-left of the phone) -->
++        <svg class="phone-peeking-sage-new" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
++          <defs>
++            <linearGradient id="sage-grad-phone" x1="0" y1="0" x2="1" y2="1">
++              <stop offset="0%" stop-color="#FFE4D4" />
++              <stop offset="100%" stop-color="#FFD4B8" />
++            </linearGradient>
++          </defs>
++          <g>
++            <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
++            <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
++            <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
++            <circle cx="50" cy="62" r="30" fill="url(#sage-grad-phone)" stroke="#e9694a" stroke-width="3.5" />
++            <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++            <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
++            <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++            <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
++            <circle cx="33" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
++            <circle cx="67" cy="64" r="5" fill="#FFB8A0" fill-opacity="0.6" />
++            <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
++          </g>
++        </svg>
+         <img src="data:image/png;base64,${learnScreenBase64}" class="phone-mockup-new phone-back" alt="Learn Screen">
+         <img id="home-screen-img" src="data:image/png;base64,${homeScreenBase64}" class="phone-mockup-new phone-front" alt="Home Screen">
+       </div>
+ 
+       <!-- Testimonials Quote Box (Moved here, between phone and download) -->
+-      <div class="quote-box" style="margin: 12px 0 16px 0; padding: 12px 0; border-top: 1px solid var(--p-line); border-bottom: 1px solid var(--p-line); box-sizing: border-box; width: 100%;">
+-        <p class="quote-text" style="text-align: center; font-size: 12.5px; margin-bottom: 0;">
+-          "Sage tells you what is coming and what to do about it, days before the paycheck actually lands."
++      <div class="quote-box" style="margin: 2px 0 4px 0; padding: 5px 0; border-top: 1px solid var(--p-line); border-bottom: 1px solid var(--p-line); box-sizing: border-box; width: 100%;">
++        <p class="quote-text" style="text-align: center; font-size: 9px; margin-bottom: 2px; line-height: 1.35; font-style: italic; color: var(--p-ink);">
++          "For too long, financial tools have been purely reactive, tracking where our young workforce's money went yesterday rather than where it is going tomorrow. Anticipate is the only platform that prepares them for what is coming, delivering clarity before it lands."
+         </p>
++        <div class="quote-author" style="text-align: center; font-size: 7.5px; font-weight: 700; color: var(--p-ink-tertiary);">
++          ~ Rachel Reeves, UK Chancellor of the Exchequer
++        </div>
++      </div>
++
++      <!-- First Year Impact Section -->
++      <div style="width: 100%; margin: 0 0 8px 0; text-align: left; display: flex; flex-direction: column; gap: 4px;">
++        <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 700; color: var(--p-coral); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
++          Our first year impact:
++        </div>
++        <div style="display: flex; flex-direction: column; gap: 6px; background-color: var(--p-bg-2); border: 1.5px solid var(--p-line); border-radius: 16px; padding: 8px 10px;">
++          <div style="font-size: 9.5px; line-height: 1.35; color: var(--p-ink-secondary); display: flex; gap: 6px; align-items: flex-start;">
++            <!-- Green Check SVG -->
++            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1.5px;">
++              <polyline points="20 6 9 17 4 12"></polyline>
++            </svg>
++            <span><strong>47,000+</strong> young adults onboarded in the first year</span>
++          </div>
++          <div style="font-size: 9.5px; line-height: 1.35; color: var(--p-ink-secondary); display: flex; gap: 6px; align-items: flex-start; border-top: 1px solid var(--p-line); padding-top: 5px;">
++            <!-- Green Check SVG -->
++            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1.5px;">
++              <polyline points="20 6 9 17 4 12"></polyline>
++            </svg>
++            <span><strong>68%</strong> report feeling more confident opening financial documents after 4 weeks</span>
++          </div>
++          <div style="font-size: 9.5px; line-height: 1.35; color: var(--p-ink-secondary); display: flex; gap: 6px; align-items: flex-start; border-top: 1px solid var(--p-line); padding-top: 5px;">
++            <!-- Green Check SVG -->
++            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1.5px;">
++              <polyline points="20 6 9 17 4 12"></polyline>
++            </svg>
++            <span><strong>£2,400</strong> average annual saving per user from avoided pension opt-outs and overpayments</span>
++          </div>
++          <div style="font-size: 9.5px; line-height: 1.35; color: var(--p-ink-secondary); display: flex; gap: 6px; align-items: flex-start; border-top: 1px solid var(--p-line); padding-top: 5px;">
++            <!-- Green Check SVG -->
++            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1.5px;">
++              <polyline points="20 6 9 17 4 12"></polyline>
++            </svg>
++            <span><strong>3x</strong> more likely to stay enrolled in their workplace pension versus non-users</span>
++          </div>
++        </div>
+       </div>
+ 
+       <!-- Action area with App Store & Google Play download badges (Moved all the way to the bottom) -->
+-      <div class="action-info" style="padding: 12px 14px; gap: 8px; margin-top: auto; width: 100%;">
+-        <div style="font-family: var(--font-display); font-weight: 800; font-size: 13.5px; color: var(--p-ink); margin-bottom: 2px; letter-spacing: -0.01em;">
+-          Download anticipate today!
++      <div class="action-info" style="padding: 12px 14px; gap: 8px; margin-top: auto; width: 100%; background: var(--p-card); border: 1.5px dashed var(--p-coral); border-radius: 16px;">
++        <div style="font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--p-ink); margin-bottom: 2px; letter-spacing: -0.01em;">
++          Download <span style="color: var(--p-coral);">anticipate.</span> today
+         </div>
+         <div style="display: flex; gap: 12px; justify-content: center; width: 100%;">
+           <!-- Google Play Crop -->
+@@ -642,143 +898,87 @@ const htmlContent = `<!DOCTYPE html>
+     </div>
+ 
+     <!-- Right Column: Features & Impact -->
+-    <div class="col">
++    <div class="col" style="justify-content: flex-start; gap: 8px; height: 100%;">
+       <div>
+-        <div class="col-header">03 / What the app can do</div>
+-        <h2>Timeline-based proactive support.</h2>
++        <h2 style="font-size: 20px; margin-bottom: 6px; line-height: 1.2;">Built for you. Felt by everyone around you.</h2>
+       </div>
+ 
+-      <!-- Features list -->
+-      <div class="feature-list">
+-        <div class="feature-item">
+-          <!-- Sage bullet icon -->
+-          <div class="feature-icon">
+-            <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+-              <defs>
+-                <linearGradient id="sage-grad-ft1" x1="0" y1="0" x2="1" y2="1">
+-                  <stop offset="0%" stop-color="#FFE4D4" />
+-                  <stop offset="100%" stop-color="#FFD4B8" />
+-                </linearGradient>
+-              </defs>
+-              <g>
+-                <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-                <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft1)" stroke="#e9694a" stroke-width="3.5" />
+-                <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-              </g>
+-            </svg>
+-          </div>
+-          <div class="feature-content">
+-            <div class="feature-title">Proactive Onboarding Timeline</div>
+-            <div class="feature-desc">Alerts you to payslip schedules, tax shifts, and auto-enrolment deadlines 3 days before they happen.</div>
+-          </div>
+-        </div>
++      <!-- WHAT IT DOES FOR YOU moved to Column 1 -->
+ 
+-        <div class="feature-item">
+-          <!-- Sage bullet icon -->
+-          <div class="feature-icon">
+-            <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+-              <defs>
+-                <linearGradient id="sage-grad-ft2" x1="0" y1="0" x2="1" y2="1">
+-                  <stop offset="0%" stop-color="#FFE4D4" />
+-                  <stop offset="100%" stop-color="#FFD4B8" />
+-                </linearGradient>
+-              </defs>
+-              <g>
+-                <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-                <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft2)" stroke="#e9694a" stroke-width="3.5" />
+-                <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-              </g>
++      <!-- Layer 2 — Employer impact -->
++      <div style="border-top: 1.5px dashed var(--p-line); padding-top: 6px; display: flex; flex-direction: column; gap: 4px;">
++        <div style="font-family: var(--font-mono); font-size: 8.5px; font-weight: 700; color: var(--p-coral); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
++          Layer 2 — Employer impact
++        </div>
++        
++        <div style="display: flex; gap: 10px; align-items: center; background: #fffdfb; border: 1.5px solid var(--p-line); border-radius: 14px; padding: 6px 8px;">
++          <!-- 28% Chart -->
++          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; width: 44px;">
++            <svg width="34" height="34" viewBox="0 0 36 36">
++              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#e6dbc4" stroke-width="3.5" />
++              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#e9694a" stroke-width="4" stroke-dasharray="28, 100" stroke-linecap="round" transform="rotate(-90 18 18)" />
++              <text x="18" y="21.5" font-family="'Instrument Sans', Arial, sans-serif" font-weight="700" font-size="10" text-anchor="middle" fill="var(--p-ink)">28%</text>
+             </svg>
++            <div style="font-size: 6px; line-height: 1.1; color: var(--p-ink-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;">Queries</div>
+           </div>
+-          <div class="feature-content">
+-            <div class="feature-title">Document Decoder</div>
+-            <div class="feature-desc">Photograph contracts, HMRC letters, or pension opt-out papers and instantly translate them to plain English.</div>
++          <div style="font-size: 10.5px; line-height: 1.35; color: var(--p-ink-secondary); flex: 1;">
++            Anticipate reduces the operational burden of payslip queries, freeing HR teams to focus on high-value employee support.
+           </div>
+         </div>
+ 
+-        <div class="feature-item">
+-          <!-- Sage bullet icon -->
+-          <div class="feature-icon">
+-            <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+-              <defs>
+-                <linearGradient id="sage-grad-ft3" x1="0" y1="0" x2="1" y2="1">
+-                  <stop offset="0%" stop-color="#FFE4D4" />
+-                  <stop offset="100%" stop-color="#FFD4B8" />
+-                </linearGradient>
+-              </defs>
+-              <g>
+-                <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-                <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft3)" stroke="#e9694a" stroke-width="3.5" />
+-                <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-              </g>
+-            </svg>
+-          </div>
+-          <div class="feature-content">
+-            <div class="feature-title">Milestone Lessons</div>
+-            <div class="feature-desc">14 real-life career transitions covered in interactive, 4-minute visual lessons. No jargon.</div>
+-          </div>
++        <div class="quote-box" style="margin-top: 2px; padding-top: 4px; border-top: none;">
++          <p class="quote-text" style="font-size: 10px; line-height: 1.35; font-family: var(--font-display); font-style: italic; color: var(--p-ink); margin: 0 0 1px 0; border-left: 2.5px solid var(--p-coral); padding-left: 6px;">
++            "Staff payslip enquiries dropped 60% in the first two months. It is an operational necessity."
++          </p>
++          <span class="quote-author" style="font-size: 8.5px; font-weight: 700; color: var(--p-ink-tertiary); display: block; margin-top: 1px; padding-left: 8.5px;">~ Sarah Jennings, HR Director</span>
+         </div>
++      </div>
+ 
+-        <div class="feature-item">
+-          <!-- Sage bullet icon -->
+-          <div class="feature-icon">
+-            <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+-              <defs>
+-                <linearGradient id="sage-grad-ft4" x1="0" y1="0" x2="1" y2="1">
+-                  <stop offset="0%" stop-color="#FFE4D4" />
+-                  <stop offset="100%" stop-color="#FFD4B8" />
+-                </linearGradient>
+-              </defs>
+-              <g>
+-                <path d="M50 34 L50 20" stroke="#5fab84" stroke-width="5" stroke-linecap="round" />
+-                <ellipse cx="42" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <ellipse cx="58" cy="14" rx="6" ry="10" fill="#5fab84" />
+-                <circle cx="50" cy="62" r="30" fill="url(#sage-grad-ft4)" stroke="#e9694a" stroke-width="3.5" />
+-                <path d="M38 50 Q 42 46, 45 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <path d="M55 50 Q 58 46, 62 50" stroke="#1c1a24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+-                <ellipse cx="42" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <ellipse cx="58" cy="57" rx="3" ry="4.5" fill="#1c1a24" />
+-                <path d="M44 68 Q 50 74, 56 68" stroke="#1c1a24" stroke-width="3.5" stroke-linecap="round" fill="none" />
+-              </g>
+-            </svg>
+-          </div>
+-          <div class="feature-content">
+-            <div class="feature-title">Anonymous Peer Community</div>
+-            <div class="feature-desc">A safe space to discuss pay queries, contract questions, and union details with coworkers.</div>
+-          </div>
++      <!-- Layer 3 — Societal impact -->
++      <div style="border-top: 1.5px dashed var(--p-line); padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
++        <div style="font-family: var(--font-mono); font-size: 8.5px; font-weight: 700; color: var(--p-coral); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
++          Layer 3 — Societal impact
+         </div>
++        <p style="font-size: 10.5px; line-height: 1.35; color: var(--p-ink-secondary); margin: 0;">
++          If Anticipate prevents just 10% of young adults from opting out of their pension at 22, the compound effect over a working lifetime represents billions of pounds in avoided retirement poverty. Financial literacy at scale is not a personal finance problem. It is a public health and economic infrastructure problem.
++        </p>
+       </div>
+ 
+-      <!-- Testimonials -->
+-      <div class="quote-box">
+-        <p class="quote-text" style="font-size: 12px;">
+-          "Staff payslip inquiries dropped by 60% in the first two months. It is an operational necessity that saves HR hours of basic work."
++      <!-- Closing Slogan -->
++      <div style="background-color: var(--p-card-accent); border: 1.5px dashed var(--p-coral); border-radius: 12px; padding: 8px 10px; text-align: center; margin-top: auto;">
++        <p style="font-family: var(--font-display); font-size: 11px; font-weight: 800; line-height: 1.35; color: var(--p-coral); margin: 0; text-align: center;">
++          The financial education you should have received. Finally, at the exact moment you need it.
+         </p>
+-        <span class="quote-author">~ Sarah Jennings, HR Director</span>
+       </div>
+     </div>
+ 
++    </div>
++
++  </div>
+   </div>
+ 
+   <script>
++    function adjustScale() {
++      const poster = document.getElementById('poster-page');
++      if (!poster) return;
++      const winWidth = window.innerWidth;
++      const winHeight = window.innerHeight;
++      
++      const targetWidth = 1120;
++      const targetHeight = 792;
++      
++      const scaleX = winWidth / targetWidth;
++      const scaleY = winHeight / targetHeight;
++      const scale = Math.min(scaleX, scaleY, 1);
++      
++      poster.style.transform = 'scale(' + scale + ')';
++      poster.style.transformOrigin = 'center center';
++    }
++    
++    window.addEventListener('resize', adjustScale);
++    window.addEventListener('load', adjustScale);
++    adjustScale();
++
+     // Ensure image is completely decoded before exporting
+     const imgEl = document.getElementById('home-screen-img');
+     let isDecoded = false;
+@@ -790,8 +990,10 @@ const htmlContent = `<!DOCTYPE html>
+       const element = document.getElementById('poster-page');
+       const pngBtn = document.querySelector('.btn-png');
+       const originalText = pngBtn.innerHTML;
++      const originalTransform = element.style.transform;
+       
+       try {
++        element.style.transform = 'none'; // Reset scale for export
+         pngBtn.innerHTML = \`
+           <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;">
+             <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="2" stroke-opacity="0.25" fill="none"></circle>
+@@ -806,7 +1008,11 @@ const htmlContent = `<!DOCTYPE html>
+           useCORS: true,
+           allowTaint: true,
+           logging: false,
+-          backgroundColor: '#e9694a'
++          backgroundColor: '#e9694a',
++          scrollX: 0,
++          scrollY: 0,
++          windowWidth: 1200,
++          windowHeight: 900
+         });
+         
+         const link = document.createElement('a');
+@@ -817,6 +1023,7 @@ const htmlContent = `<!DOCTYPE html>
+         console.error('PNG Generation Error:', err);
+         alert('Could not generate PNG. Please open the HTML file in a modern browser like Chrome to download.');
+       } finally {
++        element.style.transform = originalTransform; // Restore scale
+         pngBtn.innerHTML = originalText;
+         pngBtn.disabled = false;
+       }
+@@ -826,8 +1033,10 @@ const htmlContent = `<!DOCTYPE html>
+       const element = document.getElementById('poster-page');
+       const pdfBtn = document.querySelector('.btn-pdf');
+       const originalText = pdfBtn.innerHTML;
++      const originalTransform = element.style.transform;
+       
+       try {
++        element.style.transform = 'none'; // Reset scale for export
+         pdfBtn.innerHTML = \`
+           <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;">
+             <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="2" stroke-opacity="0.25" fill="none"></circle>
+@@ -841,7 +1050,16 @@ const htmlContent = `<!DOCTYPE html>
+           margin:       0,
+           filename:     'anticipate_impact_poster.pdf',
+           image:        { type: 'jpeg', quality: 0.98 },
+-          html2canvas:  { scale: 2.5, useCORS: true, allowTaint: true, logging: false },
++          html2canvas:  { 
++            scale: 2.5, 
++            useCORS: true, 
++            allowTaint: true, 
++            logging: false,
++            scrollX: 0,
++            scrollY: 0,
++            windowWidth: 1200,
++            windowHeight: 900
++          },
+           jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+         };
+ 
+@@ -850,6 +1068,7 @@ const htmlContent = `<!DOCTYPE html>
+         console.error('PDF Generation Error:', err);
+         alert('Could not generate PDF. Please try downloading the PNG instead.');
+       } finally {
++        element.style.transform = originalTransform; // Restore scale
+         pdfBtn.innerHTML = originalText;
+         pdfBtn.disabled = false;
+       }

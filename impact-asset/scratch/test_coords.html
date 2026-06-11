@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #e2dbd0;
+      margin: 50px;
+    }
+    .container {
+      position: relative;
+      width: 250px; /* Test at a smaller scaled width! */
+      display: inline-block;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    .container img {
+      width: 100%;
+      display: block;
+    }
+    .name-overlay {
+      position: absolute;
+      left: 56.06%;
+      top: 15.4%;
+      width: 21.87%;
+      height: 2.93%;
+      background: #fdfaf6; /* Match card background */
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      
+      /* Typography to match the original app design */
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      color: #1c1a24;
+      font-size: 13.5px; /* Scaled down font size */
+      line-height: 1;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="../home_screen.png">
+    <div class="name-overlay">Sarah.</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="color-out" style="font-family: monospace; font-size: 24px; color: red; font-weight: bold; background: white; padding: 10px; position: fixed; top: 0; left: 0; z-index: 9999;">Checking color...</div>
+  <canvas id="canvas"></canvas>
+  <script>
+    const img = new Image();
+    img.src = '../home_screen.png';
+    img.onload = () => {
+      // Wait a moment to ensure it is drawn and ready
+      setTimeout(() => {
+        const canvas = document.getElementById('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        // Sample pixel at x=310, y=170
+        const pixel = ctx.getImageData(310, 170, 1, 1).data;
+        const hex = "#" + ("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6);
+        document.getElementById('color-out').innerText = "Color: " + hex + " (RGB: " + pixel[0] + "," + pixel[1] + "," + pixel[2] + ")";
+      }, 300);
+    };
+  </script>
+</body>
+</html>

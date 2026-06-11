@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #333333; /* Dark background to inspect transparency */
+      margin: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+    
+    .col-test {
+      background: #fffdf8;
+      border-radius: 24px;
+      width: 440px;
+      height: 540px;
+      padding: 24px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Double phone presentation container */
+    .phones-wrapper {
+      position: relative;
+      width: 280px;
+      height: 380px;
+      margin: 10px auto;
+    }
+
+    /* Clean Phone Mockup Base */
+    .phone-mockup-new {
+      width: 175px;
+      height: auto;
+      display: block;
+      /* Use filter drop-shadow to follow transparent edges */
+      filter: drop-shadow(0 12px 24px rgba(28,26,36,0.25));
+      position: absolute;
+    }
+
+    /* Tilted background phone (Learn screen) */
+    .phone-back {
+      left: 100px;
+      top: 5px;
+      transform: rotate(8deg) scale(0.96);
+      z-index: 1;
+      opacity: 0.95;
+    }
+
+    /* Straight foreground phone (Home timeline screen) */
+    .phone-front {
+      left: 10px;
+      top: 25px;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="col-test">
+    <h3>Transparency check with drop-shadow filter</h3>
+    <div class="phones-wrapper">
+      <img src="../learn_screen.png" class="phone-mockup-new phone-back" alt="Learn Screen">
+      <img src="../home_screen.png" class="phone-mockup-new phone-front" alt="Home Screen">
+    </div>
+  </div>
+
+</body>
+</html>

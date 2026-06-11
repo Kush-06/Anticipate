@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #e2dbd0;
+      margin: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .test-box {
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      gap: 15px;
+    }
+    
+    .store-badge-clip-new {
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    .store-badge-clip-new img {
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+
+  <h3>Test 5: Custom Scanned Crops (860x269 image)</h3>
+  <div class="test-box" style="background: #fbf5e9; gap: 12px;">
+    <!-- Google Play Crop -->
+    <a href="#" class="store-badge-clip-new" style="width: 105px; height: 30px;" onclick="event.preventDefault()">
+      <img src="../store_badges.png" style="width: 245px; height: auto; left: -9.5px; top: -42px;">
+    </a>
+    <!-- App Store Crop -->
+    <a href="#" class="store-badge-clip-new" style="width: 102px; height: 30px;" onclick="event.preventDefault()">
+      <img src="../store_badges.png" style="width: 245px; height: auto; left: -133.5px; top: -42px;">
+    </a>
+  </div>
+
+</body>
+</html>
