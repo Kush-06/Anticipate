@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# Anticipate 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Financial Literacy, Gamified.**
 
-Currently, two official plugins are available:
+Anticipate is a Duolingo-style financial literacy app designed to help young adults navigate the complexities of personal finance in the UK. From decoding your first payslip to saving for a mortgage, Anticipate provides bite-sized, personalized lessons tailored to your life stage and goals.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[![Build Android APK](https://github.com/Kush-06/Anticipate/actions/workflows/android-build.yml/badge.svg)](https://github.com/Kush-06/Anticipate/actions/workflows/android-build.yml)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📥 Download the Latest Version
 
-## Expanding the ESLint configuration
+You can download the latest development build of the Android APK directly from GitHub Actions:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+👉 **[Download Latest Android APK](https://nightly.link/Kush-06/Anticipate/workflows/android-build/main/my-app-apk.zip)**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+*(Note: This link always points to the latest build on the `main` branch. The APK is provided in a ZIP file.)*
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## ✨ Key Features
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **🎓 Personalized Learning Path:** A custom curriculum generated based on your goals—whether you're a student, starting your first job, or planning to buy a home.
+- **🧠 Sage AI Assistant:** Powered by Google Gemini, Sage provides personalized financial advice and helps you "decode" complex documents like payslips and mortgage offers.
+- **📅 Financial Timeline:** A visual roadmap that anticipates your upcoming financial milestones (e.g., "Your first payslip lands in 3 days").
+- **🎮 Gamified Lessons:** Bite-sized modules with interactive quizzes to test your knowledge and track your progress.
+- **🔍 Jargon Decoder:** An interactive tool to help you understand the fine print in financial documents (ESIS, Payslips, etc.).
+- **💬 Community Hub:** Join discussions with other users to share tips and ask questions.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ Tech Stack
+
+- **Frontend:** React + TypeScript + Vite
+- **Mobile Wrapper:** Ionic Capacitor
+- **Backend/Database:** Supabase (Auth, Postgres, Realtime)
+- **AI Integration:** Google Gemini API
+- **Styling:** Vanilla CSS (Custom UI/UX)
+- **CI/CD:** GitHub Actions (Android builds)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v18+)
+- npm
+
+### Local Development
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Kush-06/Anticipate.git
+   cd Anticipate
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Environment Variables:**
+   Create a `.env` file in the root directory and add your Supabase and Gemini credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_GEMINI_API_KEY=your_gemini_api_key
+   VITE_AI_PROVIDER=gemini
+   ```
+
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+### Building for Android
+
+To build the Android project locally, you need Android Studio and the Android SDK installed.
+
+```bash
+# Build the web assets
+npm run build
+
+# Sync with Capacitor
+npx cap sync android
+
+# Open in Android Studio
+npx cap open android
 ```
