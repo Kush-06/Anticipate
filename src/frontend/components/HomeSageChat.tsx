@@ -138,29 +138,6 @@ const COMPLETE_TIMELINE_EVENT_TOOL: SageTool = {
   },
 }
 
-const UPDATE_CONFIDENCE_TOOL: SageTool = {
-  name: 'update_confidence',
-  description: `Update a confidence score when the user has clearly grown their understanding during this conversation.
-Only call if there is strong evidence of a genuine shift — not just because they asked a question.
-Use this sparingly: maximum once per conversation, and only when the improvement is unmistakable.`,
-  parameters: {
-    type: 'object',
-    properties: {
-      dimension: {
-        type: 'string',
-        enum: ['tax', 'pensions', 'budgeting', 'investing', 'contracts'],
-        description: 'Which confidence area improved',
-      },
-      newScore: {
-        type: 'number',
-        minimum: 1,
-        maximum: 5,
-        description: 'New confidence score from 1 to 5',
-      },
-    },
-    required: ['dimension', 'newScore'],
-  },
-}
 
 function buildProfileDetails(profile: UserProfile): string {
   const lines: string[] = []
@@ -246,7 +223,6 @@ You are Sage, a warm and sharp personal finance companion on Anticipate — an a
 Name: ${profile.firstName} | Life stage: ${profile.lifeStage} | Employment: ${profile.employmentType}
 Six-month goal: ${profile.sixMonthGoal}
 Upcoming events: ${profile.upcomingEvents.length > 0 ? profile.upcomingEvents.join(', ') : 'none specified'}
-Confidence (1–5): tax ${profile.confidenceScores.tax}, pensions ${profile.confidenceScores.pensions}, budgeting ${profile.confidenceScores.budgeting}, investing ${profile.confidenceScores.investing}, contracts ${profile.confidenceScores.contracts}
 ${detailsSection}
 ${memoriesSection}
 
@@ -285,10 +261,7 @@ You can add events to the user's personal timeline when they mention a concrete 
 - When creating an event, also add 1–2 natural follow-up events via relatedEvents (e.g. for a new job: first payslip check, pension auto-enrolment)
 - Do NOT create events for vague future intentions ("I might invest someday")
 - After creating events, confirm warmly what was added in 1–2 sentences
-- Call complete_timeline_event only when the user explicitly confirms they have finished a milestone. Match against the itemKey list above.
-
-## Confidence update rules
-- Call update_confidence at most once per conversation, only when the user has clearly shifted their understanding through this conversation — not just by asking a question`
+- Call complete_timeline_event only when the user explicitly confirms they have finished a milestone. Match against the itemKey list above.`
 }
 
 function renderMessage(text: string): ReactNode[] {
@@ -317,7 +290,7 @@ function LessonSuggestionCard({ card, onNavigate }: { card: LessonCard; onNaviga
 
 export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
   const navigate = useNavigate()
-  const { profile, userId, updateProfile } = useProfile()
+  const { profile, userId } = useProfile()
   const { groups, refreshTimeline } = useTimeline()
   const { completedSubTopicIds } = useProgress()
   const [isClosing, setIsClosing] = useState(false)
@@ -556,7 +529,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         const result = await sendWithTools(
           systemPrompt,
           nextHistory,
-          [SUGGEST_LESSON_TOOL, ADD_TIMELINE_EVENT_TOOL, SAVE_MEMORY_TOOL, COMPLETE_TIMELINE_EVENT_TOOL, UPDATE_CONFIDENCE_TOOL],
+          [SUGGEST_LESSON_TOOL, ADD_TIMELINE_EVENT_TOOL, SAVE_MEMORY_TOOL, COMPLETE_TIMELINE_EVENT_TOOL],
           async (name, toolInput) => {
             if (name === 'suggest_lesson') {
               pendingCardsRef.current = [...pendingCardsRef.current, toolInput as unknown as LessonCard]
@@ -595,12 +568,6 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
               const label = item ? item.title : itemKey
               pendingActivityRef.current = [...pendingActivityRef.current, `Marked "${label}" as done`]
               return `Timeline event "${itemKey}" marked as done.`
-            }
-            if (name === 'update_confidence' && profile) {
-              const dimension = toolInput.dimension as keyof typeof profile.confidenceScores
-              const newScore = Math.min(5, Math.max(1, Math.round(toolInput.newScore as number)))
-              await updateProfile({ confidenceScores: { ...profile.confidenceScores, [dimension]: newScore } })
-              return `Confidence in ${dimension} updated to ${newScore}/5.`
             }
             return 'Unknown tool.'
           },

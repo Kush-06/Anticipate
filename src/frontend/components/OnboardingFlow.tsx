@@ -176,17 +176,17 @@ export function OnboardingFlow() {
   const [livingSituation, setStepLivingSituation] = useState("");
   const [upcomingEvents, setUpcomingEvents] = useState<string[]>([]);
   const [moneyWorry, setStepMoneyWorry] = useState("");
-  const [confidence, setConfidence] = useState<Record<string, number>>({
+  const confidence = {
     payslip: 3,
     budgeting: 3,
     pensions: 3,
     investing: 3,
     renting: 3
-  });
+  };
   const [studentLoan, setStepStudentLoan] = useState("");
   const [salaryInput, setSalaryInput] = useState("");
 
-  const totalSteps = 10;
+  const totalSteps = 9;
 
   useEffect(() => {
     if (screen === "welcome") {
@@ -213,7 +213,7 @@ export function OnboardingFlow() {
   }, [isAnalyzing]);
 
   const advance = async () => {
-    if (step === 8) {
+    if (step === 7) {
       if (salaryInput.trim().length === 0) {
         setSalaryInput("28000"); // Use default if skipped
       }
@@ -221,7 +221,7 @@ export function OnboardingFlow() {
       setIsAnalyzing(true);
       setTimeout(() => {
         setIsAnalyzing(false);
-        setStep(9);
+        setStep(8);
         setTypingComplete(false);
       }, 3500);
       return;
@@ -271,9 +271,6 @@ export function OnboardingFlow() {
     setter(val);
   };
 
-  const handleSelectRating = (key: string, val: number) => {
-    setConfidence((prev) => ({ ...prev, [key]: val }));
-  };
 
   const toggleUpcomingEvent = (evt: string) => {
     setUpcomingEvents((prev) => {
@@ -295,10 +292,9 @@ export function OnboardingFlow() {
     livingSituation.length > 0, // step 3
     upcomingEvents.length > 0, // step 4
     moneyWorry.length > 0, // step 5
-    true, // step 6
-    studentLoan.length > 0, // step 7
-    true, // step 8 (allow skip via main button)
-    true // step 9
+    studentLoan.length > 0, // step 6
+    true, // step 7 (allow skip via main button)
+    true // step 8
   ][step];
 
   const questionTitleStyle: React.CSSProperties = {
@@ -412,22 +408,17 @@ export function OnboardingFlow() {
     [
       "Be real with me here — what's the single biggest thing that stresses you out about money right now?"
     ],
-    // Step 6: Q5 - Confidence Check
-    [
-      "Let's do a quick pulse check on a few specific topics.",
-      "Be completely honest — this just helps me skip the basic stuff you already know inside out."
-    ],
-    // Step 7: Q6 - Student Loan
+    // Step 6: Q5 - Student Loan
     [
       "Quick one regarding university — did you take out a student loan?"
     ],
-    // Step 8: Q7 - Salary
+    // Step 7: Q6 - Salary
     [
       "Last thing, and it's completely optional.",
       "If you drop in your rough take-home salary, I can run the numbers in your lessons using your actual pay packet.",
       "It means instead of saying 'imagine you earn £30k', I can show you exactly how things impact your wallet."
     ],
-    // Step 9: Summary Reveal
+    // Step 8: Summary Reveal
     [
       `Perfect. Thanks, ${firstName || "Maya"}.`,
       "Based on what you just shared, I've custom-built your priority track.",
@@ -1030,53 +1021,8 @@ export function OnboardingFlow() {
                 </div>
               )}
 
-              {/* Step 6: Q5 - Confidence Check (Consolidated) */}
+              {/* Step 6: Q5 - Student loan */}
               {step === 6 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div style={{ alignSelf: "center", fontSize: 13, fontWeight: 600, color: "var(--p-ink-3)", fontFamily: "var(--p-sans)", marginBottom: 4 }}>
-                    1 = Clueless • 5 = Expert
-                  </div>
-                  {[
-                    { label: "Decoding your payslip and tax", key: "payslip" },
-                    { label: "Managing cash flow and day-to-day budgeting", key: "budgeting" },
-                    { label: "Pensions and saving for the future", key: "pensions" },
-                    { label: "Investing, ISAs, and growing wealth", key: "investing" },
-                    { label: "Your rights as a tenant or home buyer", key: "renting" }
-                  ].map(({ label, key }) => (
-                    <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--p-ink)", fontFamily: "var(--p-sans)" }}>{label}</span>
-                      <div style={{ display: "flex", gap: 6, justifyContent: "space-between", background: "#fff", border: "1.5px solid var(--p-line)", borderRadius: 12, padding: "8px" }}>
-                        {[1, 2, 3, 4, 5].map((val) => {
-                          const isSelected = val === confidence[key];
-                          return (
-                            <button
-                              key={val}
-                              onClick={() => handleSelectRating(key, val)}
-                              style={{
-                                flex: 1,
-                                height: 36,
-                                borderRadius: 8,
-                                border: isSelected ? "2.2px solid var(--p-coral)" : "1.5px solid var(--p-line)",
-                                background: isSelected ? "var(--p-coral-tint)" : "var(--p-line-2)",
-                                color: isSelected ? "var(--p-coral)" : "var(--p-ink)",
-                                fontWeight: 700,
-                                fontSize: 13,
-                                cursor: "pointer",
-                                fontFamily: "var(--p-mono)"
-                              }}
-                            >
-                              {val}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Step 7: Q6 - Student loan */}
-              {step === 7 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {[
                     "Yes, and it's actively coming off my payslip",
@@ -1092,15 +1038,15 @@ export function OnboardingFlow() {
                 </div>
               )}
 
-              {/* Step 8: Q7 - Salary */}
-              {step === 8 && (
+              {/* Step 7: Q6 - Salary */}
+              {step === 7 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <label style={questionTitleStyle}>Take home salary (optional)</label>
                     <div style={{ position: "relative" }}>
                       <span style={{ position: "absolute", left: 14, top: 12, color: "var(--p-ink-3)", fontWeight: 600, fontSize: 16 }}>£</span>
                       <input
-                        style={{ ...inputStyle, paddingLeft: 28 }}
+                         style={{ ...inputStyle, paddingLeft: 28 }}
                         type="text"
                         inputMode="numeric"
                         placeholder="e.g. 28,000"
@@ -1112,8 +1058,8 @@ export function OnboardingFlow() {
                 </div>
               )}
 
-              {/* Step 9: Summary learning queue reveal */}
-              {step === 9 && (
+              {/* Step 8: Summary learning queue reveal */}
+              {step === 8 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
                   {recSummary.map((card, i) => (
                     <div
@@ -1199,9 +1145,9 @@ export function OnboardingFlow() {
                 ? "Continue" 
                 : step === 1 
                   ? "Let's do it" 
-                  : step === 8 && salaryInput.trim().length === 0
+                  : step === 7 && salaryInput.trim().length === 0
                     ? "Skip"
-                    : step === 9 
+                    : step === 8 
                       ? "Let's go" 
                       : "Continue"}
             {!isSubmitting && <AppIcon name="arrowRight" size={16} stroke={2} />}
@@ -1209,7 +1155,7 @@ export function OnboardingFlow() {
           
           {/* Helper footer */}
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
-            {step > 0 && step < 9 && (
+            {step > 0 && step < 8 && (
               <button
                 onClick={() => setStep((s) => s - 1)}
                 style={{
