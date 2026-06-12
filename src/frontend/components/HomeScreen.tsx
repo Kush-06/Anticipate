@@ -257,12 +257,6 @@ export function HomeScreen() {
               <h3>What's ahead</h3>
               <span className="meta">{totalItems > 0 ? "Your timeline" : ""}</span>
             </div>
-            <button 
-              className="ut-btn"
-              onClick={() => setShowUpdatePopup(true)}
-            >
-              <AppIcon name="plus" size={14} stroke={2.5} /> Update
-            </button>
           </div>
         </div>
 
@@ -330,27 +324,6 @@ export function HomeScreen() {
         />
       )}
 
-
-      <style>{`
-        .ut-btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          background: #e6dbc4;
-          border: none;
-          border-radius: 100px;
-          color: #5f5848;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: transform 0.1s ease, background 0.15s ease;
-        }
-        .ut-btn:active {
-          transform: scale(0.96);
-          background: #d9cdb0;
-        }
-      `}</style>
     </div>
   );
 }

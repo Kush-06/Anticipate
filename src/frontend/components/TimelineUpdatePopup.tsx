@@ -106,6 +106,7 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
 
         <div className="ut-content">
           <h2 className="ut-title">What's happening in your life?</h2>
+          <p className="ut-subtitle">Select an upcoming milestone to adapt your custom timeline and learning track.</p>
           
           <div className="ut-grid">
             {LIFE_EVENTS.map(event => (
@@ -163,26 +164,27 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(28, 26, 36, 0.35);
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
+          background: rgba(28, 26, 36, 0.4);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
           z-index: 1000;
           display: flex;
           align-items: flex-end;
-          animation: fade-in 0.2s ease-out;
+          animation: fade-in 0.25s ease-out;
         }
 
         .ut-popup {
           width: 100%;
-          background: #f4f0e6;
+          background: var(--p-bg);
           border-radius: 32px 32px 0 0;
           padding: 16px 20px 40px;
           padding-bottom: max(40px, env(safe-area-inset-bottom));
-          max-height: 90vh;
+          max-height: 92vh;
           overflow-y: auto;
-          color: #1c1a24;
-          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
-          animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          color: var(--p-ink);
+          box-shadow: 0 -10px 40px rgba(28, 26, 36, 0.12);
+          animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          border-top: 1.5px solid var(--p-line);
         }
 
         .ut-header {
@@ -190,24 +192,25 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
           flex-direction: column;
           align-items: center;
           position: relative;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
         }
 
         .ut-handle {
-          width: 36px;
+          width: 42px;
           height: 4px;
-          background: #e6dbc4;
+          background: var(--p-line-2);
           border-radius: 2px;
           margin-bottom: 12px;
+          opacity: 0.8;
         }
 
         .ut-close {
           position: absolute;
           right: 0;
           top: -4px;
-          background: #ffffff;
-          border: none;
-          color: #5f5848;
+          background: var(--p-card);
+          border: 1.5px solid var(--p-line);
+          color: var(--p-ink-2);
           width: 32px;
           height: 32px;
           border-radius: 50%;
@@ -216,15 +219,31 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
           justify-content: center;
           cursor: pointer;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+          transition: all 0.2s ease;
+        }
+
+        .ut-close:hover {
+          color: var(--p-coral);
+          border-color: var(--p-coral);
+          transform: scale(1.08);
         }
 
         .ut-title {
-          font-family: Georgia, serif;
-          font-size: 20px;
-          font-weight: bold;
-          margin-bottom: 20px;
+          font-family: var(--p-display);
+          font-size: 24px;
+          font-weight: 800;
+          margin-bottom: 8px;
           text-align: left;
-          color: #1c1a24;
+          color: var(--p-ink);
+          letter-spacing: -0.02em;
+        }
+
+        .ut-subtitle {
+          font-family: var(--p-sans);
+          font-size: 14px;
+          color: var(--p-ink-2);
+          margin-bottom: 24px;
+          line-height: 1.45;
         }
 
         .ut-grid {
@@ -235,8 +254,8 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
         }
 
         .ut-card {
-          background: #ffffff;
-          border: 1.5px solid #e6dbc4;
+          background: var(--p-card);
+          border: 1.5px solid var(--p-line);
           border-radius: 20px;
           padding: 20px 16px;
           display: flex;
@@ -244,36 +263,48 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
           align-items: center;
           gap: 12px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #1c1a24;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          color: var(--p-ink);
+          box-shadow: 0 2px 6px rgba(28, 26, 36, 0.01);
+        }
+
+        .ut-card:hover {
+          transform: translateY(-2px);
+          border-color: var(--p-line-2);
+          box-shadow: 0 6px 16px rgba(28, 26, 36, 0.04);
         }
 
         .ut-card.active {
-          background: #fbe1d6;
-          border-color: #f2ab8d;
+          background: var(--p-coral-tint);
+          border-color: var(--p-coral);
+          transform: scale(1.02);
+          box-shadow: 0 4px 14px rgba(233, 105, 74, 0.12);
         }
 
         .ut-card-icon {
-          width: 44px;
-          height: 44px;
-          background: #f7f3eb;
+          width: 48px;
+          height: 48px;
+          background: var(--p-bg-2);
           border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #5f5848;
+          color: var(--p-ink-2);
+          transition: all 0.2s ease;
         }
 
         .ut-card.active .ut-card-icon {
-          background: #ff9b7d;
+          background: var(--p-coral);
           color: white;
+          transform: scale(1.05);
         }
 
         .ut-card-label {
-          font-size: 13px;
+          font-family: var(--p-display);
+          font-size: 13.5px;
           font-weight: 700;
           text-align: center;
-          font-family: system-ui, -apple-system, sans-serif;
+          color: var(--p-ink);
         }
 
         .ut-details {
@@ -294,28 +325,30 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
         }
 
         .ut-input-group label {
-          font-size: 11px;
-          font-weight: 800;
-          color: #95a4bb;
+          font-family: var(--p-mono);
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--p-ink-3);
           text-transform: uppercase;
-          letter-spacing: 0.8px;
-          padding-left: 4px;
+          letter-spacing: 0.1em;
+          padding-left: 2px;
         }
 
         .ut-input-group input {
-          background: #ffffff;
-          border: 1.5px solid #e6dbc4;
+          background: var(--p-card);
+          border: 1.5px solid var(--p-line);
           border-radius: 16px;
           padding: 14px 16px;
-          color: #1c1a24;
-          font-size: 15px;
+          color: var(--p-ink);
+          font-size: 14.5px;
           outline: none;
-          font-family: system-ui, -apple-system, sans-serif;
-          transition: border-color 0.2s ease;
+          font-family: var(--p-sans);
+          transition: all 0.2s ease;
         }
 
         .ut-input-group input:focus {
-          border-color: #ff9b7d;
+          border-color: var(--p-coral);
+          box-shadow: 0 0 0 3px var(--p-coral-tint);
         }
 
         .ut-date-input {
@@ -327,7 +360,7 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
         .ut-date-input .icon {
           position: absolute;
           left: 14px;
-          color: #95a4bb;
+          color: var(--p-ink-3);
           pointer-events: none;
         }
 
@@ -337,28 +370,38 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
         }
 
         .ut-activate {
-          background: #ff7350;
+          background: var(--p-coral);
           color: white;
           border: none;
           border-radius: 20px;
           padding: 18px;
-          font-size: 16px;
-          font-weight: 800;
+          font-size: 15px;
+          font-weight: 700;
+          font-family: var(--p-display);
           cursor: pointer;
-          transition: transform 0.1s ease, background 0.2s ease;
-          box-shadow: 0 4px 12px rgba(255, 115, 80, 0.2);
-          font-family: system-ui, -apple-system, sans-serif;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 14px rgba(233, 105, 74, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 8px;
         }
 
-        .ut-activate:active {
-          transform: scale(0.97);
-          background: #e9694a;
+        .ut-activate:hover:not(:disabled) {
+          background: #d85637;
+          box-shadow: 0 6px 16px rgba(233, 105, 74, 0.35);
+        }
+
+        .ut-activate:active:not(:disabled) {
+          transform: scale(0.98);
         }
 
         .ut-activate:disabled {
           opacity: 0.5;
           cursor: not-allowed;
-          background: #e6dbc4;
+          background: var(--p-line);
+          color: var(--p-ink-3);
           box-shadow: none;
         }
 
