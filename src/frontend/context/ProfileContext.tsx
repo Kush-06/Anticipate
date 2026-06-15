@@ -188,10 +188,13 @@ export function getPendingQuestions(profile: UserProfile | null): string[] {
   const pending: string[] = [];
 
   // Q1: day-to-day (lifeStage)
-  if (profile.lifeStage === "I've just started my first proper job") {
+  if (profile.lifeStage === "I'm about to start my first proper job") {
     if (!profile.firstJobCompanyName) pending.push("firstJobCompanyName");
     if (!profile.firstJobStartDate) pending.push("firstJobStartDate");
     if (!profile.firstJobPayDate) pending.push("firstJobPayDate");
+    if (!profile.firstJobSalary) pending.push("firstJobSalary");
+  } else if (profile.lifeStage === "I've just started my first proper job") {
+    if (!profile.firstJobCompanyName) pending.push("firstJobCompanyName");
     if (!profile.firstJobSalary) pending.push("firstJobSalary");
   } else if (profile.lifeStage === "I'm still at uni") {
     if (!profile.uniDegreeYears) pending.push("uniDegreeYears");
@@ -220,10 +223,15 @@ export function getPendingQuestions(profile: UserProfile | null): string[] {
   }
 
   // Q3: upcomingEvents
-  if (profile.upcomingEvents?.includes("Starting a new job soon")) {
+  if (profile.upcomingEvents?.includes("Starting my first job soon")) {
     if (!profile.firstJobCompanyName) pending.push("firstJobCompanyName");
     if (!profile.firstJobStartDate) pending.push("firstJobStartDate");
     if (!profile.firstJobPayDate) pending.push("firstJobPayDate");
+    if (!profile.firstJobSalary) pending.push("firstJobSalary");
+  }
+  if (profile.upcomingEvents?.includes("Starting a new job (not my first) soon")) {
+    if (!profile.firstJobCompanyName) pending.push("firstJobCompanyName");
+    if (!profile.firstJobStartDate) pending.push("firstJobStartDate");
     if (!profile.firstJobSalary) pending.push("firstJobSalary");
   }
   if (profile.upcomingEvents?.includes("Moving out for the very first time") || profile.upcomingEvents?.includes("Moving in with a partner")) {

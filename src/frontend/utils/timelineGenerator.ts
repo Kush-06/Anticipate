@@ -5,32 +5,61 @@ import type { SpineItem, SpineGroup } from "../../shared/types";
 // Maps each "upcoming events" onboarding option (step 4) to a set of milestone items.
 // Items are seeded into the DB on onboarding completion and displayed on the home timeline.
 const UPCOMING_EVENT_ITEMS: Record<string, SpineItem[]> = {
-  "Starting a new job soon": [
+  "Starting my first job soon": [
     {
-      id: "new-job-pension",
+      id: "first-job-pension",
       status: "pending",
       when: "In 3 months",
       title: "Pension auto-enrolment kicks in",
-      tag: "New job · pension",
+      tag: "First job · pension",
       lessonPath: "/topic/starting-work/subtopic/lesson-02",
       group: "this-week",
     },
     {
-      id: "new-job-budget",
+      id: "first-job-budget",
       status: "pending",
       when: "Before first payday",
       title: "Set up your 50/30/20 budget",
-      tag: "New job · budgeting",
+      tag: "First job · budgeting",
       lessonPath: "/topic/starting-work/subtopic/lesson-03",
       group: "coming-up",
     },
     {
-      id: "new-job-isa",
+      id: "first-job-isa",
       status: "pending",
       when: "5 Apr",
       title: "Use your ISA allowance before tax year ends",
       tag: "Tax calendar",
       group: "later",
+    },
+  ],
+  "Starting a new job (not my first) soon": [
+    {
+      id: "new-job-consolidate-pension",
+      status: "pending",
+      when: "In 2 weeks",
+      title: "Consolidate old pension pots",
+      tag: "Career · pension",
+      lessonPath: "/topic/career/subtopic/lesson-20",
+      group: "this-week",
+    },
+    {
+      id: "new-job-negotiate-salary",
+      status: "pending",
+      when: "Before start date",
+      title: "Prepare for salary negotiation",
+      tag: "Career · negotiation",
+      lessonPath: "/topic/career/subtopic/lesson-18",
+      group: "this-week",
+    },
+    {
+      id: "new-job-lifestyle-creep",
+      status: "pending",
+      when: "After your raise",
+      title: "Review monthly spend — avoid lifestyle creep",
+      tag: "Career · budgeting",
+      lessonPath: "/topic/career/subtopic/lesson-19",
+      group: "coming-up",
     },
   ],
   "Moving out for the very first time": [
@@ -360,7 +389,8 @@ export function generateTimeline(
   }
 
   // Life stage: already in first job (not captured by upcoming events)
-  if (lifeStage.includes("first proper job") && !evts.includes("Starting a new job soon")) {
+  const hasUpcomingJob = evts.includes("Starting my first job soon") || evts.includes("Starting a new job (not my first) soon");
+  if (lifeStage.includes("first proper job") && !hasUpcomingJob) {
     thisWeekItems.push({
       id: "pension-enrolment",
       status: "pending",
