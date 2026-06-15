@@ -58,6 +58,7 @@ export function CommunityScreen() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const replyInputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRegionStartYRef = useRef(0)
+  const filterBarRef = useRef<HTMLDivElement>(null)
 
   // Inline Sage reply warning state (avoids ugly top red toasts getting cut off)
   const [replyWarning, setReplyWarning] = useState<string | null>(null)
@@ -444,6 +445,23 @@ export function CommunityScreen() {
       void supabase.removeChannel(channel)
       void supabase.removeChannel(msgCountChannel)
     }
+  }, [selectedTopicId])
+
+  // Scroll active topic filter button into view horizontally
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (filterBarRef.current) {
+        const activeButton = filterBarRef.current.querySelector('[data-active="true"]')
+        if (activeButton) {
+          activeButton.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          })
+        }
+      }
+    }, 100)
+    return () => clearTimeout(timer)
   }, [selectedTopicId])
 
   // Load active thread messages and subscribe to real-time message updates
@@ -952,7 +970,7 @@ Keep it short (2-3 sentences max) and helpful.`
         </div>
 
         {/* Horizontal filter bar */}
-        <div className="anp-community-filters" style={{
+        <div className="anp-community-filters" ref={filterBarRef} style={{
           display: 'flex',
           gap: 8,
           overflowX: 'auto',
@@ -962,6 +980,7 @@ Keep it short (2-3 sentences max) and helpful.`
         }}>
           <button
             onClick={() => setSelectedTopicId('all')}
+            data-active={selectedTopicId === 'all'}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -986,6 +1005,7 @@ Keep it short (2-3 sentences max) and helpful.`
               <button
                 key={t.id}
                 onClick={() => setSelectedTopicId(t.id)}
+                data-active={active}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
