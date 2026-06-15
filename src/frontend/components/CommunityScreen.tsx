@@ -2066,6 +2066,12 @@ Keep it short (2-3 sentences max) and helpful.`
           overflow: hidden;
           box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
         }
+        @media (max-width: 600px) {
+          .anp-modal-drawer {
+            max-width: 100%;
+            border-radius: 0;
+          }
+        }
         .anp-modal-scrollable {
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
@@ -2090,6 +2096,11 @@ Keep it short (2-3 sentences max) and helpful.`
           height: var(--vv-height, 100%);
           background: var(--p-bg-2);
           box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+        }
+        @media (max-width: 600px) {
+          .anp-thread-drawer {
+            max-width: 100%;
+          }
         }
         .anp-thread-drawer--closing {
           /* static container */
