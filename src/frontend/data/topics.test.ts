@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getTopicById, getSubTopicById, topics } from './topics'
+import { getRecommendedSummary, getTopicById, getSubTopicById, topics } from './topics'
+import type { UserProfile } from '../context/ProfileContext'
 
 describe('topics data utilities', () => {
   describe('getTopicById', () => {
@@ -62,6 +63,32 @@ describe('topics data utilities', () => {
           expect(typeof subTopic.content).toBe('string')
         })
       })
+    })
+  })
+
+  describe('getRecommendedSummary', () => {
+    it('shows Career & Pay and Renting for a pay-rise renter profile without generic foundations filler', () => {
+      const profile: UserProfile = {
+        firstName: 'Demo',
+        email: 'demo@example.com',
+        companyName: 'Demo Co',
+        lifeStage: "I've been working for a year or two",
+        employmentType: 'Full-time',
+        sixMonthGoal: 'Personal finance confidence',
+        upcomingEvents: ['Getting a pay rise or changing jobs'],
+        confidenceScores: {
+          tax: 3,
+          pensions: 3,
+          budgeting: 3,
+          investing: 3,
+          contracts: 1,
+        },
+        livingSituation: 'Renting — just moved in or about to',
+        studentLoan: 'No',
+        hasDebt: 'No',
+      }
+
+      expect(getRecommendedSummary(profile).map((card) => card.topicId)).toEqual(['career', 'renting'])
     })
   })
 })

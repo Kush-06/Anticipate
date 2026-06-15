@@ -386,6 +386,9 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
   const upcomingEvents = profile.upcomingEvents || [];
   const livingSituation = profile.livingSituation || "";
   const studentLoan = profile.studentLoan || "";
+  const hasCareerEvent =
+    upcomingEvents.includes("Getting a pay rise or changing jobs") ||
+    upcomingEvents.includes("Getting a pay rise or switching roles");
 
   // Card 1: Stressor / tax / payslip
   if (moneyWorry === "I honestly don't get how tax works" || (confidence.tax && confidence.tax <= 2)) {
@@ -424,6 +427,14 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
       subTopicId: "lesson-29",
       icon: "chart"
     });
+  } else if (hasCareerEvent) {
+    selected.push({
+      title: "Salary Negotiation",
+      desc: "Since a raise or role change is coming up, let's prepare your salary conversation.",
+      topicId: "career",
+      subTopicId: "lesson-18",
+      icon: "chart"
+    });
   } else {
     selected.push({
       title: "The Power of Compound Interest",
@@ -435,7 +446,9 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
   }
 
   // Card 2: Budgeting / Investing
-  if (moneyWorry === "I never seem to have anything left at the end of the month" || (confidence.budgeting && confidence.budgeting <= 2)) {
+  if (hasCareerEvent) {
+    // Career is already the primary recommendation; avoid adding a generic Foundations filler card.
+  } else if (moneyWorry === "I never seem to have anything left at the end of the month" || (confidence.budgeting && confidence.budgeting <= 2)) {
     selected.push({
       title: "The 50/30/20 rule",
       desc: "You said you never have much left at the end of the month. This simple framework is going to change that.",

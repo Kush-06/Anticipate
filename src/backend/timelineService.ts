@@ -41,6 +41,10 @@ function duePartsFromItem(item: {
   return duePartsFromWhenLabel(item.whenLabel)
 }
 
+export function normalizeTimelineTitle(title: string): string {
+  return title.trim().replace(/\s+/g, ' ').toLowerCase()
+}
+
 export function sortTimelineItems(items: TimelineItem[]): TimelineItem[] {
   return [...items].sort((a, b) => {
     const duePartsDiff = duePartsSortValue(a) - duePartsSortValue(b)
@@ -53,10 +57,70 @@ export function sortTimelineItems(items: TimelineItem[]): TimelineItem[] {
   })
 }
 
+function uniqueItemsByTitle(items: SpineItemLike[]): SpineItemLike[] {
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    const titleKey = normalizeTimelineTitle(item.title)
+    if (seen.has(titleKey)) return false
+    seen.add(titleKey)
+    return true
+  })
+}
+
+function mapDbTimelineItem(row: Record<string, unknown>): TimelineItem {
+  const dueParts = duePartsFromItem({
+    whenLabel: row.when_label as string,
+    dueDate: (row.due_date as string | null) ?? undefined,
+    dueYear: row.due_year as number | undefined,
+    dueMonth: row.due_month as number | undefined,
+    dueDay: row.due_day as number | undefined,
+  })
+
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    itemKey: row.item_key as string,
+    status: row.status as SpineStatus,
+    spineGroup: deriveSpineGroup(dueParts),
+    title: row.title as string,
+    tag: row.tag as string,
+    whenLabel: formatTimelineWhen(dueParts),
+    ...dueParts,
+    lessonPath: (row.lesson_path as string | null) ?? undefined,
+    source: row.source as TimelineItem['source'],
+    sortOrder: row.sort_order as number,
+    isDismissed: row.is_dismissed as boolean,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  }
+}
+
+async function filterNewTimelineItemsByTitle(userId: string, items: SpineItemLike[]): Promise<SpineItemLike[]> {
+  const uniqueItems = uniqueItemsByTitle(items)
+  if (uniqueItems.length === 0) return []
+
+  const { data, error } = await supabase
+    .from('user_timeline_items')
+    .select('title')
+    .eq('user_id', userId)
+    .eq('is_dismissed', false)
+
+  if (error) throw new Error(`fetch timeline titles failed: ${error.message}`)
+
+  const existingTitles = new Set(
+    ((data ?? []) as { title: string }[]).map((row) => normalizeTimelineTitle(row.title)),
+  )
+
+  return uniqueItems.filter((item) => !existingTitles.has(normalizeTimelineTitle(item.title)))
+}
+
 // Converts SpineItem[] (from generateTimeline) into DB rows and inserts them.
 // Called once from ProfileContext.completeOnboarding.
 export async function seedTimeline(userId: string, items: SpineItemLike[]): Promise<void> {
-  const rows = items.map((item, index) => {
+  const newItems = await filterNewTimelineItemsByTitle(userId, items)
+  if (newItems.length === 0) return
+
+  const rows = newItems.map((item, index) => {
     const dueParts = duePartsFromItem({
       whenLabel: item.when,
       dueYear: item.dueYear,
@@ -84,12 +148,15 @@ export async function seedTimeline(userId: string, items: SpineItemLike[]): Prom
 
   const { error } = await supabase
     .from('user_timeline_items')
-    .insert(rows)
+    .upsert(rows, { onConflict: 'user_id,item_key,source', ignoreDuplicates: true })
   if (error) throw new Error(`seedTimeline failed: ${error.message}`)
 }
 
 export async function addTimelineItems(userId: string, items: SpineItemLike[]): Promise<void> {
-  const rows = items.map((item, index) => {
+  const newItems = await filterNewTimelineItemsByTitle(userId, items)
+  if (newItems.length === 0) return
+
+  const rows = newItems.map((item, index) => {
     const dueParts = duePartsFromItem({
       whenLabel: item.when,
       dueYear: item.dueYear,
@@ -131,33 +198,7 @@ export async function fetchTimeline(userId: string): Promise<TimelineItem[]> {
 
   if (error || !data) return []
 
-  const items = (data as Record<string, unknown>[]).map((row) => {
-    const dueParts = duePartsFromItem({
-      whenLabel: row.when_label as string,
-      dueDate: (row.due_date as string | null) ?? undefined,
-      dueYear: row.due_year as number | undefined,
-      dueMonth: row.due_month as number | undefined,
-      dueDay: row.due_day as number | undefined,
-    })
-
-    return {
-      id: row.id as string,
-      userId: row.user_id as string,
-      itemKey: row.item_key as string,
-      status: row.status as SpineStatus,
-      spineGroup: deriveSpineGroup(dueParts),
-      title: row.title as string,
-      tag: row.tag as string,
-      whenLabel: formatTimelineWhen(dueParts),
-      ...dueParts,
-      lessonPath: (row.lesson_path as string | null) ?? undefined,
-      source: row.source as TimelineItem['source'],
-      sortOrder: row.sort_order as number,
-      isDismissed: row.is_dismissed as boolean,
-      createdAt: row.created_at as string,
-      updatedAt: row.updated_at as string,
-    }
-  })
+  const items = (data as Record<string, unknown>[]).map(mapDbTimelineItem)
 
   return sortTimelineItems(items)
 }
@@ -191,6 +232,20 @@ export async function addTimelineItem(
     lessonPath?: string
   },
 ): Promise<TimelineItem> {
+  const { data: existingRows, error: existingError } = await supabase
+    .from('user_timeline_items')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_dismissed', false)
+
+  if (existingError) throw new Error(`fetch timeline titles failed: ${existingError.message}`)
+
+  const existingItem = ((existingRows ?? []) as Record<string, unknown>[])
+    .map(mapDbTimelineItem)
+    .find((row) => normalizeTimelineTitle(row.title) === normalizeTimelineTitle(item.title))
+
+  if (existingItem) return existingItem
+
   const { data: maxRows } = await supabase
     .from('user_timeline_items')
     .select('sort_order')
