@@ -98,13 +98,8 @@ export function HomeScreen() {
 
   useEffect(() => {
     if (profile) {
-      const pending = getPendingQuestions(profile);
-      const skipped = sessionStorage.getItem("anticipate_skipped_extra_details");
-      const justOnboarded = localStorage.getItem("anticipate_just_onboarded") === "true";
-      if (pending.length > 0 && !skipped && justOnboarded) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setShowExtraPopup(true);
-      }
+      // Automatic secondary onboarding trigger removed.
+      // Profile screen will keep the reminder.
     }
   }, [profile]);
 

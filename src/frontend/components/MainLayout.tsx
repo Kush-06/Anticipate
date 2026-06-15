@@ -63,27 +63,6 @@ export function MainLayout() {
             >
               <span className="av-tab__ico" style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                 <AppIcon name={tab.icon} size={22} stroke={active ? 2 : 1.8} />
-                {tab.name === "profile" && hasPending && (
-                  <span style={{
-                    position: "absolute",
-                    top: -5,
-                    right: -7,
-                    background: "var(--p-coral)",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    width: 14,
-                    height: 14,
-                    fontSize: 9,
-                    fontWeight: "bold",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 0 0 1.5px var(--p-bg-2)",
-                    fontFamily: "var(--p-mono)"
-                  }}>
-                    1
-                  </span>
-                )}
               </span>
               <span className="av-tab__lbl">{tab.label}</span>
             </button>
