@@ -314,8 +314,11 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
 
   // 5. Question 3 — Upcoming events
   const evts = profile.upcomingEvents || [];
-  if (evts.includes("Starting a new job soon")) {
+  if (evts.includes("Starting my first job soon")) {
     recs.push("starting-work");
+  }
+  if (evts.includes("Starting a new job (not my first) soon")) {
+    recs.push("career");
   }
   if (evts.includes("Moving out for the first time")) {
     recs.push("renting");
@@ -393,12 +396,24 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
       subTopicId: "lesson-01",
       icon: "receipt"
     });
-  } else if (lifeStage === "I've just started my first proper job" || upcomingEvents.includes("Starting a new job soon")) {
+  } else if (
+    lifeStage === "I'm about to start my first proper job" ||
+    lifeStage === "I've just started my first proper job" ||
+    upcomingEvents.includes("Starting my first job soon")
+  ) {
     selected.push({
       title: "Decoding your payslip",
       desc: "Since you're starting a new job, let's make sure you understand your very first paycheck.",
       topicId: "starting-work",
       subTopicId: "lesson-01",
+      icon: "briefcase"
+    });
+  } else if (upcomingEvents.includes("Starting a new job (not my first) soon")) {
+    selected.push({
+      title: "Salary Negotiation",
+      desc: "Since you're starting a new job, let's review how to negotiate your salary and benefits.",
+      topicId: "career",
+      subTopicId: "lesson-18",
       icon: "briefcase"
     });
   } else if (moneyWorry === "I've got debt I'm trying to clear") {

@@ -162,14 +162,14 @@ function getQuestionConfigs(prof: UserProfile): QuestionConfig[] {
   const configs: QuestionConfig[] = [];
 
   // Q1: day-to-day (lifeStage)
-  if (prof.lifeStage === "I've just started my first proper job") {
+  if (prof.lifeStage === "I'm about to start my first proper job") {
     configs.push({
       field: "firstJobCompanyName",
       label: "Company Name",
       placeholder: "e.g. Google, NHS, Deloitte...",
       type: "text",
       getSageText: (name) => [
-        `Congrats on starting your first proper job, **${name}**! That is huge.`,
+        `Congrats on starting your first proper job soon, **${name}**! That is huge.`,
         "What is the name of the company or employer?"
       ]
     });
@@ -196,6 +196,26 @@ function getQuestionConfigs(prof: UserProfile): QuestionConfig[] {
       type: "number",
       getSageText: () => [
         "What is your starting gross annual salary? (Rough estimate is fine!)"
+      ]
+    });
+  } else if (prof.lifeStage === "I've just started my first proper job") {
+    configs.push({
+      field: "firstJobCompanyName",
+      label: "Company Name",
+      placeholder: "e.g. Google, NHS, Deloitte...",
+      type: "text",
+      getSageText: (name) => [
+        `Congrats on starting your first proper job, **${name}**! That is huge.`,
+        "What is the name of the company or employer?"
+      ]
+    });
+    configs.push({
+      field: "firstJobSalary",
+      label: "Salary",
+      placeholder: "e.g. 30000",
+      type: "number",
+      getSageText: () => [
+        "What is your gross annual salary? (Rough estimate is fine!)"
       ]
     });
   } else if (prof.lifeStage === "I'm still at uni") {
@@ -337,7 +357,7 @@ function getQuestionConfigs(prof: UserProfile): QuestionConfig[] {
   }
 
   // Q3: upcomingEvents
-  if (prof.upcomingEvents?.includes("Starting a new job soon")) {
+  if (prof.upcomingEvents?.includes("Starting my first job soon")) {
     if (!configs.some(c => c.field === "firstJobCompanyName")) {
       configs.push({
         field: "firstJobCompanyName",
@@ -345,7 +365,7 @@ function getQuestionConfigs(prof: UserProfile): QuestionConfig[] {
         placeholder: "e.g. Google, NHS, Deloitte...",
         type: "text",
         getSageText: (name) => [
-          `Congrats on starting a new job soon, **${name}**! That's exciting.`,
+          `Congrats on starting your first job soon, **${name}**! That's exciting.`,
           "What is the name of the company or employer?"
         ]
       });
@@ -372,6 +392,37 @@ function getQuestionConfigs(prof: UserProfile): QuestionConfig[] {
         type: "number",
         getSageText: () => [
           "What is your starting gross annual salary? (It's fine to estimate)"
+        ]
+      });
+    }
+  }
+  if (prof.upcomingEvents?.includes("Starting a new job (not my first) soon")) {
+    if (!configs.some(c => c.field === "firstJobCompanyName")) {
+      configs.push({
+        field: "firstJobCompanyName",
+        label: "Company Name",
+        placeholder: "e.g. Google, NHS, Deloitte...",
+        type: "text",
+        getSageText: (name) => [
+          `Congrats on starting your new job soon, **${name}**! That's exciting.`,
+          "What is the name of the company or employer?"
+        ]
+      });
+      configs.push({
+        field: "firstJobStartDate",
+        label: "Start Date",
+        type: "date",
+        getSageText: () => [
+          "And when is your official start date?"
+        ]
+      });
+      configs.push({
+        field: "firstJobSalary",
+        label: "Salary",
+        placeholder: "e.g. 30000",
+        type: "number",
+        getSageText: () => [
+          "What is your gross annual salary? (It's fine to estimate)"
         ]
       });
     }

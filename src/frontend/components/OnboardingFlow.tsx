@@ -235,7 +235,8 @@ export function OnboardingFlow() {
 
     // Final step — save profile
     const cleanSalary = salaryInput.trim().replace(/[^0-9.]/g, "") || "28000";
-    const mappedCompany = upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer";
+    const hasNewJob = upcomingEvents.includes("Starting my first job soon") || upcomingEvents.includes("Starting a new job (not my first) soon");
+    const mappedCompany = hasNewJob ? "your new employer" : "your employer";
     const cleanEmail = registeredEmail.trim() || `${firstName.toLowerCase().replace(/\s+/g, "")}@example.com`;
 
     const profile: UserProfile = {
@@ -355,7 +356,7 @@ export function OnboardingFlow() {
   const tempProfileForRecs: UserProfile = {
     firstName: firstName.trim() || "Maya",
     email: registeredEmail,
-    companyName: upcomingEvents.includes("Starting a new job soon") ? "your new employer" : "your employer",
+    companyName: (upcomingEvents.includes("Starting my first job soon") || upcomingEvents.includes("Starting a new job (not my first) soon")) ? "your new employer" : "your employer",
     lifeStage: lifeStage,
     employmentType: lifeStage,
     sixMonthGoal: moneyWorry || "Personal finance confidence",
@@ -945,6 +946,7 @@ export function OnboardingFlow() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {[
                     "I'm still at uni",
+                    "I'm about to start my first proper job",
                     "I've just started my first proper job",
                     "I've been working for a year or two",
                     "I'm doing the freelance / self-employed thing",
@@ -980,7 +982,8 @@ export function OnboardingFlow() {
               {step === 4 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {[
-                    "Starting a new job soon",
+                    "Starting my first job soon",
+                    "Starting a new job (not my first) soon",
                     "Moving out for the very first time",
                     "Thinking about buying a place",
                     "Moving in with a partner",

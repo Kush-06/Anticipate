@@ -80,8 +80,10 @@ function getRecommendedDocuments(profile: UserProfile | null): string[] {
   
   // 1. Payslip
   if (
+    profile.lifeStage === "I'm about to start my first proper job" ||
     profile.lifeStage === "I've just started my first proper job" ||
-    profile.upcomingEvents?.includes("Starting a new job soon") ||
+    profile.upcomingEvents?.includes("Starting my first job soon") ||
+    profile.upcomingEvents?.includes("Starting a new job (not my first) soon") ||
     profile.upcomingEvents?.includes("Getting a pay rise or switching roles") ||
     profile.sixMonthGoal?.includes("tax") ||
     profile.sixMonthGoal?.includes("payslip") ||
@@ -120,6 +122,7 @@ function getRecommendedDocuments(profile: UserProfile | null): string[] {
   
   // 5. Pension
   if (
+    profile.lifeStage === "I'm about to start my first proper job" ||
     profile.lifeStage === "I've just started my first proper job" ||
     profile.lifeStage === "I've been working for a year or two" ||
     profile.sixMonthGoal?.includes("pension")
