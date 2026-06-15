@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useProfile, getPendingQuestions } from "../context/ProfileContext";
+import { useProfile } from "../context/ProfileContext";
 import { useTimeline } from "../context/TimelineContext";
 import type { SpineItem } from "../context/TimelineContext";
 import { useProgress } from "../context/ProgressContext";

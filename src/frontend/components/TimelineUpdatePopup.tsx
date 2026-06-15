@@ -170,11 +170,13 @@ export function TimelineUpdatePopup({ isOpen, onClose }: TimelineUpdatePopupProp
           z-index: 1000;
           display: flex;
           align-items: flex-end;
+          justify-content: center;
           animation: fade-in 0.25s ease-out;
         }
 
         .ut-popup {
           width: 100%;
+          max-width: 360px;
           background: var(--p-bg);
           border-radius: 32px 32px 0 0;
           padding: 16px 20px 40px;

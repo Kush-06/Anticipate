@@ -763,7 +763,7 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
           }}
           style={{
             width: "100%",
-            maxWidth: "440px",
+            maxWidth: "360px",
             height: "100%",
             maxHeight: "min(580px, calc(var(--extra-vv-height, 100vh) - max(20px, env(safe-area-inset-top)) - 40px))",
             background: "var(--p-bg-2)",

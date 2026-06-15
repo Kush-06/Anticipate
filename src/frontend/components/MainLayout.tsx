@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { AppIcon } from "./AppIcon";
-import { useProfile, getPendingQuestions } from "../context/ProfileContext";
 
 
 const TABS = [
@@ -24,12 +23,9 @@ export function MainLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const lastPaths = useRef<Record<string, string>>({});
-  const { profile } = useProfile();
 
   const { search } = useLocation();
   const currentTab = getTabForPath(pathname);
-
-  const hasPending = getPendingQuestions(profile).length > 0;
 
   // Keep the most-recent full URL (path + search params) for whichever tab is active
   useEffect(() => {

@@ -57,7 +57,7 @@ export function CommunityScreen() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const replyInputRef = useRef<HTMLTextAreaElement>(null)
-  const scrollRegionStartY = useRef(0)
+  const scrollRegionStartYRef = useRef(0)
 
   // Inline Sage reply warning state (avoids ugly top red toasts getting cut off)
   const [replyWarning, setReplyWarning] = useState<string | null>(null)
@@ -75,48 +75,44 @@ export function CommunityScreen() {
   const [validationResult, setValidationResult] = useState<SageValidationResult | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  // Animation states for smooth closing transitions
-  const [isClosingThread, setIsClosingThread] = useState(false)
-  const [isClosingCreating, setIsClosingCreating] = useState(false)
-
-  // Dynamic Viewport height for iOS keyboard layout shifts
-
-  // Swipe-to-reply states
-  const [swipeMsgId, setSwipeMsgId] = useState<string | null>(null)
-  const [swipeX, setSwipeX] = useState<number>(0)
-  const swipeStartX = useRef<number>(0)
-  const swipeStartY = useRef<number>(0)
-  const hasTriggeredSwipeReply = useRef<boolean>(false)
+  // Animation states (no longer used for delays, but kept for conditional rendering if needed)
+  const [isClosingThread] = useState(false)
+  const [isClosingCreating] = useState(false)
 
   // Pull-to-refresh states for threads list
-  const [threadPullY, setThreadPullY] = useState(0)
+  const [threadPullY, setThreadPullY] = useState(0);
   const [isThreadRefreshingState, setIsThreadRefreshingState] = useState(false)
   const [isDraggingThread, setIsDraggingThread] = useState(false)
-  const threadTouchStart = useRef({ x: 0, y: 0 })
-  const threadScrollTop = useRef(0)
+  const threadTouchStartRef = useRef({ x: 0, y: 0 })
+  const threadScrollTopRef = useRef(0)
 
-  // Pull-to-refresh states for messages list
   const [messagePullY, setMessagePullY] = useState(0)
   const [isMessageRefreshingState, setIsMessageRefreshingState] = useState(false)
   const [isDraggingMessage, setIsDraggingMessage] = useState(false)
-  const messageTouchStart = useRef({ x: 0, y: 0 })
-  const messageScrollTop = useRef(0)
+  const messageTouchStartRef = useRef({ x: 0, y: 0 })
+  const messageScrollTopRef = useRef(0)
 
   // Swipe-to-reply gesture handlers
+  const [swipeMsgId, setSwipeMsgId] = useState<string | null>(null)
+  const [swipeX, setSwipeX] = useState<number>(0)
+  const swipeStartXRef = useRef<number>(0)
+  const swipeStartYRef = useRef<number>(0)
+  const hasTriggeredSwipeReplyRef = useRef<boolean>(false)
+
   const handleMsgTouchStart = (e: React.TouchEvent, msgId: string) => {
     const touch = e.touches[0]
-    swipeStartX.current = touch.clientX
-    swipeStartY.current = touch.clientY
+    swipeStartXRef.current = touch.clientX
+    swipeStartYRef.current = touch.clientY
     setSwipeMsgId(msgId)
     setSwipeX(0)
-    hasTriggeredSwipeReply.current = false
+    hasTriggeredSwipeReplyRef.current = false
   }
 
   const handleMsgTouchMove = (e: React.TouchEvent) => {
     if (!swipeMsgId) return
     const touch = e.touches[0]
-    const deltaX = touch.clientX - swipeStartX.current
-    const deltaY = touch.clientY - swipeStartY.current
+    const deltaX = touch.clientX - swipeStartXRef.current
+    const deltaY = touch.clientY - swipeStartYRef.current
 
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       if (deltaX < 0) { // Swipe to the left
@@ -140,22 +136,22 @@ export function CommunityScreen() {
     }
     setSwipeMsgId(null)
     setSwipeX(0)
-    hasTriggeredSwipeReply.current = false
+    hasTriggeredSwipeReplyRef.current = false
   }
 
   // Pull-to-refresh handlers for Threads list
   const handleThreadTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0]
-    threadTouchStart.current = { x: touch.clientX, y: touch.clientY }
-    threadScrollTop.current = e.currentTarget.scrollTop
+    threadTouchStartRef.current = { x: touch.clientX, y: touch.clientY }
+    threadScrollTopRef.current = e.currentTarget.scrollTop
     setIsDraggingThread(true)
   }
 
   const handleThreadTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (threadScrollTop.current > 0 || isThreadRefreshingState) return
+    if (threadScrollTopRef.current > 0 || isThreadRefreshingState) return
     const touch = e.touches[0]
-    const diffY = touch.clientY - threadTouchStart.current.y
-    const diffX = touch.clientX - threadTouchStart.current.x
+    const diffY = touch.clientY - threadTouchStartRef.current.y
+    const diffX = touch.clientX - threadTouchStartRef.current.x
 
     if (diffY > 0 && Math.abs(diffY) > Math.abs(diffX)) {
       const pull = Math.min(80, Math.pow(diffY, 0.82))
@@ -188,22 +184,22 @@ export function CommunityScreen() {
   // Pull-to-refresh handlers for Messages list
   const handleMessageTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0]
-    messageTouchStart.current = { x: touch.clientX, y: touch.clientY }
-    messageScrollTop.current = e.currentTarget.scrollTop
+    messageTouchStartRef.current = { x: touch.clientX, y: touch.clientY }
+    messageScrollTopRef.current = e.currentTarget.scrollTop
     setIsDraggingMessage(true)
   }
 
   const handleMessageTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0]
-    const diffY = touch.clientY - messageTouchStart.current.y
-    const diffX = touch.clientX - messageTouchStart.current.x
+    const diffY = touch.clientY - messageTouchStartRef.current.y
+    const diffX = touch.clientX - messageTouchStartRef.current.x
 
     // Dismiss the keyboard when the list is dragged vertically.
     if (Math.abs(diffY) > 16 && Math.abs(diffY) > Math.abs(diffX)) {
       dismissKeyboard()
     }
 
-    if (messageScrollTop.current > 0 || isMessageRefreshingState) return
+    if (messageScrollTopRef.current > 0 || isMessageRefreshingState) return
 
     if (diffY > 0 && Math.abs(diffY) > Math.abs(diffX)) {
       const pull = Math.min(80, Math.pow(diffY, 0.82))
@@ -353,10 +349,10 @@ export function CommunityScreen() {
 
   // Blur the focused input on a downward swipe within a scroll region.
   const handleScrollRegionTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    scrollRegionStartY.current = e.touches[0].clientY
+    scrollRegionStartYRef.current = e.touches[0].clientY
   }
   const handleScrollRegionTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches[0].clientY - scrollRegionStartY.current > 16) {
+    if (e.touches[0].clientY - scrollRegionStartYRef.current > 16) {
       dismissKeyboard()
     }
   }
@@ -610,53 +606,47 @@ export function CommunityScreen() {
   }
 
   const handleCloseCreate = () => {
-    setIsClosingCreating(true)
-    setTimeout(() => {
-      setIsCreating(false)
-      setIsClosingCreating(false)
-      setValidationResult(null)
-    }, 240)
+    setIsCreating(false)
+    setValidationResult(null)
   }
 
   const openThread = (thread: ForumThread) => {
-    setActiveThread(thread)
     setSearchParams(prev => {
       const p = new URLSearchParams(prev)
       p.set('thread', thread.id)
       return p
-    })
+    }, { replace: false })
   }
 
   const handleCloseThread = () => {
-    setIsClosingThread(true)
     setSearchParams(prev => {
       const p = new URLSearchParams(prev)
       p.delete('thread')
       return p
-    })
-    setTimeout(() => {
+    }, { replace: false })
+  }
+
+  // Synchronize active thread with URL param
+  useEffect(() => {
+    const threadId = searchParams.get('thread')
+    
+    if (threadId) {
+      // Only set if we don't have it or it's different
+      if (threads.length > 0 && activeThread?.id !== threadId) {
+        const found = threads.find(t => t.id === threadId)
+        if (found) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setActiveThread(found)
+        }
+      }
+    } else if (activeThread) {
+      // URL param is gone, so clear local state
       setActiveThread(null)
-      setIsClosingThread(false)
       setMessages([])
       setReplyWarning(null)
       setReplyToMessage(null)
-    }, 300)
-  }
-
-  // Restore thread from URL after tab switch (runs once when threads load)
-  useEffect(() => {
-    const threadId = searchParams.get('thread')
-    if (threadId && threads.length > 0) {
-      const found = threads.find(t => t.id === threadId)
-      if (found) {
-        // Use a small delay to avoid cascading renders warning
-        const timer = setTimeout(() => {
-          setActiveThread(found)
-        }, 0)
-        return () => clearTimeout(timer)
-      }
     }
-  }, [threads, activeThread, searchParams])
+  }, [searchParams, threads, activeThread])
 
   // Sage AI Post Validation
   const handleValidatePost = async (e: React.FormEvent) => {
@@ -2021,8 +2011,6 @@ Keep it short (2-3 sentences max) and helpful.`
         .anp-modal-backdrop {
           position: fixed;
           inset: 0;
-          /* Keep the backdrop full-screen; the sheet itself moves above the
-             keyboard so the forum list never peeks through during animation. */
           background: rgba(28, 26, 36, 0.4);
           backdrop-filter: blur(6px);
           -webkit-backdrop-filter: blur(6px);
@@ -2030,10 +2018,6 @@ Keep it short (2-3 sentences max) and helpful.`
           display: flex;
           align-items: flex-end;
           justify-content: center;
-          animation: fade-in 0.24s ease-out both;
-        }
-        .anp-modal-backdrop--closing {
-          animation: fade-out 0.22s ease-out both;
         }
 
         .anp-modal-viewport {
@@ -2061,14 +2045,6 @@ Keep it short (2-3 sentences max) and helpful.`
           flex-direction: column;
           overflow: hidden;
           box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-          transform: translate3d(0, 100%, 0);
-          animation: slide-up 0.28s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-          will-change: transform;
-        }
-        .anp-modal-drawer--closing {
-          transform: translate3d(0, 0, 0);
-          animation: slide-down 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-          will-change: transform;
         }
         .anp-modal-scrollable {
           -webkit-overflow-scrolling: touch;
@@ -2079,30 +2055,21 @@ Keep it short (2-3 sentences max) and helpful.`
           position: fixed;
           inset: 0;
           z-index: 110;
-          background: var(--p-bg-2);
+          background: rgba(28, 26, 36, 0.4);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
           overflow: hidden;
-          transform: translate3d(100%, 0, 0);
-          animation: slide-in-right 0.28s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-          will-change: transform;
-        }
-        .anp-thread-drawer-overlay--closing {
-          position: fixed;
-          inset: 0;
-          z-index: 110;
-          background: var(--p-bg-2);
-          overflow: hidden;
-          transform: translate3d(0, 0, 0);
-          animation: slide-out-right 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-          will-change: transform;
+          display: flex;
+          justify-content: center;
         }
 
         .anp-thread-drawer {
-          position: absolute;
-          top: var(--vv-offset-top, 0px);
-          left: 0;
-          right: 0;
+          position: relative;
+          width: 100%;
+          max-width: 360px;
           height: var(--vv-height, 100%);
           background: var(--p-bg-2);
+          box-shadow: -4px 0 24px rgba(0,0,0,0.15);
         }
         .anp-thread-drawer--closing {
           /* static container */

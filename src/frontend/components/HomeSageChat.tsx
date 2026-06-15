@@ -837,6 +837,7 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
         .scc-panel {
           position: relative;
           width: 100%;
+          max-width: 360px;
           height: 85%;
           pointer-events: auto;
           border-radius: 28px 28px 0 0;

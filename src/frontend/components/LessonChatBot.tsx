@@ -567,6 +567,7 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
         .lcb-panel {
           position: relative;
           width: 100%;
+          max-width: 360px;
           height: 85%;
           pointer-events: auto;
           border-radius: 28px 28px 0 0;
