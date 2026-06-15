@@ -29,7 +29,11 @@ export function MainLayout() {
 
   // Keep the most-recent full URL (path + search params) for whichever tab is active
   useEffect(() => {
-    lastPaths.current[currentTab] = pathname + search;
+    if (currentTab === "community") {
+      lastPaths.current["community"] = "/community";
+    } else {
+      lastPaths.current[currentTab] = pathname + search;
+    }
   }, [pathname, search, currentTab]);
 
   const handleTabPress = (tab: typeof TABS[0]) => {
@@ -38,7 +42,11 @@ export function MainLayout() {
       navigate(tab.path);
     } else {
       // Restore the last place the user was in this tab, or fall back to root
-      navigate(lastPaths.current[tab.name] ?? tab.path);
+      if (tab.name === "community") {
+        navigate("/community");
+      } else {
+        navigate(lastPaths.current[tab.name] ?? tab.path);
+      }
     }
   };
 
