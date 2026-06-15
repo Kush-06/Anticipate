@@ -578,6 +578,12 @@ export function LessonChatBot({ lessonTitle, topicTitle, lessonContent }: Lesson
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
           animation: lcb-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
+        @media (max-width: 600px) {
+          .lcb-panel {
+            max-width: 100%;
+            border-radius: 0;
+          }
+        }
         .lcb-panel--closing {
           animation: lcb-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
         }

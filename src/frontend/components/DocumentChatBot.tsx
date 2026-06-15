@@ -599,6 +599,7 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
         .dcb-panel {
           position: relative;
           width: 100%;
+          max-width: 360px;
           height: 85%;
           pointer-events: auto;
           border-radius: 28px 28px 0 0;
@@ -608,6 +609,12 @@ export function DocumentChatBot({ documentTitle, documentPath }: DocumentChatBot
           overflow: hidden;
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
           animation: dcb-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @media (max-width: 600px) {
+          .dcb-panel {
+            max-width: 100%;
+            border-radius: 0;
+          }
         }
         .dcb-panel--closing { animation: dcb-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
         @keyframes dcb-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }

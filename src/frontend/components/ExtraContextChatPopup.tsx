@@ -1054,6 +1054,16 @@ export function ExtraContextChatPopup({ isOpen, onClose }: ExtraContextChatPopup
           margin-left: 2px;
           display: inline-block;
         }
+        @media (max-width: 600px) {
+          .extra-popup-card {
+            max-width: 100% !important;
+            border-radius: 0 !important;
+            max-height: 100% !important;
+          }
+          .extra-popup-viewport-wrapper {
+            padding: 0 !important;
+          }
+        }
       `}</style>
       </div>
       </div>

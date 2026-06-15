@@ -848,6 +848,12 @@ export function HomeSageChat({ open, onClose }: HomeSageChatProps) {
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
           animation: scc-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
+        @media (max-width: 600px) {
+          .scc-panel {
+            max-width: 100%;
+            border-radius: 0;
+          }
+        }
         .scc-panel--closing { animation: scc-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
         @keyframes scc-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes scc-slide-down { from { transform: translateY(0); } to { transform: translateY(100%); } }
