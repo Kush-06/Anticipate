@@ -1035,12 +1035,12 @@ Keep it short (2-3 sentences max) and helpful.`
           fontSize: 12,
           color: 'var(--p-ink-3)',
           display: 'flex',
-          justifyContent: 'space-between',
+          gap: 4,
           alignItems: 'center',
           flexShrink: 0
         }}>
-          <span>Everything you post is anonymous</span>
-          <span style={{ fontWeight: 600, color: 'var(--p-coral)' }}>Persona: {userNickname}</span>
+          <span>Posting anonymously as:</span>
+          <span style={{ fontWeight: 600, color: 'var(--p-coral)' }}>{userNickname}</span>
         </div>
 
         {/* Threads List */}

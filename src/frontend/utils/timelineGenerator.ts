@@ -258,71 +258,17 @@ export function generateTimeline(
       {
         key: "this-week",
         label: "This week",
-        items: [
-          {
-            id: "payslip-lesson",
-            status: "active",
-            when: "Today",
-            title: "Reading your first payslip",
-            tag: "First job · lesson",
-            lessonPath: "/topic/starting-work/subtopic/lesson-01",
-            group: "this-week",
-          },
-          {
-            id: "pension-enrolment",
-            status: "pending",
-            when: "Thu 5 Jun",
-            title: "Pension auto-enrolment kicks in",
-            tag: "First job",
-            group: "this-week",
-          },
-        ],
+        items: [],
       },
       {
         key: "coming-up",
         label: "Coming up",
-        items: [
-          {
-            id: "pension-lesson",
-            status: "pending",
-            when: "Before 12 Jun",
-            title: "Finish Starting Work track",
-            tag: "3 lessons left",
-            lessonPath: "/topic/starting-work",
-            group: "coming-up",
-          },
-          {
-            id: "student-loan",
-            status: "pending",
-            when: "1 Jul",
-            title: "Student loan repayment starts",
-            tag: "Starting work",
-            group: "coming-up",
-          },
-        ],
+        items: [],
       },
       {
         key: "later",
         label: "Later",
-        items: [
-          {
-            id: "moving-out",
-            status: "pending",
-            when: "August",
-            title: "Moving out — your tenancy agreement",
-            tag: "Moving out",
-            lessonPath: "/topic/renting",
-            group: "later",
-          },
-          {
-            id: "isa-deadline",
-            status: "pending",
-            when: "5 Apr",
-            title: "ISA deadline",
-            tag: "Tax calendar",
-            group: "later",
-          },
-        ],
+        items: [],
       },
     ];
   }

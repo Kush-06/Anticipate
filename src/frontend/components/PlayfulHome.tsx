@@ -17,7 +17,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { topics, getRecommendedTopics, getRecommendedSummary } from "../data/topics";
+import { topics, getRecommendedTopics } from "../data/topics";
 import { useProgress } from "../context/ProgressContext";
 import { useProfile } from "../context/ProfileContext";
 import { TopBar } from "./TopBar";
@@ -140,7 +140,7 @@ export function PlayfulHome() {
   const navigate = useNavigate();
   const { completedSubTopicIds } = useProgress();
   const { profile } = useProfile();
-  const [foundationalOpen, setFoundationalOpen] = useState(false);
+  const [foundationalOpen, setFoundationalOpen] = useState(true);
   const [libraryOpen, setLibraryOpen] = useState(false);
 
   const completions = topics.map((t) => {
@@ -168,11 +168,19 @@ export function PlayfulHome() {
     return completedCount < t.subTopics.length;
   });
 
-  const recSummary = getRecommendedSummary(profile);
-  const recTopicIds = Array.from(new Set(recSummary.map((c) => c.topicId)));
+  const recTopicIds = recs.slice(0, 3);
   const suggestedTopics = recTopicIds
     .map((id) => topics.find((t) => t.id === id))
-    .filter((t): t is typeof topics[0] => !!t);
+    .filter((t): t is typeof topics[0] => !!t)
+    .sort((a, b) => {
+      const aIdx = topics.indexOf(a);
+      const bIdx = topics.indexOf(b);
+      const aActive = statuses[aIdx] === "active";
+      const bActive = statuses[bIdx] === "active";
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
+      return 0;
+    });
 
   const foundational = topics.filter((t) => FOUNDATIONAL_IDS.has(t.id));
   const suggested = topics
@@ -216,7 +224,7 @@ export function PlayfulHome() {
       <div className="anp-scroll">
 
         {/* Continue card — only when user has actual progress */}
-        {activeIdx >= 0 && <div className="anp-l-current" style={{ margin: "0 calc(16px * var(--d)) calc(20px * var(--d))" }}>
+        {activeIdx >= 0 && activeCompletedCount > 0 && <div className="anp-l-current" style={{ margin: "0 calc(16px * var(--d)) calc(20px * var(--d))" }}>
           <div className="hd">
             <div>
               <div className="eyebrow">Continue where you left off</div>
@@ -283,71 +291,9 @@ export function PlayfulHome() {
           </div>
         )}
 
-        {/* ── Module Library — collapsible card ── */}
-        <div style={{
-          margin: "0 calc(16px * var(--d)) calc(16px * var(--d))",
-          background: "var(--p-bg-card, #fff)",
-          borderRadius: "calc(20px * var(--d))",
-          border: "1px solid var(--p-line-1)",
-          overflow: "hidden",
-        }}>
-          <button
-            onClick={() => setLibraryOpen((o) => !o)}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "calc(14px * var(--d)) calc(14px * var(--d))",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "calc(6px * var(--d))" }}>
-              <span style={{
-                fontFamily: "var(--p-display)",
-                fontWeight: 600,
-                fontSize: "calc(16px * var(--d))",
-                letterSpacing: "-0.01em",
-                color: "var(--p-ink)",
-              }}>Module Library</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "calc(8px * var(--d))" }}>
-              <span style={{
-                fontFamily: "var(--p-mono)",
-                fontSize: "calc(9.5px * var(--d))",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase" as const,
-                color: "var(--p-ink-3)",
-              }}>All topics</span>
-              <ChevronDown
-                size={16}
-                color="var(--p-ink-3)"
-                style={{
-                  transition: "transform 0.25s ease",
-                  transform: libraryOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  flexShrink: 0,
-                }}
-              />
-            </div>
-          </button>
-
-          {libraryOpen && (
-            <div style={{
-              padding: "0 calc(14px * var(--d)) calc(14px * var(--d))",
-              display: "flex",
-              flexDirection: "column",
-              gap: "calc(10px * var(--d))",
-            }}>
-              {suggested.map(renderTrackTile)}
-            </div>
-          )}
-        </div>
-
         {/* ── Foundational section — collapsible card ── */}
         <div style={{
-          margin: "calc(16px * var(--d)) calc(16px * var(--d)) calc(16px * var(--d))",
+          margin: "0 calc(16px * var(--d)) calc(16px * var(--d))",
           background: "linear-gradient(135deg, #fef9ee 0%, #faeac8 45%, #fdf5e2 100%)",
           borderRadius: "calc(20px * var(--d))",
           border: "1px solid var(--p-gold-tint)",
@@ -406,6 +352,68 @@ export function PlayfulHome() {
               gap: "calc(10px * var(--d))",
             }}>
               {foundational.map(renderTrackTile)}
+            </div>
+          )}
+        </div>
+
+        {/* ── Module Library — collapsible card ── */}
+        <div style={{
+          margin: "calc(16px * var(--d)) calc(16px * var(--d)) calc(16px * var(--d))",
+          background: "var(--p-bg-card, #fff)",
+          borderRadius: "calc(20px * var(--d))",
+          border: "1px solid var(--p-line-1)",
+          overflow: "hidden",
+        }}>
+          <button
+            onClick={() => setLibraryOpen((o) => !o)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "calc(14px * var(--d)) calc(14px * var(--d))",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "calc(6px * var(--d))" }}>
+              <span style={{
+                fontFamily: "var(--p-display)",
+                fontWeight: 600,
+                fontSize: "calc(16px * var(--d))",
+                letterSpacing: "-0.01em",
+                color: "var(--p-ink)",
+              }}>Module Library</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "calc(8px * var(--d))" }}>
+              <span style={{
+                fontFamily: "var(--p-mono)",
+                fontSize: "calc(9.5px * var(--d))",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase" as const,
+                color: "var(--p-ink-3)",
+              }}>All topics</span>
+              <ChevronDown
+                size={16}
+                color="var(--p-ink-3)"
+                style={{
+                  transition: "transform 0.25s ease",
+                  transform: libraryOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  flexShrink: 0,
+                }}
+              />
+            </div>
+          </button>
+
+          {libraryOpen && (
+            <div style={{
+              padding: "0 calc(14px * var(--d)) calc(14px * var(--d))",
+              display: "flex",
+              flexDirection: "column",
+              gap: "calc(10px * var(--d))",
+            }}>
+              {suggested.map(renderTrackTile)}
             </div>
           )}
         </div>

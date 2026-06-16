@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TimelineItem } from '../shared/types'
-import { sortTimelineItems } from './timelineService'
+import { normalizeTimelineTitle, sortTimelineItems } from './timelineService'
 import { duePartsFromWhenLabel, formatTimelineWhen } from '../shared/timelineDates'
 
 function timelineItem(overrides: Partial<TimelineItem>): TimelineItem {
@@ -39,6 +39,12 @@ describe('sortTimelineItems', () => {
       'added-first',
       'next-year',
     ])
+  })
+})
+
+describe('normalizeTimelineTitle', () => {
+  it('normalizes case and whitespace for deduplication', () => {
+    expect(normalizeTimelineTitle('  Pension   Auto-Enrolment Kicks In  ')).toBe('pension auto-enrolment kicks in')
   })
 })
 

@@ -244,51 +244,51 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
   const recs: string[] = [];
 
   // 1. Debt priority (from Q4 or general profile)
-  if (profile.hasDebt === "Yes" || profile.sixMonthGoal === "I've got debt I'm trying to deal with") {
+  if (profile.hasDebt === "Yes" || profile.sixMonthGoal === "I've got debt I'm trying to clear") {
     recs.push("debt");
   }
 
   // 2. Question 4 — Money worry specific mappings
   const worry = profile.sixMonthGoal;
-  if (worry === "I don't really understand how tax works") {
+  if (worry === "I honestly don't get how tax works") {
     recs.push("starting-work");
     recs.push("taxes-wealth");
   } else if (worry === "I never seem to have anything left at the end of the month") {
     recs.push("starting-work");
     recs.push("foundations");
     recs.push("career");
-  } else if (worry === "I've got debt I'm trying to deal with") {
+  } else if (worry === "I've got debt I'm trying to clear") {
     recs.push("debt");
-  } else if (worry === "I don't know if I'm saving enough or doing it right") {
+  } else if (worry === "I don't know if I'm saving right, or saving enough") {
     recs.push("foundations");
     recs.push("investing-101");
-  } else if (worry === "I have no idea what my pension is doing") {
+  } else if (worry === "I have absolutely no idea what my pension is doing") {
     recs.push("starting-work");
     recs.push("career");
     recs.push("taxes-wealth");
-  } else if (worry === "I want to start investing but don't know where to begin") {
+  } else if (worry === "I want to start investing but I'm stuck at square one") {
     recs.push("investing-101");
-  } else if (worry === "I feel like I'm missing out on money the government owes me") {
+  } else if (worry === "I feel like I'm missing out on free government cash") {
     recs.push("relationships");
     recs.push("family");
     recs.push("buying-a-home");
-  } else if (worry === "Honestly I don't know what I don't know") {
+  } else if (worry === "Honestly? I don't even know what I don't know") {
     recs.push("foundations");
   }
 
   // 3. Question 1 — Life stage inferences
   const stage = profile.lifeStage;
-  if (stage === "I'm still at university") {
+  if (stage === "I'm still at uni") {
     recs.push("starting-work"); // has Student Loan
     recs.push("foundations");
-  } else if (stage === "I've just started my first job") {
+  } else if (stage === "I've just started my first proper job" || stage === "I'm about to start my first proper job") {
     recs.push("starting-work");
   } else if (stage === "I've been working for a year or two") {
     recs.push("taxes-wealth");
     recs.push("investing-101");
     recs.push("mastering-credit");
     recs.push("career");
-  } else if (stage === "I'm self employed or doing freelance work") {
+  } else if (stage === "I'm doing the freelance / self-employed thing") {
     recs.push("taxes-wealth");
   } else if (stage === "I'm not working at the moment") {
     recs.push("debt");
@@ -297,12 +297,12 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
 
   // 4. Question 2 — Living situation inferences
   const living = profile.livingSituation;
-  if (living === "At home with family") {
+  if (living === "Living at home with family") {
     recs.push("renting");
     recs.push("buying-a-home");
-  } else if (living === "Renting — just moved in or about to") {
+  } else if (living === "Renting (just moved in, or about to)") {
     recs.push("renting");
-  } else if (living === "Renting — been here a while") {
+  } else if (living === "Renting (been here a while now)") {
     recs.push("buying-a-home");
   } else if (living === "I own my place") {
     recs.push("investing-101");
@@ -320,7 +320,7 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
   if (evts.includes("Starting a new job (not my first) soon")) {
     recs.push("career");
   }
-  if (evts.includes("Moving out for the first time")) {
+  if (evts.includes("Moving out for the very first time")) {
     recs.push("renting");
   }
   if (evts.includes("Thinking about buying a place")) {
@@ -329,10 +329,10 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
   if (evts.includes("Moving in with a partner")) {
     recs.push("relationships");
   }
-  if (evts.includes("Having a baby or just had one")) {
+  if (evts.includes("Having a baby (or just had one)")) {
     recs.push("family");
   }
-  if (evts.includes("Getting a pay rise or changing jobs")) {
+  if (evts.includes("Getting a pay rise or switching roles")) {
     recs.push("career");
   }
   if (evts.includes("Buying a car")) {
@@ -355,7 +355,7 @@ export function getRecommendedTopics(profile: UserProfile | null): string[] {
   let result = Array.from(new Set(combined));
   
   // Still at university -> deprioritise buying-a-home and taxes-wealth (pensions)
-  if (stage === "I'm still at university") {
+  if (stage === "I'm still at uni") {
     result = result.filter(id => id !== "buying-a-home" && id !== "taxes-wealth");
     result.push("buying-a-home");
     result.push("taxes-wealth");
@@ -386,6 +386,9 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
   const upcomingEvents = profile.upcomingEvents || [];
   const livingSituation = profile.livingSituation || "";
   const studentLoan = profile.studentLoan || "";
+  const hasCareerEvent =
+    upcomingEvents.includes("Getting a pay rise or changing jobs") ||
+    upcomingEvents.includes("Getting a pay rise or switching roles");
 
   // Card 1: Stressor / tax / payslip
   if (moneyWorry === "I honestly don't get how tax works" || (confidence.tax && confidence.tax <= 2)) {
@@ -424,6 +427,14 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
       subTopicId: "lesson-29",
       icon: "chart"
     });
+  } else if (hasCareerEvent) {
+    selected.push({
+      title: "Salary Negotiation",
+      desc: "Since a raise or role change is coming up, let's prepare your salary conversation.",
+      topicId: "career",
+      subTopicId: "lesson-18",
+      icon: "chart"
+    });
   } else {
     selected.push({
       title: "The Power of Compound Interest",
@@ -435,7 +446,9 @@ export function getRecommendedSummary(profile: UserProfile | null): RecommendedC
   }
 
   // Card 2: Budgeting / Investing
-  if (moneyWorry === "I never seem to have anything left at the end of the month" || (confidence.budgeting && confidence.budgeting <= 2)) {
+  if (hasCareerEvent) {
+    // Career is already the primary recommendation; avoid adding a generic Foundations filler card.
+  } else if (moneyWorry === "I never seem to have anything left at the end of the month" || (confidence.budgeting && confidence.budgeting <= 2)) {
     selected.push({
       title: "The 50/30/20 rule",
       desc: "You said you never have much left at the end of the month. This simple framework is going to change that.",
