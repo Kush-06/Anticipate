@@ -1,0 +1,57 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\begin{document}
+
+\section{Third-Party Resource Acknowledgement}
+The following libraries, frameworks, and assets are utilized within the Anticipate project. All listed resources were not created by the development group and are used under their respective licenses.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Resource Category} & \textbf{Name / Item} & \textbf{License / Source} \\
+\midrule
+Core Framework & React 19, React DOM & MIT License \\
+Mobile Runtime & Capacitor (Android, iOS, Core) & MIT License \\
+Backend/Database & Supabase JS SDK & Apache License 2.0 \\
+UI Components & Radix UI (Dialog, Tabs, etc.) & MIT License \\
+Styling & Tailwind CSS, PostCSS & MIT License \\
+Icons & Lucide React & ISC License \\
+Utilities & Clsx, Sonner & MIT License \\
+Build Tools & Vite, TypeScript, Vitest & MIT License \\
+Graphical Assets & react.svg, vite.svg & MIT (Framework Logos) \\
+Educational Content & Financial Lesson Data & MoneySavingExpert / Fair Use \\
+\bottomrule
+\end{tabular}
+\caption{Third-party libraries and assets utilized in the project.}
+\end{table}
+
+\section{Legal Issues and Considerations}
+For an official release of the Anticipate digital touchpoint, several legal hurdles must be navigated. Primarily, the application utilizes numerous open-source libraries under the MIT and Apache 2.0 licenses, which require the inclusion of original copyright notices and license texts within the distribution. 
+
+Furthermore, the educational content references trademarked entities such as \textbf{MoneySavingExpert} and \textbf{Martin Lewis}. While used here for educational context within a prototype, an official release would require explicit permission or a licensing agreement to avoid trademark infringement or passing off. 
+
+Additionally, as the application provides financial guidance (e.g., pension advice, debt strategies), it must comply with \textbf{Financial Conduct Authority (FCA)} regulations in the UK. This is critical to ensure the platform does not cross the line into providing unregulated financial advice, which could carry significant legal penalties. 
+
+\section{Note for Future Development Teams}
+Future teams continuing work on Anticipate must adhere to the following legal and structural constraints:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{License Compliance:} Ensure all third-party code maintains its original license headers. Use auditing tools to verify dependencies before any production build.
+    \item \textbf{Trademark Audit:} Before any public deployment, audit the educational content and UI strings to remove or seek permission for trademarked names and logos.
+    \item \textbf{Regulatory Review:} Consulting with a legal expert on UK financial regulation is mandatory if the "Sage" AI or lesson content is expanded to provide specific, personalized financial recommendations.
+\end{itemize}
+
+\vfill
+\begin{center}
+\textit{Prepared for University Portfolio Submission.}
+\end{center}
+
+\end{document}
