@@ -10,14 +10,18 @@ const __dirname = path.dirname(__filename);
 const homeScreenPath = path.join(__dirname, 'homescreen.jpeg');
 const learnScreenPath = path.join(__dirname, 'learnpage.jpeg');
 const communityScreenPath = path.join(__dirname, 'community.jpeg');
-const storeBadgesPath = path.join(__dirname, 'store_badges.png');
+const decoderScreenPath = path.join(__dirname, 'decoder.png');
+const playStoreBadgePath = path.join(__dirname, 'play_store_badge.svg');
+const appStoreBadgePath = path.join(__dirname, 'app_store_badge.svg');
 const outputPath = path.join(__dirname, 'project_flyer.html');
 
 console.log('Converting screenshots and badges to Base64...');
 const homeScreenBase64 = fs.readFileSync(homeScreenPath).toString('base64');
 const learnScreenBase64 = fs.readFileSync(learnScreenPath).toString('base64');
 const communityScreenBase64 = fs.readFileSync(communityScreenPath).toString('base64');
-const storeBadgesBase64 = fs.readFileSync(storeBadgesPath).toString('base64');
+const decoderScreenBase64 = fs.readFileSync(decoderScreenPath).toString('base64');
+const playStoreBadgeBase64 = fs.readFileSync(playStoreBadgePath).toString('base64');
+const appStoreBadgeBase64 = fs.readFileSync(appStoreBadgePath).toString('base64');
 
 console.log('Generating self-contained project flyer HTML...');
 
@@ -78,13 +82,14 @@ const htmlContent = `<!DOCTYPE html>
 
     /* Outer page container: Solid orange background, square corners */
     #poster-page {
-      width: 792px;
-      height: 1120px; /* Exact A4 aspect ratio in pixels (792x1120) */
+      width: 210mm;
+      height: 297mm; /* Exact A4 dimensions */
       box-sizing: border-box;
-      padding: 18px; /* The orange border margin */
+      padding: 4.8mm; /* The orange border margin */
       position: relative;
       z-index: 1;
       display: flex;
+      flex-direction: column;
       flex-shrink: 0;
       background-color: var(--p-coral);
       border-radius: 0 !important; /* Square outer corners */
@@ -139,7 +144,7 @@ const htmlContent = `<!DOCTYPE html>
     .brand-logo-large {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 10px; /* Reduced gap to bring Sage closer to text */
     }
 
     .brand-logo-text {
@@ -167,7 +172,7 @@ const htmlContent = `<!DOCTYPE html>
       grid-template-columns: 1.05fr 0.95fr;
       gap: 32px;
       align-items: center;
-      height: 380px;
+      height: auto; /* Allow auto height based on content */
       position: relative;
       z-index: 10;
       box-sizing: border-box;
@@ -175,6 +180,7 @@ const htmlContent = `<!DOCTYPE html>
 
     .poster-row-bottom {
       grid-template-columns: 0.95fr 1.05fr;
+      align-items: center;
     }
 
     .poster-col {
@@ -183,7 +189,6 @@ const htmlContent = `<!DOCTYPE html>
       gap: 16px;
       position: relative;
       box-sizing: border-box;
-      height: 100%;
       justify-content: center;
     }
 
@@ -222,7 +227,7 @@ const htmlContent = `<!DOCTYPE html>
     .phones-showcase-top {
       position: relative;
       width: 100%;
-      height: 350px;
+      height: 320px; /* Reduced to fit better */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -232,7 +237,7 @@ const htmlContent = `<!DOCTYPE html>
     .phones-showcase-bottom {
       position: relative;
       width: 100%;
-      height: 350px;
+      height: 320px; /* Reduced to fit better */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -241,12 +246,12 @@ const htmlContent = `<!DOCTYPE html>
 
     /* Sleek Real iPhone Mockup matching reference image exactly */
     .phone-mock {
-      width: 155px; /* Exact same screen width as impact asset */
+      width: 140px; /* Scaled slightly to fit within column without overflow */
       aspect-ratio: 1206 / 2622; /* Natural aspect ratio of screenshot */
-      background: #1c1a24;
-      border-radius: 26px;
+      background: #0d0c10;
+      border-radius: 32px; /* Rounded corners matching real iPhone shape */
       box-shadow: 0 12px 32px rgba(28, 26, 36, 0.22);
-      border: 5.5px solid #1c1a24;
+      border: 6px solid #0d0c10; /* Precise bezel thickness */
       overflow: hidden;
       box-sizing: content-box; /* Crucial to prevent warping/stretching */
       position: absolute;
@@ -263,13 +268,13 @@ const htmlContent = `<!DOCTYPE html>
     .phone-mock::before {
       content: "";
       position: absolute;
-      top: 5px;
+      top: 7px;
       left: 50%;
       transform: translateX(-50%);
-      width: 28px; /* Proportional dynamic island width for 155px mock */
-      height: 8px;
+      width: 42px; /* Thicker, proportional Dynamic Island width matching reference image */
+      height: 12px;
       background: #000000;
-      border-radius: 10px;
+      border-radius: 8px; /* Smooth capsule shape */
       z-index: 30;
     }
 
@@ -278,19 +283,19 @@ const htmlContent = `<!DOCTYPE html>
       height: 100%;
       display: block;
       object-fit: cover;
-      border-radius: 21px; /* Curve inner corners */
+      border-radius: 26px; /* concentric corner radius matching outer frame */
     }
 
     /* Phone positions top row - Left phone overlapping Right phone */
     .phone-top-1 {
-      left: 12px;
-      top: 15px;
+      left: 15px;
+      top: 10px;
       transform: rotate(-4deg);
       z-index: 5; /* In front */
     }
 
     .phone-top-2 {
-      right: 12px;
+      right: 15px;
       top: 0;
       transform: rotate(5deg);
       z-index: 2; /* Behind */
@@ -317,7 +322,7 @@ const htmlContent = `<!DOCTYPE html>
     .ad-bullet-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
       margin-bottom: 2px;
     }
 
@@ -337,7 +342,7 @@ const htmlContent = `<!DOCTYPE html>
     .bullet-check {
       color: var(--p-mint);
       font-weight: bold;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1;
       margin-top: 1px;
     }
@@ -351,7 +356,7 @@ const htmlContent = `<!DOCTYPE html>
 
     .testimonial-quote {
       font-family: var(--font-display);
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       line-height: 1.35;
       font-style: italic;
@@ -359,50 +364,56 @@ const htmlContent = `<!DOCTYPE html>
       margin: 0 0 4px 0;
     }
 
-    .testimonial-quote::before {
-      content: "“";
-      font-size: 32px;
-      position: absolute;
-      left: 2px;
-      top: -12px;
-      color: var(--p-coral);
-      opacity: 0.25;
-    }
-
     .testimonial-author {
       font-family: var(--font-mono);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       color: var(--p-ink-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
-    /* Sage Sprout border vectors */
-    .border-sprout {
-      position: absolute;
-      pointer-events: none;
-      z-index: 100;
-      width: 44px;
-      height: 44px;
+    /* Store Download Badges Card */
+    .download-badge-card {
+      border: 1.5px dashed var(--p-coral);
+      border-radius: 16px;
+      padding: 10px 14px;
+      background-color: var(--p-card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-sizing: border-box;
+      box-shadow: 0 4px 12px rgba(233, 105, 74, 0.03);
     }
 
-    .sprout-top-left {
-      top: -12px;
-      left: 45px;
-      transform: rotate(-25deg);
+    .download-title {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--p-ink);
+      text-align: center;
     }
 
-    .sprout-mid-right {
-      top: 520px;
-      right: -12px;
-      transform: rotate(90deg);
+    .download-brand {
+      color: var(--p-coral);
+      font-family: var(--font-display);
+      font-weight: 800;
     }
 
-    .sprout-bottom-left {
-      bottom: 80px;
-      left: -12px;
-      transform: rotate(-90deg);
+    .download-badges-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .download-store-img {
+      height: 32px; /* Scaled slightly to fit perfectly */
+      display: block;
+      object-fit: contain;
     }
 
     /* Interactive export strip */
@@ -466,9 +477,10 @@ const htmlContent = `<!DOCTYPE html>
         display: block !important;
         background: none !important;
         padding: 0 !important;
+        position: relative !important;
       }
       #poster-page {
-        width: 210mm !important;
+        width: 210mm !important; /* Lock to exact A4 physical boundaries */
         height: 297mm !important;
         box-shadow: none !important;
         border: none !important;
@@ -485,7 +497,9 @@ const htmlContent = `<!DOCTYPE html>
       #poster-inner-canvas {
         border-radius: 6.4mm !important; /* Curved canvas inner edge */
         background-color: var(--p-bg) !important;
-        padding: 6.4mm 8.5mm !important;
+        padding: 8.5mm 9.5mm !important;
+        width: 100% !important;
+        height: 100% !important;
       }
       .export-strip {
         display: none !important;
@@ -498,26 +512,6 @@ const htmlContent = `<!DOCTYPE html>
   <div id="poster-wrapper">
     <!-- Outer page: square orange borders -->
     <div id="poster-page">
-
-      <!-- Sage Sprouts sticking out from the inner canvas edges onto the orange border -->
-      <!-- Sprout 1: Top Left -->
-      <svg class="border-sprout sprout-top-left" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 90 L50 30" stroke="#5fab84" stroke-width="12" stroke-linecap="round" />
-        <ellipse cx="30" cy="20" rx="16" ry="26" fill="#5fab84" transform="rotate(-30 30 20)" />
-        <ellipse cx="70" cy="20" rx="16" ry="26" fill="#5fab84" transform="rotate(30 70 20)" />
-      </svg>
-      <!-- Sprout 2: Middle Right -->
-      <svg class="border-sprout sprout-mid-right" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 90 L50 30" stroke="#5fab84" stroke-width="12" stroke-linecap="round" />
-        <ellipse cx="30" cy="20" rx="16" ry="26" fill="#5fab84" transform="rotate(-30 30 20)" />
-        <ellipse cx="70" cy="20" rx="16" ry="26" fill="#5fab84" transform="rotate(30 70 20)" />
-      </svg>
-      <!-- Sprout 3: Bottom Left -->
-      <svg class="border-sprout sprout-bottom-left" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 90 L50 30" stroke="#5fab84" stroke-width="12" stroke-linecap="round" />
-        <ellipse cx="30" cy="20" rx="16" ry="26" fill="#5fab84" transform="rotate(-30 30 20)" />
-        <ellipse cx="70" cy="20" rx="16" ry="26" fill="#5fab84" transform="rotate(30 70 20)" />
-      </svg>
       
       <!-- Inner Canvas: Curved corners, cream background -->
       <div id="poster-inner-canvas">
@@ -526,7 +520,7 @@ const htmlContent = `<!DOCTYPE html>
         <div class="brand-header-center">
           <div class="brand-logo-large">
             <!-- Big Sage Icon inside logo -->
-            <svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(28,26,36,0.12));">
+            <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(28,26,36,0.12));">
               <defs>
                 <linearGradient id="sage-logo-grad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stop-color="#FFE4D4" />
@@ -554,18 +548,25 @@ const htmlContent = `<!DOCTYPE html>
         <div class="poster-row">
           
           <!-- Top Left Text in Card Panels -->
-          <div class="poster-col">
-            <div class="card-panel">
-              <h2 class="promo-headline">Anxious about first payslips, renting, or pensions?</h2>
-              <p class="promo-body">
-                Transitioning to the adult world shouldn't mean guessing your tax codes or signing lease contracts in the dark. Anticipate builds a friendly timeline of your milestones, guiding you through them before they happen.
+          <div class="poster-col" style="margin-top: 16px; gap: 12px;">
+            <div class="card-panel" style="padding: 16px 20px;">
+              <h2 class="promo-headline" style="font-size: 22px; margin-bottom: 8px;">Anxious about first payslips, renting, or pensions?</h2>
+              <p class="promo-body" style="font-size: 13.5px; line-height: 1.45;">
+                Transitioning to the adult world shouldn't mean guessing your tax codes or signing rental contracts in the dark. Anticipate builds a friendly timeline of your milestones, guiding you through them before they happen.
               </p>
             </div>
 
-            <div class="card-panel" style="padding: 16px 20px;">
-              <h3 class="promo-headline" style="font-size: 18px; color: var(--p-coral); margin-bottom: 6px;">Predictive Timeline Guide</h3>
-              <p class="promo-body" style="font-size: 14px;">
-                We know your rent dates, job starts, or money worries, preparing you with simple, jargon-free checklists days in advance.
+            <div class="card-panel" style="padding: 10px 16px;">
+              <h3 class="promo-headline" style="font-size: 15px; color: var(--p-coral); margin-bottom: 4px;">Predictive Timeline Guide</h3>
+              <p class="promo-body" style="font-size: 12.5px; line-height: 1.4;">
+                We know your rent dates, job starts, or money worries, preparing you with simple, checklist-driven guides days in advance.
+              </p>
+            </div>
+
+            <div class="card-panel" style="padding: 10px 16px;">
+              <h3 class="promo-headline" style="font-size: 15px; color: var(--p-coral); margin-bottom: 4px;">Anonymity First</h3>
+              <p class="promo-body" style="font-size: 12.5px; line-height: 1.4;">
+                Ask the questions you are too embarrassed to raise. Share insights and connect with peers in a safe, moderated space.
               </p>
             </div>
           </div>
@@ -580,7 +581,7 @@ const htmlContent = `<!DOCTYPE html>
                 <img src="data:image/jpeg;base64,${learnScreenBase64}" class="phone-screen" alt="Lessons">
               </div>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 0 32px; margin-top: 10px; z-index: 15; position: relative;">
+            <div style="display: flex; justify-content: space-between; padding: 0 24px; margin-top: 20px; z-index: 15; position: relative;">
               <span class="phone-label-text">01 / Timeline</span>
               <span class="phone-label-text">02 / Lessons</span>
             </div>
@@ -591,50 +592,57 @@ const htmlContent = `<!DOCTYPE html>
         <!-- Row 2 (Bottom Half): One screenshot left, Text right inside cards -->
         <div class="poster-row poster-row-bottom">
           
-          <!-- Bottom Left Screen (Perfect aspect ratio iPhone - straight) -->
+          <!-- Bottom Left Screen (Perfect aspect ratio iPhones - overlapping) -->
           <div class="poster-col">
             <div class="phones-showcase-bottom">
-              <div class="phone-mock phone-bottom-single">
+              <div class="phone-mock phone-top-1">
                 <img src="data:image/jpeg;base64,${communityScreenBase64}" class="phone-screen" alt="Forum">
               </div>
+              <div class="phone-mock phone-top-2">
+                <img src="data:image/png;base64,${decoderScreenBase64}" class="phone-screen" alt="Decoder">
+              </div>
             </div>
-            <div style="text-align: center; margin-top: 10px; z-index: 15; position: relative;">
+            <div style="display: flex; justify-content: space-between; padding: 0 24px; margin-top: 20px; z-index: 15; position: relative;">
               <span class="phone-label-text">03 / Anonymous Forums</span>
-            </div>
-
-            <!-- Card panel below phone to fill space and prevent emptiness -->
-            <div class="card-panel" style="margin-top: 12px; padding: 14px 18px;">
-              <h3 class="promo-headline" style="font-size: 17px; color: var(--p-coral); margin-bottom: 4px;">Anonymity First</h3>
-              <p class="promo-body" style="font-size: 13.5px;">Ask the questions you are too embarrassed to raise. Share insights and connect with peers in a safe, moderated space.</p>
+              <span class="phone-label-text">04 / Lease Decoder</span>
             </div>
           </div>
 
           <!-- Bottom Right Text inside card panels -->
-          <div class="poster-col">
-            <div class="card-panel">
-              <h2 class="promo-headline">Decode the adulting fine print in 4 minutes.</h2>
+          <div class="poster-col" style="gap: 12px;">
+            <div class="card-panel" style="padding: 14px 18px;">
+              <h2 class="promo-headline" style="font-size: 20px; margin-bottom: 8px;">Uncomplicate your finances in just 4 minutes.</h2>
               
               <div class="ad-bullet-list">
-                <div class="ad-bullet-item">
-                  <span class="bullet-check">✓</span>
-                  <span><strong>Wage Walkthroughs:</strong> Sage flags emergency tax codes early, showing you how to claim refunds.</span>
+                <div class="ad-bullet-item" style="font-size: 12.5px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2.5px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>A financial friend:</strong> Sage maps your upcoming milestones, preparing you for them before they hit.</span>
                 </div>
-                <div class="ad-bullet-item">
-                  <span class="bullet-check">✓</span>
-                  <span><strong>Lease Decoders:</strong> Drag-and-drop rental contracts to instantly isolate hidden fees and deposit clauses.</span>
+                <div class="ad-bullet-item" style="font-size: 12.5px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2.5px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>No more dreading documents:</strong> HMRC letters, payslips, and contracts decoded instantly into plain English.</span>
                 </div>
-                <div class="ad-bullet-item">
-                  <span class="bullet-check">✓</span>
-                  <span><strong>Anonymous Support:</strong> Ask peer community topics you are too embarrassed to raise in public.</span>
+                <div class="ad-bullet-item" style="font-size: 12.5px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fab84" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2.5px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Learn when you need it:</strong> Short, jargon-free lessons timed to your life, not a generic curriculum.</span>
                 </div>
               </div>
             </div>
 
-            <div class="card-panel" style="padding: 16px 20px;">
+            <div class="card-panel" style="padding: 8px 14px;">
               <!-- Testimonial Quote Banner -->
               <div class="testimonial-card">
-                <p class="testimonial-quote">"Finally, a financial guide that doesn't make me feel stupid."</p>
+                <p class="testimonial-quote" style="font-size: 13.5px;">"Finally, a financial guide that doesn't make me feel stupid."</p>
                 <span class="testimonial-author">— Sarah, 2nd Year Student</span>
+              </div>
+            </div>
+
+            <!-- Download Section at the bottom right -->
+            <div class="download-badge-card">
+              <span class="download-title">Download <span class="download-brand">anticipate.</span> today</span>
+              <div class="download-badges-row">
+                <img src="data:image/svg+xml;base64,${playStoreBadgeBase64}" class="download-store-img" alt="Google Play">
+                <img src="data:image/svg+xml;base64,${appStoreBadgeBase64}" class="download-store-img" alt="App Store">
               </div>
             </div>
           </div>
@@ -644,7 +652,10 @@ const htmlContent = `<!DOCTYPE html>
         <!-- Footer Action Strip -->
         <div class="export-strip">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="data:image/png;base64,${storeBadgesBase64}" class="store-badge-img" alt="Download badges">
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <img src="data:image/svg+xml;base64,${playStoreBadgeBase64}" style="height: 18px; display: block;" alt="Google Play">
+              <img src="data:image/svg+xml;base64,${appStoreBadgeBase64}" style="height: 18px; display: block;" alt="App Store">
+            </div>
             <span style="font-family: var(--font-mono); font-size: 8px; color: var(--p-ink-tertiary); max-width: 200px; line-height: 1.25;">
               Available on iOS & Android.<br>© 2026 Anticipate App. All rights reserved.
             </span>
@@ -673,7 +684,7 @@ const htmlContent = `<!DOCTYPE html>
         filename: 'anticipate_project_leaflet.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2.2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'px', format: [792, 1120], orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
       // Temporary hide the button during render to look clean
